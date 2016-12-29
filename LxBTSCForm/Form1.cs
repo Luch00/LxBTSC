@@ -56,7 +56,10 @@ namespace LxBTSCForm
             }
             else
             {
-                //load from git
+                var site = "https://luch00.github.io/LxBTSC/chat.html";
+                requestHandler = new RequestHandler(site);
+                browser.RequestHandler = requestHandler;
+                browser.Load(site);
             }
         }
 
