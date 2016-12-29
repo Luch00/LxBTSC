@@ -1,0 +1,57 @@
+<!DOCTYPE HTML><html>
+    <head>
+        <meta charset='utf-8'>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+        <link rel = 'stylesheet' type='text/css' href='style.css'/>
+        <link rel = 'stylesheet' type='text/css' href='emote.css'/>
+        <script type = 'text/javascript' >
+            var main;
+            var i = 0;
+        var IsBottom = true;
+        window.onload = function()
+        {
+            main = document.getElementById('main');
+        };
+        window.onscroll = function(ev)
+        {
+            if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight)
+            {
+                IsBottom = true;
+                console.log("bottom");
+            }
+            else
+            {
+                IsBottom = false;
+                console.log("not bottom");
+            }
+        };
+        function AddLine(line)
+        {
+            if (main.childElementCount > 500)
+            {
+                main.firstElementChild.remove();
+            }
+            main.insertAdjacentHTML('beforeend', line);
+            if (IsBottom)
+            {
+                window.scroll(0, document.body.scrollHeight);
+            }
+        }
+
+        function TestAdd(string)
+        {
+            callbackObj.receiveMessage(string);
+        }
+        function IsBottom()
+        {
+            window.onscroll = function(ev) {
+                if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight)
+                {
+                }
+            };
+        }
+        </script>
+    </head>
+    <body id='main'>
+    </body>
+</html>
