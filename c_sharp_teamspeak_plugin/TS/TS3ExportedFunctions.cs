@@ -3,6 +3,7 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.Windows.Forms;
 
 namespace TS
 {
@@ -170,7 +171,7 @@ namespace TS
         //                        // Print it
         //                        funcs.printMessageToCurrentTab(result);
         //                    }
-                            
+
 
         //                    break;
 
@@ -185,20 +186,49 @@ namespace TS
         //            break;
         //    }
         //}
-
+        private const string serverName = "Shinku, Mare and more Yomes";
+        private const string serverName2 = "げんけん";
+        private static ulong enabledServer = 0;
         [DllExport]
-        public static void ts3plugin_onClientDisplayNameChanged(UInt64 serverConnectionHandlerID, anyID clientID, [System.Runtime.InteropServices.InAttribute()] [System.Runtime.InteropServices.MarshalAsAttribute(System.Runtime.InteropServices.UnmanagedType.LPStr)] string displayName, [System.Runtime.InteropServices.InAttribute()] [System.Runtime.InteropServices.MarshalAsAttribute(System.Runtime.InteropServices.UnmanagedType.LPStr)] string uniqueClientIdentifier)
+        public static void ts3plugin_onConnectStatusChangeEvent(UInt64 serverConnectionHandlerID, ConnectStatus status, int errorNumber)
         {
-            var functions = TSPlugin.Instance.Functions;
-            functions.printMessageToCurrentTab(uniqueClientIdentifier);
+            if (status == ConnectStatus.STATUS_CONNECTED)
+            {
+                IntPtr name = IntPtr.Zero;
+                TSPlugin.Instance.Functions.getServerVariableAsString(serverConnectionHandlerID, new IntPtr((int)VirtualServerProperties.VIRTUALSERVER_NAME), ref name);
+                //string ret = Marshal.PtrToStringAnsi(name);
+                string ret = UsefulFuncs.StringFromNativeUtf8(name);
+                //MessageBox.Show(ret);
+                if (ret == serverName || ret == serverName2)
+                {
+                    //MessageBox.Show("yay");
+                    enabledServer = serverConnectionHandlerID;
+                }
+                //TSPlugin.Instance.ServerID = serverConnectionHandlerID;
+            }
+            /*if (status == ConnectStatus.STATUS_DISCONNECTED)
+            {
+                //TSPlugin.Instance.SendChatMessage("I have returned!", 3, 0, serverConnectionHandlerID);
+                TSPlugin.Instance.UpdateDisconnect();
+            }*/
         }
+
+        //[DllExport]
+        //public static void ts3plugin_onClientDisplayNameChanged(UInt64 serverConnectionHandlerID, anyID clientID, [System.Runtime.InteropServices.InAttribute()] [System.Runtime.InteropServices.MarshalAsAttribute(System.Runtime.InteropServices.UnmanagedType.LPStr)] string displayName, [System.Runtime.InteropServices.InAttribute()] [System.Runtime.InteropServices.MarshalAsAttribute(System.Runtime.InteropServices.UnmanagedType.LPStr)] string uniqueClientIdentifier)
+        //{
+        //    var functions = TSPlugin.Instance.Functions;
+        //    functions.printMessageToCurrentTab(uniqueClientIdentifier);
+        //}
 
         [DllExport]
         public static int ts3plugin_onTextMessageEvent(UInt64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID, [In()] [MarshalAs(UnmanagedType.LPStr)] string fromName, [In()] [MarshalAs(UnmanagedType.LPStr)] string fromUniqueIdentifier, IntPtr message, int ffIgnored)
         {
-            if (targetMode.value != 3)
+            if (serverConnectionHandlerID != enabledServer)
                 return 0;
 
+            if (targetMode.value != 3 && targetMode.value != 2)
+                return 0;
+            
             bool outgoing = false;
             var functions = TSPlugin.Instance.Functions;
             ushort myID = 0;
@@ -210,23 +240,8 @@ namespace TS
             if (fromID.value == myID)
             {
                 outgoing = true;
-                //return 0;
             }
-            TSPlugin.Instance.chatGui.MessageReceived(outgoing, fromName, UsefulFuncs.StringFromNativeUtf8(message));
-
-            /*TSPlugin.Instance.CheckMessage(
-                new TextMessage
-                {
-                    ServerConnectionHandlerID = serverConnectionHandlerID,
-                    TargetMode = targetMode.value,
-                    ToID = toID.value,
-                    FromID = fromID.value,
-                    FromName = fromName,
-                    FromUniqueID = fromUniqueIdentifier,
-                    Text = UsefulFuncs.StringFromNativeUtf8(message)
-                });*/
-
-            //functions.printMessageToCurrentTab($"{serverConnectionHandlerID} {targetMode.value} {toID.value} {fromID.value} {fromName} {fromUniqueIdentifier} {message} {ffIgnored}");
+            TSPlugin.Instance.chatGui.MessageReceived(targetMode.value, outgoing, fromName, UsefulFuncs.StringFromNativeUtf8(message));
 
             return 0;
         }

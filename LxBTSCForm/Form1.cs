@@ -12,6 +12,7 @@ using System.Threading;
 using System.IO;
 using CodeKicker.BBCode;
 using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
 
 namespace LxBTSCForm
 {
@@ -23,12 +24,18 @@ namespace LxBTSCForm
         private readonly CallBackObject cbo;
         private RequestHandler requestHandler = new RequestHandler("a");
         private LifespanHandler lifespanHandler = new LifespanHandler();
+        private Action windowPositionChanged;
+        private readonly SynchronizationContext context;
+
+        private static Dictionary<string, string> Emotes = new Dictionary<string, string>();
 
         public Form1()
         {
             libraryLoader = new CefLibraryHandle(Path.Combine(appdataPath, @"Luch\LxBTSC\CefLib\libcef.dll"));
             InitCef();
+            //windowPositionChanged = WindowPositionChanged;
             InitializeComponent();
+            context = SynchronizationContext.Current;
             cbo = new CallBackObject();
             cbo.MessageEvent += Cbo_MessageEvent;
 
@@ -46,10 +53,13 @@ namespace LxBTSCForm
 
         private void LoadHtml()
         {
+            //MessageBox.Show("LOAD");
             if (File.Exists(Path.Combine(appdataPath, @"Luch\LxBTSC\template\chat.html")))
             {
                 var slashes = appdataPath.Replace("\\", "/");
                 var file = $"file:///{slashes}/Luch/LxBTSC/template/chat.html";
+                var json = File.ReadAllText($"{appdataPath}\\Luch\\LxBTSC\\template\\emotes.json");
+                Emotes = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
                 requestHandler = new RequestHandler(file);
                 browser.RequestHandler = requestHandler;
                 browser.Load(file);
@@ -57,6 +67,8 @@ namespace LxBTSCForm
             else
             {
                 var site = "https://luch00.github.io/LxBTSC/chat.html";
+                var json = "https://luch00.github.io/LxBTSC/emotes.json";
+                Emotes = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
                 requestHandler = new RequestHandler(site);
                 browser.RequestHandler = requestHandler;
                 browser.Load(site);
@@ -96,17 +108,25 @@ namespace LxBTSCForm
             var m = e.Message;
             if (m.Length>0)
             {
-                MessageReceived(true, "Test", m);
+                MessageReceived(3, true, "Test", m);
             }
         }
 
-        public void MessageReceived(bool outgoing, string name, string s)
+        public void MessageReceived(ushort target, bool outgoing, string name, string s)
         {
-            var message = ToHTML(s);
+            var message = ToHTML(s.Replace("\r", ""));
             if (message.Length > 0)
             {
                 string chatline = string.Format("<img class=\"{0}\"><{1:HH:mm:ss}> <span class=\"name\">\"{2}\"</span>: {3}", outgoing ? "outgoing" : "incoming", DateTime.Now, name, Emoticonize(message));
-                browser.ExecuteScriptAsync($"AddLine('<div>{chatline}</div>');");
+                if (target == 3)
+                {
+                    browser.ExecuteScriptAsync($"AddServerLine('<div>{chatline}</div>');");
+                }
+                else
+                {
+                    browser.ExecuteScriptAsync($"AddChannelLine('<div>{chatline}</div>');");
+                }
+                
             }
         }
 
@@ -114,7 +134,7 @@ namespace LxBTSCForm
         {
             if (chatline.Length > 0)
             {
-                browser.ExecuteScriptAsync($"AddLine('<div>{chatline}</div>');");
+                browser.ExecuteScriptAsync($"AddServerLine('<div>{chatline}</div>');");
             }
         }
 
@@ -125,7 +145,7 @@ namespace LxBTSCForm
             new BBTag("b", "<b>", "</b>"),
             new BBTag("i", "<i>", "</i>"),
             new BBTag("u", "<u>", "</u>"),
-            new BBTag("url", "<a href=\"${href}\">", "</a>", new BBAttribute("href", "", PrefixHref), new BBAttribute("href", "href", PrefixHref))
+            new BBTag("url", "<a href=\"${href}\">", "</a>", new BBAttribute("href", "", PrefixHref), new BBAttribute("href", "href", PrefixHref)),
         });
 
         static string PrefixHref(IAttributeRenderingContext attributeRenderingContext)
@@ -167,270 +187,370 @@ namespace LxBTSCForm
             return emoticonized;
         }
 
-        private static Dictionary<string, string> Emotes = new Dictionary<string, string>
-        {
-            { "Kappa", "Kappa" },
-            { "SourPls", "SourPls" },
-            { "BibleThump", "BibleThump" },
-            { "WutFace", "WutFace" },
-            { "PogChamp", "PogChamp" },
-            { "ResidentSleeper", "ResidentSleeper" },
-            { "FeelsAmazingMan", "FeelsAmazingMan" },
-            { "FeelsBadMan", "FeelsBadMan" },
-            { "FeelsGoodMan", "FeelsGoodMan" },
-            { "LUL", "LUL" },
-            { "Kreygasm", "Kreygasm" },
-            { "RamKiss", "RamKiss" },
-            { "RemKiss", "RemKiss" },
-            { "BiriBlush", "BiriBlush" },
-            { "RikkaWoop", "RikkaWoop" },
-            { "NillaWag", "NillaWag" },
-            { "Tutturu", "Tutturu" },
-            { "SoSnowy", "SoSnowy" },
-            { "AkaWalk", "AkaWalk" },
-            { "MikuStare", "MikuStare" },
+        //private static Dictionary<string, string> Emotes = new Dictionary<string, string>
+        //{
+        //    { "Kappa", "Kappa" },
+        //    { "SourPls", "SourPls" },
+        //    { "BibleThump", "BibleThump" },
+        //    { "WutFace", "WutFace" },
+        //    { "PogChamp", "PogChamp" },
+        //    { "ResidentSleeper", "ResidentSleeper" },
+        //    { "FeelsAmazingMan", "FeelsAmazingMan" },
+        //    { "FeelsBadMan", "FeelsBadMan" },
+        //    { "FeelsGoodMan", "FeelsGoodMan" },
+        //    { "LUL", "LUL" },
+        //    { "Kreygasm", "Kreygasm" },
+        //    { "RamKiss", "RamKiss" },
+        //    { "RemKiss", "RemKiss" },
+        //    { "BiriBlush", "BiriBlush" },
+        //    { "RikkaWoop", "RikkaWoop" },
+        //    { "NillaWag", "NillaWag" },
+        //    { "Tutturu", "Tutturu" },
+        //    { "SoSnowy", "SoSnowy" },
+        //    { "AkaWalk", "AkaWalk" },
+        //    { "MikuStare", "MikuStare" },
 
-            { "9cirno9", "cirno9" },
-            { "MareWish", "MareWish" },
-            { "VivioWife", "VivioWife" },
-            { "EinhartYuri", "EinhartYuri" },
-            { "NightKud", "NightKud" },
-            { "DogeZ", "DogeZ" },
-            { "KinKaren", "KinKaren" },
-            { "Kabooto", "Kabooto" },
-            { "NekoRin", "NekoRin" },
-            { "FairyRenge", "FairyRenge" },
-            { "ChickenRappi", "ChickenRappi" },
-            { "UsagigaNigeteru", "UsagigaNigeteru" },
-            { "NoulShiro", "NoulShiro" },
-            { "Shyppa", "Shyppa" },
-            { "LoliLick", "LoliLick" },
-            { "LoliPantsu", "LoliPantsu" },
-            { "LoliButt", "LoliButt" },
-            { "AmazingChest", "AmazingChest" },
-            { "HentaiNeko", "HentaiNeko" },
-            { "HamsterImouto", "HamsterImouto" },
-            { "ImoutosHamster", "ImoutosHamster" },
-            { "ShakeKuma", "ShakeKuma" },
-            { "ShiroKuma", "ShiroKuma" },
-            { "MireiCute", "MireiCute" },
-            { "LostRen", "LostRen" },
-            { "FeitoFeico", "FeitoFeico" },
-            { "FeitoChesto", "FeitoChesto" },
-            { "FeitoLegso", "FeitoLegso" },
-            { "FeitoFeeto", "FeitoFeeto" },
-            { "AiShiteru", "AiShiteru" },
-            { "&lt;3", "h2" },
-            { "ShinkuWish", "ShinkuWish" },
-            { "ShinMea1", "ShinMea1" },
-            { "ShinMea2", "ShinMea2" },
-            { "ShinMea3", "ShinMea3" },
-            { "ShinLeft", "ShinLeft" },
-            { "ShinRight", "ShinRight" },
-            { "MeaLeft", "MeaLeft" },
-            { "MeaRight", "MeaRight" },
-            { "RikaPassion", "RikaPassion" },
-            { "KirinoYome", "KirinoYome" },
-            { "YoshinoHime", "YoshinoHime" },
-            { "RikaCh", "RikaCh" },
-            { "ampFull", "ampFull" },
-            { "ClaireScarlet", "ClaireScarlet" },
-            { "KuonLog", "KuonLog" },
-            { "KanoHana", "KanoHana" },
-            { "MiniK", "MiniK" },
-            { "RikuStare", "RikuStare" },
-            { "Wing1", "Wing1" },
-            { "Wing2", "Wing2" },
-            { "MeiK", "MeiK" },
-            { "oreD", "oreD" },
-            { "aaa-", "aaa-" },
-            { "HentaiAria", "HentaiAria" },
-            { "ShakeBoko", "ShakeBoko" },
-            { "MareThump", "MareThump" },
-            { "FeelsBadMare", "FeelsBadMare" },
-            { "ArisaMoe", "ArisaMoe" },
-            { "MofuNuko", "MofuNuko" },
-            { "BlueShinku", "BlueShinku" },
-            { "NoBra", "NoBra" },
-            { "AmaFloat", "AmaFloat" },
-            { "EUkun", "EUkun" },
-            { "D:", "D" },
-            { ":thinking:", "thinking" },
-            { "HypeSplosion", "HypeSplosion" },
-            { "TSSalt", "TSSalt" },
-            { "NeverLucky", "NeverLucky" },
-            { "NeverS", "NeverS" },
-            { "HentaiBed", "HentaiBed" },
-            { "Loominati", "Loominati" },
-            { "SingleGee", "SingleGee" },
-            { "PigDisgusting", "PigDisgusting" },
-            { "BanHammer", "BanHammer" },
-            { "ItsaTrap", "ItsaTrap" },
-            { "panicBasket", "panicBasket" },
-            { "nepSmug", "nepSmug" },
-            { "ABABABABA", "ABABABABA" },
-            { "TabeRu", "TabeRu" },
-            { "topNep", "topNep" },
-        };
+        //    { "9cirno9", "cirno9" },
+        //    { "MareWish", "MareWish" },
+        //    { "VivioWife", "VivioWife" },
+        //    { "EinhartYuri", "EinhartYuri" },
+        //    { "NightKud", "NightKud" },
+        //    { "DogeZ", "DogeZ" },
+        //    { "KinKaren", "KinKaren" },
+        //    { "Kabooto", "Kabooto" },
+        //    { "NekoRin", "NekoRin" },
+        //    { "FairyRenge", "FairyRenge" },
+        //    { "ChickenRappi", "ChickenRappi" },
+        //    { "UsagigaNigeteru", "UsagigaNigeteru" },
+        //    { "NoulShiro", "NoulShiro" },
+        //    { "Shyppa", "Shyppa" },
+        //    { "LoliLick", "LoliLick" },
+        //    { "LoliPantsu", "LoliPantsu" },
+        //    { "LoliButt", "LoliButt" },
+        //    { "AmazingChest", "AmazingChest" },
+        //    { "HentaiNeko", "HentaiNeko" },
+        //    { "HamsterImouto", "HamsterImouto" },
+        //    { "ImoutosHamster", "ImoutosHamster" },
+        //    { "ShakeKuma", "ShakeKuma" },
+        //    { "ShiroKuma", "ShiroKuma" },
+        //    { "MireiCute", "MireiCute" },
+        //    { "LostRen", "LostRen" },
+        //    { "FeitoFeico", "FeitoFeico" },
+        //    { "FeitoChesto", "FeitoChesto" },
+        //    { "FeitoLegso", "FeitoLegso" },
+        //    { "FeitoFeeto", "FeitoFeeto" },
+        //    { "AiShiteru", "AiShiteru" },
+        //    { "&lt;3", "h2" },
+        //    { "ShinkuWish", "ShinkuWish" },
+        //    { "ShinMea1", "ShinMea1" },
+        //    { "ShinMea2", "ShinMea2" },
+        //    { "ShinMea3", "ShinMea3" },
+        //    { "ShinLeft", "ShinLeft" },
+        //    { "ShinRight", "ShinRight" },
+        //    { "MeaLeft", "MeaLeft" },
+        //    { "MeaRight", "MeaRight" },
+        //    { "RikaPassion", "RikaPassion" },
+        //    { "KirinoYome", "KirinoYome" },
+        //    { "YoshinoHime", "YoshinoHime" },
+        //    { "RikaCh", "RikaCh" },
+        //    { "ampFull", "ampFull" },
+        //    { "ClaireScarlet", "ClaireScarlet" },
+        //    { "KuonLog", "KuonLog" },
+        //    { "KanoHana", "KanoHana" },
+        //    { "MiniK", "MiniK" },
+        //    { "RikuStare", "RikuStare" },
+        //    { "Wing1", "Wing1" },
+        //    { "Wing2", "Wing2" },
+        //    { "MeiK", "MeiK" },
+        //    { "oreD", "oreD" },
+        //    { "aaa-", "aaa-" },
+        //    { "HentaiAria", "HentaiAria" },
+        //    { "ShakeBoko", "ShakeBoko" },
+        //    { "MareThump", "MareThump" },
+        //    { "FeelsBadMare", "FeelsBadMare" },
+        //    { "ArisaMoe", "ArisaMoe" },
+        //    { "MofuNuko", "MofuNuko" },
+        //    { "BlueShinku", "BlueShinku" },
+        //    { "NoBra", "NoBra" },
+        //    { "AmaFloat", "AmaFloat" },
+        //    { "EUkun", "EUkun" },
+        //    { "D:", "D" },
+        //    { ":thinking:", "thinking" },
+        //    { "HypeSplosion", "HypeSplosion" },
+        //    { "TSSalt", "TSSalt" },
+        //    { "NeverLucky", "NeverLucky" },
+        //    { "NeverS", "NeverS" },
+        //    { "HentaiBed", "HentaiBed" },
+        //    { "Loominati", "Loominati" },
+        //    { "SingleGee", "SingleGee" },
+        //    { "PigDisgusting", "PigDisgusting" },
+        //    { "BanHammer", "BanHammer" },
+        //    { "ItsaTrap", "ItsaTrap" },
+        //    { "panicBasket", "panicBasket" },
+        //    { "nepSmug", "nepSmug" },
+        //    { "ABABABABA", "ABABABABA" },
+        //    { "TabeRu", "TabeRu" },
+        //    { "topNep", "topNep" },
+        //};
 
-        private const string HTML = @"<!DOCTYPE HTML><html>
-    <head>
-        <meta charset='utf-8'>
-        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-        <link rel = 'stylesheet' type='text/css' href='file:///C:/Users/TURSAS/Desktop/style.css'/>
-        <link rel = 'stylesheet' type='text/css' href='file:///C:/Users/TURSAS/Desktop/emote.css'/>
-        <script type = 'text/javascript' >
-            var main;
-            var i = 0;
-        var IsBottom = true;
-        window.onload = function()
-        {
-            main = document.getElementById('main');
-        };
-        window.onscroll = function(ev)
-        {
-            if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight)
-            {
-                IsBottom = true;
-                console.log(""bottom"");
-            }
-            else
-            {
-                IsBottom = false;
-                console.log(""not bottom"");
-            }
-        };
-        function AddLine(line)
-        {
-            if (main.childElementCount > 500)
-            {
-                main.firstElementChild.remove();
-            }
-            main.insertAdjacentHTML('beforeend', line);
-            if (IsBottom)
-            {
-                window.scroll(0, document.body.scrollHeight);
-            }
-        }
+//        private const string HTML = @"<!DOCTYPE HTML><html>
+//    <head>
+//        <meta charset='utf-8'>
+//        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+//        <link rel = 'stylesheet' type='text/css' href='file:///C:/Users/TURSAS/Desktop/style.css'/>
+//        <link rel = 'stylesheet' type='text/css' href='file:///C:/Users/TURSAS/Desktop/emote.css'/>
+//        <script type = 'text/javascript' >
+//            var main;
+//            var i = 0;
+//        var IsBottom = true;
+//        window.onload = function()
+//        {
+//            main = document.getElementById('main');
+//        };
+//        window.onscroll = function(ev)
+//        {
+//            if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight)
+//            {
+//                IsBottom = true;
+//                console.log(""bottom"");
+//            }
+//            else
+//            {
+//                IsBottom = false;
+//                console.log(""not bottom"");
+//            }
+//        };
+//        function AddLine(line)
+//        {
+//            if (main.childElementCount > 500)
+//            {
+//                main.firstElementChild.remove();
+//            }
+//            main.insertAdjacentHTML('beforeend', line);
+//            if (IsBottom)
+//            {
+//                window.scroll(0, document.body.scrollHeight);
+//            }
+//        }
 
-        function TestAdd(string)
-        {
-            callbackObj.receiveMessage(string);
-        }
-        function IsBottom()
-        {
-            window.onscroll = function(ev) {
-                if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight)
-                {
-                }
-            };
-        }
-        </script>
-    </head>
-    <body id='main'>
-    </body>
-</html>";
+//        function TestAdd(string)
+//        {
+//            callbackObj.receiveMessage(string);
+//        }
+//        function IsBottom()
+//        {
+//            window.onscroll = function(ev) {
+//                if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight)
+//                {
+//                }
+//            };
+//        }
+//        </script>
+//    </head>
+//    <body id='main'>
+//    </body>
+//</html>";
 
-        public void WindowPositionChanged()
-        {
-            var rect = (System.Windows.Rect)textPane.GetCurrentPropertyValue(AutomationElement.BoundingRectangleProperty);
-            SetWindowSizeAndPosition(rect.Left, rect.Top, rect.Width, rect.Height);
-        }
+        //public async Task WindowPositionChanged()
+        //{
+        //    await Task.Run(() =>
+        //    {
+        //        SendMessage("move");
+        //        var rect = (System.Windows.Rect)textPane.GetCurrentPropertyValue(AutomationElement.BoundingRectangleProperty);
+        //        SetWindowSizeAndPosition(rect.Left, rect.Top, rect.Width, rect.Height);
+        //    });
+        //}
+        
+        //public void ChannelTabChanged()
+        //{
+        //    if (channelTab != null)
+        //    {
+        //        // check server by first tab
+        //        var ele = channelTab.GetUpdatedCache(request);
+        //        var serverName = ele.CachedChildren[0].Cached.Name;
+        //        if (serverName != "Shinku, Mare and more Yomes" && serverName != "げんけん")
+        //        {
+        //            this.Visible = false;
+        //            return;
+        //        }
+        //        else
+        //        {
+        //            this.Visible = true;
+        //        }
+        //        //first tab: server, second: channel, else: hidden
+        //        var name = ele.Cached.Name;
+        //        if (name == ele.CachedChildren[0].Cached.Name)
+        //        {
+        //            browser.ExecuteScriptAsync($"ChangeTab('server');");
+        //        }
+        //        else if (name == ele.CachedChildren[1].Cached.Name)
+        //        {
+        //            browser.ExecuteScriptAsync($"ChangeTab('channel');");
+        //        }
+        //        else
+        //        {
+        //            this.Visible = false;
+        //        }
+        //        //if (s !="げんけん")
+        //        //if (s != "Shinku, Mare and more Yomes" && s != "げんけん") //REMOVE OTHER
+        //        //{
+        //        //    this.Visible = false;
+        //        //}
+        //        //else if (currentState != WindowVisualState.Minimized)
+        //        //{
+        //        //    this.Visible = true;
+        //        //}
+        //    }
+        //}
 
-        public void ChannelTabChanged()
-        {
-            if (channelTab != null)
-            {
-                var s = channelTab.Current.Name;
-                //if (s !="げんけん")
-                if (s != "Shinku, Mare and more Yomes" && s != "げんけん") //REMOVE OTHER
-                {
-                    this.Visible = false;
-                }
-                else if (currentState != WindowVisualState.Minimized)
-                {
-                    this.Visible = true;
-                }
-            }
-        }
-        private AutomationElement window;
-        private AutomationElement splitButton;
-        private AutomationElement textPane;
-        //private AutomationElement text;
-        private AutomationElement channelTab;
-        private AutomationPropertyChangedEventHandler handler1;
+        //private CacheRequest request;
+        //private AutomationElement window;
+        //private AutomationElement splitButton;
+        //private AutomationElement textPane;
+        //private AutomationElement channelTab;
+        //private AutomationPropertyChangedEventHandler handler1;
         
         public void StartAutomation()
         {
-            DeviceChangeNotifier.DeviceNotify += DeviceChangeNotifier_DeviceNotify;
+            //await Task.Run(async () =>
+            //{
+            //    Process process = Process.GetCurrentProcess();
+
+            //    request = new CacheRequest();
+            //    request.TreeScope = TreeScope.Element | TreeScope.Children;
+            //    request.Add(AutomationElement.BoundingRectangleProperty);
+            //    request.Add(AutomationElement.NameProperty);
+            //    request.AutomationElementMode = AutomationElementMode.Full;
+            //    using (request.Activate())
+            //    {
+            //        window = AutomationElement.FromHandle(process.MainWindowHandle);
+            //        Automation.AddAutomationPropertyChangedEventHandler(window, TreeScope.Element, new AutomationPropertyChangedEventHandler(OnWindowMoveSize), AutomationElement.BoundingRectangleProperty);
+            //        Automation.AddAutomationPropertyChangedEventHandler(window, TreeScope.Element, handler1 = new AutomationPropertyChangedEventHandler(OnWindowStateChanged), WindowPattern.WindowVisualStateProperty);
+            //        Condition splitButtonCondition = new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "split button");
+            //        Condition textPaneCondition = new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "pane");
+            //        Condition channelTabCondition = new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "tab");
+            //        splitButton = window.FindFirst(TreeScope.Descendants, splitButtonCondition);
+            //        textPane = splitButton.FindFirst(TreeScope.Descendants, textPaneCondition);
+            //        channelTab = window.FindFirst(TreeScope.Descendants, channelTabCondition);
+            //    }
+
+            //    if (textPane == null)
+            //    {
+            //        MessageBox.Show("not found :(");
+            //    }
+            //    else
+            //    {
+            //        await WindowPositionChanged();
+            //    }
+
+            //    if (channelTab == null)
+            //    {
+            //        MessageBox.Show("not found 2 :(");
+            //    }
+            //    else
+            //    {
+            //        ChannelTabChanged();
+            //    }
+
+
+            //});
+            DeviceChangeNotifier.WindowMoveSizeNotify += DeviceChangeNotifier_WindowMoveSizeNotify;
+            DeviceChangeNotifier.WindowStateNotify += DeviceChangeNotifier_WindowStateNotify;
+            DeviceChangeNotifier.TabChangedNotify += DeviceChangeNotifier_TabChangedNotify;
+            //DeviceChangeNotifier.DeviceNotify += DeviceChangeNotifier_DeviceNotify;
             DeviceChangeNotifier.Start();
-            Process process = Process.GetCurrentProcess();
-            window = AutomationElement.FromHandle(process.MainWindowHandle);
 
-            Condition splitButtonCondition = new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "split button");
-            Condition textPaneCondition = new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "pane");
-            Condition channelTabCondition = new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "tab");
-            //Condition textCondition = new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "text");
-            //Automation.AddAutomationPropertyChangedEventHandler(window, TreeScope.Element, handler3 = new AutomationPropertyChangedEventHandler(OnWindowMoveSize), AutomationElement.BoundingRectangleProperty);
-            Automation.AddAutomationPropertyChangedEventHandler(window, TreeScope.Element, handler1 = new AutomationPropertyChangedEventHandler(OnWindowStateChanged), WindowPattern.WindowVisualStateProperty);
-            //Automation.AddAutomationPropertyChangedEventHandler(window, TreeScope.Element, handler2 = new AutomationPropertyChangedEventHandler(OnTopmostChanged), WindowPattern.IsTopmostProperty);
-            splitButton = window.FindFirst(TreeScope.Descendants, splitButtonCondition);
-            textPane = splitButton.FindFirst(TreeScope.Descendants, textPaneCondition);
-            //text = splitButton.FindFirst(TreeScope.Descendants, textCondition);
-            if (textPane == null)
+        }
+
+        private void DeviceChangeNotifier_TabChangedNotify(TabChangeEventArgs args)
+        {
+            //MessageBox.Show("tab change " + args.Server.ToString() + " " + args.Channel.ToString());
+            if (args.Server == ServerTabState.Hidden)
             {
-                MessageBox.Show("not found :(");
+                this.Visible = false;
             }
             else
             {
-                WindowPositionChanged();
-                //Automation.AddAutomationPropertyChangedEventHandler(textPane, TreeScope.Element, handler3 = new AutomationPropertyChangedEventHandler(OnBoundsChanged), AutomationElementIdentifiers.BoundingRectangleProperty);
-                //Automation.AddAutomationPropertyChangedEventHandler(text, TreeScope.Element, handler4 = new AutomationPropertyChangedEventHandler(OnBoundsChanged), AutomationElementIdentifiers.BoundingRectangleProperty);
+                this.Visible = true;
+                if (args.Channel == ChannelTabState.Server)
+                {
+                    browser.ExecuteScriptAsync($"ChangeTab('server');");
+                }
+                else if (args.Channel == ChannelTabState.Channel)
+                {
+                    browser.ExecuteScriptAsync($"ChangeTab('channel');");
+                }
+                else
+                {
+                    this.Visible = false;
+                }
             }
-            channelTab = window.FindFirst(TreeScope.Descendants, channelTabCondition);
-            if (channelTab == null)
+        }
+
+        // Do I even need this?
+        private void DeviceChangeNotifier_WindowStateNotify(WindowStateEventArgs args)
+        {
+            //MessageBox.Show(args.State.ToString());
+            //var state = (WindowVisualState)e.NewValue;
+            if (args.State == WindowVisualState.Minimized)
             {
-                MessageBox.Show("not found 2 :(");
+                //this.WindowState = FormWindowState.Minimized;
+                //currentState = WindowVisualState.Minimized;
+                this.Visible = false;
             }
             else
             {
-                ChannelTabChanged();
+                //currentState = state;
+                //this.WindowState = FormWindowState.Normal;
             }
         }
 
-        private readonly object padlock = new object();
-        private uint lastEventTime = 0;
-        private void DeviceChangeNotifier_DeviceNotify(Message msg)
+        private double lastHeight = 0;
+        private void DeviceChangeNotifier_WindowMoveSizeNotify(WindowMoveSizeEventArgs args)
         {
-            if (!Monitor.TryEnter(padlock))
-            {
-                return;
-            }
-            try
-            {
-                if (msg.Msg == 1)
-                {
-                    ChannelTabChanged();
-                }
-                if (msg.Msg == 2)
-                {
-                    if ((uint)msg.WParam > lastEventTime)
-                    {
-                        lastEventTime = (uint)msg.WParam;
-                        WindowPositionChanged();
-                    }
-                }
-            }
-            finally
-            {
-                Monitor.Exit(padlock);
-            }
+            lastHeight = args.Rect.Height;
+            SetWindowSizeAndPosition(args.Rect.Left, args.Rect.Top, args.Rect.Width, args.Rect.Height);
+            //MessageBox.Show(args.Rect.ToString());
         }
 
-        static DateTime GetDateTimeFromMilliseconNumber(int millisecond)
-        {
-            return DateTime.Now.AddMilliseconds(millisecond - Environment.TickCount);
-        }
+        //private async void OnWindowMoveSize(object sender, AutomationPropertyChangedEventArgs e)
+        //{
+        //    await WindowPositionChanged();
+        //}
+
+        //private readonly object padlock = new object();
+        //private uint lastEventTime = 0;
+        //private void DeviceChangeNotifier_DeviceNotify(Message msg)
+        //{
+        //    //if (!Monitor.TryEnter(padlock))
+        //    //{
+        //    //    return;
+        //    //}
+        //    //try
+        //    //{
+        //        if (msg.Msg == 1)
+        //        {
+        //            ChannelTabChanged();
+        //        }
+        //        /*if (msg.Msg == 2)
+        //        {
+        //            if ((uint)msg.WParam > lastEventTime)
+        //            {
+        //                lastEventTime = (uint)msg.WParam;
+        //                WindowPositionChanged();
+        //            }
+        //        }*/
+        //    //}
+        //    //finally
+        //    //{
+        //    //    Monitor.Exit(padlock);
+        //    //}
+        //}
+
+        //static DateTime GetDateTimeFromMilliseconNumber(int millisecond)
+        //{
+        //    return DateTime.Now.AddMilliseconds(millisecond - Environment.TickCount);
+        //}
 
         private WindowVisualState currentState = WindowVisualState.Normal;
         private void OnWindowStateChanged(object sender, AutomationPropertyChangedEventArgs e)
@@ -456,6 +576,7 @@ namespace LxBTSCForm
 
         private void SetWindowSizeAndPosition(double x, double y, double w, double h)
         {
+            //MessageBox.Show("why");
             this.Left = (int)x;
             this.Top = (int)y;
             this.Width = (int)w;
@@ -467,6 +588,9 @@ namespace LxBTSCForm
             {
                 this.Height = 30;
             }
+            this.Update();
+            this.Refresh();
+            Application.DoEvents();
         }
 
         private void devButton_Click(object sender, EventArgs e)
@@ -476,19 +600,17 @@ namespace LxBTSCForm
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            
             this.Dispose();
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             DeviceChangeNotifier.Stop();
-            Automation.RemoveAllEventHandlers();
+            //Automation.RemoveAllEventHandlers();
             //browser.Dispose();
             Cef.Shutdown();
             //libraryLoader.Close();
             libraryLoader.Dispose();
-            //MessageBox.Show(t.ThreadState.ToString());
         }
 
         private void Form1_Shown(object sender, EventArgs e)
@@ -506,8 +628,14 @@ namespace LxBTSCForm
             else
             {
                 hidden = false;
-                WindowPositionChanged();
+                this.Height = (int)lastHeight;
+                //WindowPositionChanged();
             }
+        }
+
+        private void reloadButton_Click(object sender, EventArgs e)
+        {
+            LoadHtml();
         }
     }
 
@@ -671,10 +799,64 @@ namespace LxBTSCForm
         }
     }
 
+    public class WindowMoveSizeEventArgs
+    {
+        public System.Windows.Rect Rect { get; private set; }
+        public WindowMoveSizeEventArgs(System.Windows.Rect r)
+        {
+            Rect = r;
+        }
+    }
+
+    public class WindowStateEventArgs
+    {
+        public WindowVisualState State { get; private set; }
+        public WindowStateEventArgs(WindowVisualState s)
+        {
+            State = s;
+        }
+    }
+
+    public class TabChangeEventArgs
+    {
+        public ServerTabState Server { get; private set; }
+        public ChannelTabState Channel { get; private set; }
+        public TabChangeEventArgs(ServerTabState s, ChannelTabState c)
+        {
+            Server = s;
+            Channel = c;
+        }
+    }
+
+    public enum ChannelTabState
+    {
+        Server,
+        Channel,
+        None
+    }
+
+    public enum ServerTabState
+    {
+        Visible,
+        Hidden
+    }
+
     class DeviceChangeNotifier : Form
     {
         public delegate void DeviceNotifyDelegate(Message msg);
         public static event DeviceNotifyDelegate DeviceNotify;
+
+        public delegate void WindowMoveSizeNotifyDelegate(WindowMoveSizeEventArgs args);
+        public static event WindowMoveSizeNotifyDelegate WindowMoveSizeNotify;
+
+        public delegate void WindowStateNotifyDelegate(WindowStateEventArgs args);
+        public static event WindowStateNotifyDelegate WindowStateNotify;
+
+        public delegate void TabChangedNotifyDelegate(TabChangeEventArgs args);
+        public static event TabChangedNotifyDelegate TabChangedNotify;
+
+        private static Action channelTabChanged;
+
         private static DeviceChangeNotifier mInstance;
         private static IntPtr winEventHook;
         delegate void WinEventDelegate(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
@@ -721,14 +903,16 @@ namespace LxBTSCForm
         {
             if (eventType == EVENT_OBJECT_SELECTION)
             {
-                DeviceNotifyDelegate handler = DeviceNotify;
-                if (handler != null) handler(new Message { Msg = 1,  });
+                //DeviceNotifyDelegate handler = DeviceNotify;
+                //if (handler != null) handler(new Message { Msg = 1,  });
+                //ChannelTabChanged();
+                channelTabChanged();
             }
-            if (eventType == EVENT_OBJECT_LOCATIONCHANGE && idObject == 0 && idChild == 0)
+            /*if (eventType == EVENT_OBJECT_LOCATIONCHANGE && idObject == 0 && idChild == 0)
             {
                 DeviceNotifyDelegate handler = DeviceNotify;
                 if (handler != null) handler(new Message { Msg = 2, WParam = new IntPtr(dwmsEventTime) });
-            }
+            }*/
 
             // filter out non-HWND namechanges... (eg. items within a listbox)
             //if (idObject != 0 || idChild != 0)
@@ -757,6 +941,7 @@ namespace LxBTSCForm
         private void endForm()
         {
             //MessageBox.Show("Ending" + t.ManagedThreadId);
+            Automation.RemoveAllEventHandlers();
             UnhookWinEvent(winEventHook);
             this.Close();
             //Application.Exit();
@@ -769,10 +954,116 @@ namespace LxBTSCForm
             if (mInstance == null) CreateHandle();
             mInstance = this;
             value = false;
+            channelTabChanged = ChannelTabChanged;
             Process[] process = Process.GetProcessesByName("ts3client_win64");
             //winEventHook = SetWinEventHook((uint)WinEvent.EVENT_OBJECT_SELECTION, (uint)WinEvent.EVENT_OBJECT_LOCATIONCHANGE, IntPtr.Zero, procDelegate, (uint)process[0].Id, GetWindowThreadProcessId(process[0].MainWindowHandle, IntPtr.Zero)/*0*/, WINEVENT_OUTOFCONTEXT);
-            winEventHook = SetWinEventHook(EVENT_OBJECT_SELECTION, EVENT_OBJECT_LOCATIONCHANGE, IntPtr.Zero, procDelegate, (uint)process[0].Id, GetWindowThreadProcessId(process[0].MainWindowHandle, IntPtr.Zero)/*0*/, WINEVENT_OUTOFCONTEXT);
+            //winEventHook = SetWinEventHook(EVENT_OBJECT_SELECTION, EVENT_OBJECT_LOCATIONCHANGE, IntPtr.Zero, procDelegate, (uint)process[0].Id, GetWindowThreadProcessId(process[0].MainWindowHandle, IntPtr.Zero)/*0*/, WINEVENT_OUTOFCONTEXT);
+            // only selection
+            winEventHook = SetWinEventHook(EVENT_OBJECT_SELECTION, EVENT_OBJECT_SELECTION, IntPtr.Zero, procDelegate, (uint)process[0].Id, GetWindowThreadProcessId(process[0].MainWindowHandle, IntPtr.Zero)/*0*/, WINEVENT_OUTOFCONTEXT);
+            StartAutomation();
             base.SetVisibleCore(value);
+        }
+
+        private CacheRequest request;
+        private AutomationElement window;
+        private AutomationElement splitButton;
+        private AutomationElement textPane;
+        private AutomationElement channelTab;
+
+        private void StartAutomation()
+        {
+            Process process = Process.GetCurrentProcess();
+
+            request = new CacheRequest();
+            request.TreeScope = TreeScope.Element | TreeScope.Children;
+            request.Add(AutomationElement.BoundingRectangleProperty);
+            request.Add(AutomationElement.NameProperty);
+            request.AutomationElementMode = AutomationElementMode.Full;
+            using (request.Activate())
+            {
+                window = AutomationElement.FromHandle(process.MainWindowHandle);
+                Automation.AddAutomationPropertyChangedEventHandler(window, TreeScope.Element, new AutomationPropertyChangedEventHandler(OnWindowMoveSize), AutomationElement.BoundingRectangleProperty);
+                Automation.AddAutomationPropertyChangedEventHandler(window, TreeScope.Element, new AutomationPropertyChangedEventHandler(OnWindowStateChanged), WindowPattern.WindowVisualStateProperty);
+                Condition splitButtonCondition = new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "split button");
+                Condition textPaneCondition = new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "pane");
+                Condition channelTabCondition = new PropertyCondition(AutomationElement.LocalizedControlTypeProperty, "tab");
+                splitButton = window.FindFirst(TreeScope.Descendants, splitButtonCondition);
+                textPane = splitButton.FindFirst(TreeScope.Descendants, textPaneCondition);
+                channelTab = window.FindFirst(TreeScope.Descendants, channelTabCondition);
+            }
+
+            if (textPane == null)
+            {
+                MessageBox.Show("not found :(");
+            }
+            else
+            {
+                var args = new WindowMoveSizeEventArgs(textPane.Current.BoundingRectangle);
+                WindowMoveSizeNotify(args);
+            }
+
+            if (channelTab == null)
+            {
+                MessageBox.Show("not found 2 :(");
+            }
+            else
+            {
+                ChannelTabChanged();
+            }
+        }
+
+        public void ChannelTabChanged()
+        {
+            if (channelTab != null)
+            {
+                // check server by first tab
+                
+                var ele = channelTab.GetUpdatedCache(request);
+                var serverName = ele.CachedChildren[0].Cached.Name;
+                if (serverName != "Shinku, Mare and more Yomes" && serverName != "げんけん")
+                {
+                    //this.Visible = false;
+                    var args = new TabChangeEventArgs(ServerTabState.Hidden, ChannelTabState.None);
+                    TabChangedNotify(args);
+                    return;
+                }
+                else
+                {
+                    var name = ele.Cached.Name;
+                    if (name == ele.CachedChildren[0].Cached.Name)
+                    {
+                        //browser.ExecuteScriptAsync($"ChangeTab('server');");
+                        var args = new TabChangeEventArgs(ServerTabState.Visible, ChannelTabState.Server);
+                        TabChangedNotify(args);
+                    }
+                    else if (name == ele.CachedChildren[1].Cached.Name)
+                    {
+                        //browser.ExecuteScriptAsync($"ChangeTab('channel');");
+                        var args = new TabChangeEventArgs(ServerTabState.Visible, ChannelTabState.Channel);
+                        TabChangedNotify(args);
+                    }
+                    else
+                    {
+                        //this.Visible = false;
+                        var args = new TabChangeEventArgs(ServerTabState.Hidden, ChannelTabState.None);
+                        TabChangedNotify(args);
+                    }
+                    //this.Visible = true;
+                }
+            }
+        }
+
+        private void OnWindowStateChanged(object sender, AutomationPropertyChangedEventArgs e)
+        {
+            var args = new WindowStateEventArgs((WindowVisualState)e.NewValue);
+            WindowStateNotify(args);
+        }
+
+        private void OnWindowMoveSize(object sender, AutomationPropertyChangedEventArgs e)
+        {
+            var ele = textPane.GetUpdatedCache(request);
+            var args = new WindowMoveSizeEventArgs(ele.Cached.BoundingRectangle);
+            WindowMoveSizeNotify(args);
         }
 
         //protected override void WndProc(ref Message m)

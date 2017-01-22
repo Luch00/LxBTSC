@@ -55,6 +55,18 @@ namespace TS
             return 0;
         }
 
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+        const int GWL_EXSTYLE = -20;
+        const int WS_EX_TOPMOST = 0x0008;
+
+        public static bool IsWindowTopMost(IntPtr hWnd)
+        {
+            int exStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
+            return (exStyle & WS_EX_TOPMOST) == WS_EX_TOPMOST;
+        }
+
         private void CheckHandle(object state)
         {
             var tshandle = GetHandle();
@@ -67,6 +79,10 @@ namespace TS
             
             NativeWindow owner = new NativeWindow();
             owner.AssignHandle(tshandle);
+            //MessageBox.Show(tshandle.ToString());
+            var b = IsWindowTopMost(tshandle);
+            //MessageBox.Show(b.ToString());
+            chatGui.TopMost = IsWindowTopMost(tshandle);
             chatGui.Show(owner);
             try
             {
