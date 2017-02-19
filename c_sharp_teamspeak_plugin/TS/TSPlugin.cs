@@ -36,7 +36,7 @@ namespace TS
 
         public string PluginName = "LxBTSC";
         public string PluginVersion = "0.1";
-        public int ApiVersion = 20;
+        public int ApiVersion = 21;
         public string Author = "Luch";
         public string Description = "Better TeamSpeak Chat";
         public string PluginID { get; set; }

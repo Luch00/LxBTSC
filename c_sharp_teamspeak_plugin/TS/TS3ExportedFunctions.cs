@@ -11,18 +11,19 @@ namespace TS
     public class TS3ExportedFunctions
     {
         static AppDomain currentDomain = AppDomain.CurrentDomain;
-        private static string exePath;
+        //private static string exePath;
+        private static string pluginPath;
         static Boolean Is64Bit()
         {
             return Marshal.SizeOf(typeof(IntPtr)) == 8;
         }
-        private static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             //MessageBox.Show("ARGH" + args.Name);
             //string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             //string currentPath = @"C:\Program Files\TeamSpeak 3 Client";
             //MessageBox.Show(currentPath);
-            string assemblyPath = Path.Combine(exePath, @"plugins\cef", new AssemblyName(args.Name).Name + ".dll");
+            string assemblyPath = Path.Combine(pluginPath, @"cef", new AssemblyName(args.Name).Name + ".dll");
             //MessageBox.Show(assemblyPath);
             if (!File.Exists(assemblyPath))
             {
@@ -66,12 +67,12 @@ namespace TS
         public static int ts3plugin_init()
         {
             //MessageBox.Show("INIT");
+            pluginPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"TS3Client\plugins");
             currentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-            exePath = UsefulFuncs.GetProcess("ts3client_win64").StartInfo.WorkingDirectory;
             var appPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Luch\LxBTSC");
             if (!Directory.Exists(Path.Combine(appPath, @"CefLib")))
             {
-                UsefulFuncs.ExtractZip(Path.Combine(exePath, @"plugins\cef\CefLib.zip"), appPath);
+                UsefulFuncs.ExtractZip(Path.Combine(pluginPath, @"cef\CefLib.zip"), appPath);
             }
 
             return TSPlugin.Instance.Init();
@@ -99,93 +100,6 @@ namespace TS
             //functs.printMessageToCurrentTab(serverConnectionHandlerID.ToString());
         }
 
-        //[DllExport]
-        //public unsafe static void ts3plugin_initMenus(PluginMenuItem*** menuItems, char** menuIcon)
-        //{
-
-        //    int x = 2;
-        //    int sz = x + 1;
-        //    int n = 0;
-
-        //    *menuItems = (PluginMenuItem**)Marshal.AllocHGlobal((sizeof(PluginMenuItem*) * sz));
-        //    string name = "Try";
-        //    string icon = "2.png";
-
-        //    (*menuItems)[n++] = UsefulFuncs.createMenuItem(PluginMenuType.PLUGIN_MENU_TYPE_GLOBAL, 1, name, icon);
-        //    (*menuItems)[n++] = UsefulFuncs.createMenuItem(PluginMenuType.PLUGIN_MENU_TYPE_GLOBAL, 2, "Unload", icon);
-        //    (*menuItems)[n++] = null;
-        //    Debug.Assert(n == sz);
-
-        //    *menuIcon = (char*)Marshal.AllocHGlobal(128 * sizeof(char));
-
-        //    IntPtr ptr = System.Runtime.InteropServices.Marshal.StringToHGlobalAnsi("t.png");
-        //    void* strPtr = ptr.ToPointer();
-        //    char* cptr = (char*)strPtr;
-        //    UsefulFuncs.my_strcpy(*menuIcon, 128, cptr);
-        //}
-
-        //[DllExport]
-        //public unsafe static void ts3plugin_onMenuItemEvent(ulong serverConnectionHandlerID, PluginMenuType type, int menuItemID, ulong selectedItemID)
-        //{
-        //    var funcs = TSPlugin.Instance.Functions;
-        //    IntPtr v = IntPtr.Zero;
-        //    switch (type)
-        //    {
-        //        case PluginMenuType.PLUGIN_MENU_TYPE_GLOBAL:
-        //            switch (menuItemID)
-        //            {
-        //                case 1:
-        //                    // How to get all the channel's names
-        //                    // First, get a pointer to an array
-        //                    if (funcs.getChannelList(serverConnectionHandlerID, ref v) != Errors.ERROR_ok)
-        //                    {
-        //                        funcs.logMessage("Failed", LogLevel.LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
-        //                        break;
-        //                    }
-        //                    // Convert it to a ulong*
-        //                    ulong* ptr = (ulong*) v.ToPointer();
-        //                    // Iterate through the array
-        //                    for (ulong t = 0; ptr[t] != 0; t++)
-        //                    {
-        //                        // The String result
-        //                        string result;
-        //                        // The pointer result
-        //                        IntPtr res = IntPtr.Zero;
-        //                        /*
-        //                            Channel Variable Arguments:
-        //                            1: The server connection ID
-        //                            2: The iterated channel id
-        //                            3: An IntPtr at 0, which signifies CHANNEL_NAME
-        //                            4: A reference to stores results
-        //                        */
-        //                        if (
-        //                            funcs.getChannelVariableAsString(serverConnectionHandlerID, ptr[t], new IntPtr(0), ref res) !=
-        //                            Errors.ERROR_ok)
-        //                        {
-        //                            // Error message
-        //                            funcs.logMessage("Error", LogLevel.LogLevel_WARNING, "Plugin", serverConnectionHandlerID);
-        //                            break;
-        //                        }
-        //                        // Convert the pointer to a string
-        //                        if ((result = Marshal.PtrToStringAnsi(res)) == null) break;
-        //                        // Print it
-        //                        funcs.printMessageToCurrentTab(result);
-        //                    }
-
-
-        //                    break;
-
-        //                case 2:
-
-        //                    break;
-
-        //                default:
-        //                    break;
-        //            }
-
-        //            break;
-        //    }
-        //}
         private const string serverName = "Shinku, Mare and more Yomes";
         private const string serverName2 = "げんけん";
         private static ulong enabledServer = 0;
