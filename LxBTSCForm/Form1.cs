@@ -454,11 +454,11 @@ namespace LxBTSCForm
 
 
             //});
-            DeviceChangeNotifier.WindowMoveSizeNotify += DeviceChangeNotifier_WindowMoveSizeNotify;
-            DeviceChangeNotifier.WindowStateNotify += DeviceChangeNotifier_WindowStateNotify;
-            DeviceChangeNotifier.TabChangedNotify += DeviceChangeNotifier_TabChangedNotify;
+            //DeviceChangeNotifier.WindowMoveSizeNotify += DeviceChangeNotifier_WindowMoveSizeNotify;
+            //DeviceChangeNotifier.WindowStateNotify += DeviceChangeNotifier_WindowStateNotify;
+            //DeviceChangeNotifier.TabChangedNotify += DeviceChangeNotifier_TabChangedNotify;
             //DeviceChangeNotifier.DeviceNotify += DeviceChangeNotifier_DeviceNotify;
-            DeviceChangeNotifier.Start();
+            //DeviceChangeNotifier.Start();
 
         }
 
