@@ -3,7 +3,6 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.IO;
-using System.Windows.Forms;
 
 namespace TS
 {
@@ -19,12 +18,9 @@ namespace TS
         }
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            //MessageBox.Show("ARGH" + args.Name);
             //string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             //string currentPath = @"C:\Program Files\TeamSpeak 3 Client";
-            //MessageBox.Show(currentPath);
             string assemblyPath = Path.Combine(pluginPath, @"cef", new AssemblyName(args.Name).Name + ".dll");
-            //MessageBox.Show(assemblyPath);
             if (!File.Exists(assemblyPath))
             {
                 return null;
@@ -96,13 +92,8 @@ namespace TS
         [DllExport]
         public static void ts3plugin_currentServerConnectionChanged(ulong serverConnectionHandlerID)
         {
-            //var functs = (TS3Functions)TSPlugin.Instance.Functions;
-            //functs.printMessageToCurrentTab(serverConnectionHandlerID.ToString());
         }
 
-        private const string serverName = "Shinku, Mare and more Yomes";
-        private const string serverName2 = "げんけん";
-        private static ulong enabledServer = 0;
         [DllExport]
         public static void ts3plugin_onConnectStatusChangeEvent(UInt64 serverConnectionHandlerID, ConnectStatus status, int errorNumber)
         {
@@ -112,19 +103,9 @@ namespace TS
                 TSPlugin.Instance.Functions.getServerVariableAsString(serverConnectionHandlerID, new IntPtr((int)VirtualServerProperties.VIRTUALSERVER_NAME), ref name);
                 //string ret = Marshal.PtrToStringAnsi(name);
                 string ret = UsefulFuncs.StringFromNativeUtf8(name);
-                //MessageBox.Show(ret);
-                if (ret == serverName || ret == serverName2)
-                {
-                    //MessageBox.Show("yay");
-                    enabledServer = serverConnectionHandlerID;
-                }
-                //TSPlugin.Instance.ServerID = serverConnectionHandlerID;
+                TSPlugin.Instance.chatGui.ServerConnected(serverConnectionHandlerID, ret);
+                //TSPlugin.Instance.Functions.printMessageToCurrentTab("connected " + serverConnectionHandlerID + " " + ret);
             }
-            /*if (status == ConnectStatus.STATUS_DISCONNECTED)
-            {
-                //TSPlugin.Instance.SendChatMessage("I have returned!", 3, 0, serverConnectionHandlerID);
-                TSPlugin.Instance.UpdateDisconnect();
-            }*/
         }
 
         //[DllExport]
@@ -137,12 +118,6 @@ namespace TS
         [DllExport]
         public static int ts3plugin_onTextMessageEvent(UInt64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID, [In()] [MarshalAs(UnmanagedType.LPStr)] string fromName, [In()] [MarshalAs(UnmanagedType.LPStr)] string fromUniqueIdentifier, IntPtr message, int ffIgnored)
         {
-            if (serverConnectionHandlerID != enabledServer)
-                return 0;
-
-            if (targetMode.value != 3 && targetMode.value != 2)
-                return 0;
-            
             bool outgoing = false;
             var functions = TSPlugin.Instance.Functions;
             ushort myID = 0;
@@ -155,7 +130,7 @@ namespace TS
             {
                 outgoing = true;
             }
-            TSPlugin.Instance.chatGui.MessageReceived(targetMode.value, outgoing, fromName, UsefulFuncs.StringFromNativeUtf8(message));
+            TSPlugin.Instance.chatGui.MessageReceived(serverConnectionHandlerID, targetMode.value, outgoing, fromName, UsefulFuncs.StringFromNativeUtf8(message));
 
             return 0;
         }
