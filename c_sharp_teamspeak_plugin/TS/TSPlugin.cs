@@ -1,5 +1,8 @@
 ﻿using System;
 using LxBTSCForm;
+using LxBTSCWPF1;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace TS
 {
@@ -32,31 +35,43 @@ namespace TS
         public string Author = "Luch";
         public string Description = "Better TeamSpeak Chat";
         public string PluginID { get; set; }
-        public Form1 chatGui;
+        //public Form1 chatGui;
+        public Window2 chatGui;
 
         public int Init()
         {
-            chatGui = new Form1();
+            //chatGui = new Form1();
+            //Thread thread = new Thread(() =>
+            //{
+                chatGui = new Window2();
+                chatGui.Show();
+            //    chatGui.Closed += (sender, e) => chatGui.Dispatcher.InvokeShutdown();
+            //    System.Windows.Threading.Dispatcher.Run();
+            //});
+            //thread.SetApartmentState(ApartmentState.STA);
+            //thread.IsBackground = true;
+            //thread.Start();
             
-            chatGui.Show();
-            
+            //chatGui2.Show();
             return 0;
         }
 
         public void ServerConnected(UInt64 serverConnectionHandlerID, string name)
         {
             chatGui.ServerConnected(serverConnectionHandlerID, name);
+            //chatGui2.ServerConnected(serverConnectionHandlerID, name);
         }
 
         private void CheckHandle(object state)
         {
-            chatGui.Show();
+            //chatGui.Show();
         }
 
         public void Shutdown()
         {
+            //chatGui2.Close();
             chatGui.Close();
-            chatGui.Dispose();
+            //chatGui.Dispose();
         }
     }
 }

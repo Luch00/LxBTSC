@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using System.IO;
 using System.Runtime.CompilerServices;
+using Microsoft.WindowsAPICodePack.Taskbar;
 
 namespace LxBTSCForm
 {
@@ -18,32 +19,49 @@ namespace LxBTSCForm
         {
             libraryLoader = new CefLibraryHandle(Path.Combine(appdataPath, @"Luch\LxBTSC\CefLib\libcef.dll"));
             InitCef();
+            TaskbarManager.Instance.SetApplicationIdForSpecificWindow(this.Handle, "lxbtscform_separate_window");
             InitializeComponent();
         }
-        private Dictionary<ulong, Dictionary<int, BrowserTab>> serverTabs = new Dictionary<ulong, Dictionary<int, BrowserTab>>();
+        private Dictionary<ulong, Dictionary<int, BrowserTabPage>> serverTabs = new Dictionary<ulong, Dictionary<int, BrowserTabPage>>();
+
+        private class BrowserTabPage : TabPage
+        {
+            public BrowserTab Browser { get; private set; }
+            //public TabPage Tab { get; private set; }
+            public TabPage ServerTab { get; set; }
+            public bool HasMessages { get; set; }
+            public BrowserTabPage(string header)
+            {
+                Browser = new BrowserTab("");
+                HasMessages = false;
+                this.Text = header;
+                this.Controls.Add(Browser);
+            }
+        }
 
         public void ServerConnected(ulong serverConnectionHandlerID, string name)
         {
             if (!serverTabs.ContainsKey(serverConnectionHandlerID))
             {
-                var chatTabs = new Dictionary<int, BrowserTab>
+                var chatTabs = new Dictionary<int, BrowserTabPage>
                 {
-                    {-2, new BrowserTab("") },
-                    {-1, new BrowserTab("") }
+                    {-2, new BrowserTabPage("Server") },
+                    {-1, new BrowserTabPage("Channel") }
                 };
                 serverTabs.Add(serverConnectionHandlerID, chatTabs);
                 TabPage serverPage = new TabPage(name);
-                TabPage serverChatPage = new TabPage("Server");
-                serverChatPage.Controls.Add(chatTabs[-2]);
-                TabPage channelChatPage = new TabPage("Channel");
-                channelChatPage.Controls.Add(chatTabs[-1]);
+                chatTabs[-2].ServerTab = serverPage;
+                //TabPage serverChatPage = new TabPage("Server");
+                //serverChatPage.Controls.Add(chatTabs[-2]);
+                //TabPage channelChatPage = new TabPage("Channel");
+                //channelChatPage.Controls.Add(chatTabs[-1]);
 
                 TabControl chatTabControl = new TabControl();
                 chatTabControl.Alignment = TabAlignment.Bottom;
                 chatTabControl.Dock = DockStyle.Fill;
 
-                chatTabControl.TabPages.Add(serverChatPage);
-                chatTabControl.TabPages.Add(channelChatPage);
+                chatTabControl.TabPages.Add(chatTabs[-2]);
+                chatTabControl.TabPages.Add(chatTabs[-1]);
 
                 serverPage.Controls.Add(chatTabControl);
                 tabControl1.TabPages.Add(serverPage);
@@ -90,10 +108,10 @@ namespace LxBTSCForm
                     case 1:
                         break;
                     case 2:
-                        serverTabs[server][-1].MessageReceived(outgoing, name, s);
+                        serverTabs[server][-1].Browser.MessageReceived(outgoing, name, s);
                         break;
                     case 3:
-                        serverTabs[server][-2].MessageReceived(outgoing, name, s);
+                        serverTabs[server][-2].Browser.MessageReceived(outgoing, name, s);
                         break;
                 }
             }

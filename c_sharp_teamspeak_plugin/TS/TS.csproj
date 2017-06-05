@@ -90,6 +90,8 @@
       <HintPath>..\..\packages\DllExport.1.5.2\lib\net20\DllExport.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression.FileSystem" />
@@ -99,6 +101,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TS3ExportedFunctions.cs" />
@@ -111,6 +114,10 @@
     <ProjectReference Include="..\..\LxBTSCForm\LxBTSCForm.csproj">
       <Project>{17e213e2-1891-407b-9f58-0a19d15dd8a0}</Project>
       <Name>LxBTSCForm</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\LxBTSCWPF1\LxBTSCWPF1.csproj">
+      <Project>{1ff5f739-fb16-4b59-be11-e4bcf71978e9}</Project>
+      <Name>LxBTSCWPF1</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
