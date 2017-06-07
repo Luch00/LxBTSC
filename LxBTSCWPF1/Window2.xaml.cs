@@ -2,10 +2,13 @@
 using Microsoft.WindowsAPICodePack.Taskbar;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 
@@ -14,7 +17,7 @@ namespace LxBTSCWPF1
     /// <summary>
     /// Interaction logic for Window2.xaml
     /// </summary>
-    public partial class Window2 : Window
+    public partial class Window2 : Window, INotifyPropertyChanged
     {
         private string appdataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
         private CefLibraryHandle libraryLoader;
@@ -29,6 +32,15 @@ namespace LxBTSCWPF1
         }
 
         private Dictionary<ulong, ServerTab> serverTabs = new Dictionary<ulong, ServerTab>();
+        private ObservableCollection<ServerTab> serverTabs2 = new ObservableCollection<ServerTab>();
+        public ObservableCollection<ServerTab> ServerTabs2
+        {
+            get { return serverTabs2; }
+            set
+            {
+                serverTabs2 = value;
+            }
+        }
 
         public static readonly SolidColorBrush BRUSH_BLACK = new SolidColorBrush(Colors.Black);
         public static readonly SolidColorBrush BRUSH_TEAL = new SolidColorBrush(Colors.Teal);
@@ -43,110 +55,110 @@ namespace LxBTSCWPF1
             }
         }
 
+        //public class ChatTab : TabItem
+        //{
+        //    public BrowserTab Browser { get; set; }
+        //    public int Target { get; set; }
+        //    public int From { get; set; }
+        //    //public bool HasNewMessages { get; set; }
 
-        public class ChatTab : TabItem
-        {
-            public BrowserTab Browser { get; set; }
-            public int Target { get; set; }
-            public int From { get; set; }
-            //public ServerTab ServerTab { get; set; }
+        //    public ChatTab(string header, int target)
+        //    {
+        //        Browser = new BrowserTab();
+        //        Target = target;
+        //        this.Header = header;
+        //        this.Content = Browser;
+        //    }
 
-            public ChatTab(string header, int target)
-            {
-                Browser = new BrowserTab();
-                Target = target;
-                this.Header = header;
-                this.Content = Browser;
-            }
+        //    public void MessageReceived(bool outgoing, string name, string s, bool isSelected)
+        //    {
+        //        if (!isSelected)
+        //        {
+        //            //HasNewMessages = true;
+        //            this.Foreground = BRUSH_TEAL;
+        //        }
+        //        Browser.MessageReceived(outgoing, name, s);
+        //    }
 
-            public void SetColor(Color color)
-            {
-                this.Foreground = new SolidColorBrush(color);
-            }
-        }
+        //    public void WasSelected()
+        //    {
+        //        this.Foreground = BRUSH_BLACK;
+        //    }
+        //}
 
-        public class ServerTab : TabItem
-        {
-            public ulong ServerConnectionHandlerID { get; private set; }
-            public Dictionary<int, ChatTab> chatTabs;
-            //public ChatTabControl chatTabControl;
-            public TabControl chatTabControl;
-            public SolidColorBrush ForegroundBrush
-            {
-                get { return foregroundBrush; }
-                set
-                {
-                    if (foregroundBrush != value)
-                    {
-                        foregroundBrush = value;
-                    }
-                }
-            }
-            private SolidColorBrush foregroundBrush;
-            public ServerTab(ulong serverConnectionHandlerID, string header)
-            {
-                ServerConnectionHandlerID = serverConnectionHandlerID;
-                this.Header = header;
+        //public class ServerTab : TabItem
+        //{
+        //    public ulong ServerConnectionHandlerID { get; private set; }
+        //    public Dictionary<int, ChatTab> chatTabs;
+        //    //public ChatTabControl chatTabControl;
+        //    public TabControl chatTabControl;
+        //    public SolidColorBrush ForegroundBrush
+        //    {
+        //        get { return foregroundBrush; }
+        //        set
+        //        {
+        //            if (foregroundBrush != value)
+        //            {
+        //                foregroundBrush = value;
+        //            }
+        //        }
+        //    }
+        //    private SolidColorBrush foregroundBrush;
+        //    public ServerTab(ulong serverConnectionHandlerID, string header)
+        //    {
+        //        ServerConnectionHandlerID = serverConnectionHandlerID;
+        //        this.Header = header;
 
-                //Binding binding = new Binding();
-                //binding.Path = new PropertyPath("ForegroundBrush");
-                //binding.Source = this;
-                //binding.Mode = BindingMode.TwoWay;
-                //binding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-                //BindingOperations.SetBinding(this, ForegroundProperty, binding);
+        //        chatTabs = new Dictionary<int, ChatTab>
+        //        {
+        //            { -2, new ChatTab("Server", 3) },
+        //            { -1, new ChatTab("Channel", 2) }
+        //        };
+        //        chatTabControl = new TabControl();
+        //        chatTabControl.TabStripPlacement = Dock.Bottom;
+        //        chatTabControl.Items.Add(chatTabs[-2]);
+        //        chatTabControl.Items.Add(chatTabs[-1]);
+        //        this.Content = chatTabControl;
+        //        chatTabControl.SelectedIndex = 0;
+        //    }
 
-                //ForegroundBrush = BRUSH_BLACK;
-                chatTabs = new Dictionary<int, ChatTab>
-                {
-                    { -2, new ChatTab("Server", 3) },
-                    { -1, new ChatTab("Channel", 2) }
-                };
-                chatTabControl = new TabControl();
-                chatTabControl.TabStripPlacement = Dock.Bottom;
-                chatTabControl.Items.Add(chatTabs[-2]);
-                chatTabControl.Items.Add(chatTabs[-1]);
-                this.Content = chatTabControl;
-                chatTabControl.SelectedIndex = 0;
-            }
+        //    public void MessageReceived(ushort target, bool outgoing, string name, string s, bool isSelected)
+        //    {
+        //        if (!isSelected)
+        //        {
+        //            this.Foreground = BRUSH_TEAL;
+        //        }
+        //        bool chatIsSelected;
+        //        switch (target)
+        //        {
+        //            case 1:
+        //                // private message
+        //                break;
+        //            case 2:
+        //                chatIsSelected = chatTabs[-2] == chatTabControl.SelectedItem;
+        //                chatTabs[-1].MessageReceived(outgoing, name, s, chatIsSelected);
+        //                break;
+        //            case 3:
+        //                chatIsSelected = chatTabs[-2] == chatTabControl.SelectedItem;
+        //                chatTabs[-2].MessageReceived(outgoing, name, s, chatIsSelected);
+        //                break;
+        //            default:
+        //                break;
+        //        }
+        //    }
 
-            public void MessageReceived(ushort target, bool outgoing, string name, string s, bool isSelected)
-            {
-                if (!isSelected)
-                {
-                    //ForegroundBrush = new SolidColorBrush(Colors.Teal);
-                    //ForegroundBrush = BRUSH_TEAL;
-                    this.Foreground = BRUSH_TEAL;
-                }
-                
-                switch (target)
-                {
-                    case 1:
-                        // private message
-                        break;
-                    case 2:
-                        chatTabs[-1].Browser.MessageReceived(outgoing, name, s);
-                        break;
-                    case 3:
-                        bool chatIsSelected = chatTabs[-2] == chatTabControl.SelectedItem;
-                        chatTabs[-2].Browser.MessageReceived(outgoing, name, s);
-                        break;
-                    default:
-                        break;
-                }
-            }
+        //    public void AddChatTab(int id, string name)
+        //    {
+        //        chatTabs.Add(id, new ChatTab(name, id));
+        //        chatTabControl.Items.Add(chatTabs[id]);
+        //    }
 
-            public void AddChatTab(int id, string name)
-            {
-                chatTabs.Add(id, new ChatTab(name, id));
-                chatTabControl.Items.Add(chatTabs[id]);
-            }
-
-            public void WasSelected()
-            {
-                //ForegroundBrush = BRUSH_BLACK;
-                this.Foreground = BRUSH_BLACK;
-            }
-        }
+        //    public void WasSelected()
+        //    {
+        //        //ForegroundBrush = BRUSH_BLACK;
+        //        this.Foreground = BRUSH_BLACK;
+        //    }
+        //}
 
         public void ServerConnected(ulong serverConnectionHandlerID, string name)
         {
@@ -156,22 +168,11 @@ namespace LxBTSCWPF1
                 {
                     if (!serverTabs.ContainsKey(serverConnectionHandlerID))
                     {
-                        ServerTab serverTab = new ServerTab(serverConnectionHandlerID, name);
-                        //var chatTabs = new Dictionary<int, ChatTab>
-                        //{
-                        //    { -2, new ChatTab("Server") },
-                        //    { -1, new ChatTab("Channel") }
-                        //};
-                        //chatTabs[-2].ServerTab = serverTab;
+                        var serverTab = new ServerTab(serverConnectionHandlerID, name);
                         serverTabs.Add(serverConnectionHandlerID, serverTab);
+                        ServerTabs2.Add(serverTab);
 
-                        //serverTab.Header = name;
-                        //ChatTabControl ctc = new ChatTabControl();
-                        //ctc.chatTabControl.Items.Add(chatTabs[-2]);
-                        //ctc.chatTabControl.Items.Add(chatTabs[-1]);
-                        //ctc.chatTabControl.SelectedIndex = 0;
-                        //serverTab.Content = ctc;
-                        serverTabControl.Items.Add(serverTab);
+                        //serverTabControl.Items.Add(serverTab);
                         serverTabControl.SelectedIndex = (serverTabControl.Items.Count - 1);
                     }
                 }
@@ -230,7 +231,6 @@ namespace LxBTSCWPF1
             //ServerConnected(2, "Testi2");
             if (CurrentServerTab != null)
             {
-                //MessageBox.Show(CurrentServerTab.Header.ToString());
                 CurrentServerTab.Foreground = Brushes.Black;
             }
             else
@@ -258,5 +258,53 @@ namespace LxBTSCWPF1
         {
 
         }
+
+        private void TextBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter && ChatboxText.Length > 0)
+            {
+                if ((Keyboard.Modifiers & ModifierKeys.Shift) != ModifierKeys.Shift)
+                {
+                    var serverID = CurrentServerTab.ServerConnectionHandlerID;
+                    var chatID = CurrentServerTab.SelectedTab.Target;
+                    var to = CurrentServerTab.SelectedTab.From;
+                    var eventargs = new MessageSentEventArgs();
+                    eventargs.ServerID = serverID;
+                    eventargs.ChatID = (ushort)chatID;
+                    eventargs.ToID = (ushort)to;
+                    eventargs.Message = ChatboxText;
+                    OnMessageSent(eventargs);
+                    ChatboxText = string.Empty;
+                    OnPropertyChanged("ChatboxText");
+                    e.Handled = true;
+                }
+                //else
+                //{
+                //    ChatboxText += Environment.NewLine;
+                //    OnPropertyChanged("ChatboxText");
+                //}
+            }
+        }
+
+        public event EventHandler<MessageSentEventArgs> MessageSent;
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnMessageSent(MessageSentEventArgs e)
+        {
+            MessageSent?.Invoke(this, e);
+        }
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    public class MessageSentEventArgs : EventArgs
+    {
+        public ulong ServerID { get; set; }
+        public ushort ChatID { get; set; }
+        public ushort ToID { get; set; }
+        public string Message { get; set; }
     }
 }

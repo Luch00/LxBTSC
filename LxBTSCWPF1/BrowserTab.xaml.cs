@@ -13,22 +13,26 @@ namespace LxBTSCWPF1
     /// <summary>
     /// Interaction logic for BrowserTab.xaml
     /// </summary>
-    public partial class BrowserTab : UserControl
+    public partial class BrowserTab : TabItem
     {
         public IWpfWebBrowser Browser { get; private set; }
-        //public IWinFormsWebBrowser Browser { get; private set; }
         private readonly CallBackObject cbo;
-        public BrowserTab()
+        //private string header;
+
+        //public string Header
+        //{
+        //    get { return header; }
+        //    set { header = value; }
+        //}
+
+        public int Target { get; set; }
+        public int From { get; set; }
+
+        public BrowserTab(string header, int id)
         {
             InitializeComponent();
-
-            //var browser = new ChromiumWebBrowser(url)
-            //{
-            //    Dock = DockStyle.Fill
-            //};
-            //this.Dock = DockStyle.Fill;
-            //browserPanel.Controls.Add(browser);
-
+            Header = header;
+            Target = id;
             Browser = cefBrowser;
 
             cefBrowser.MenuHandler = new Handlers.MenuHandler();
@@ -40,6 +44,11 @@ namespace LxBTSCWPF1
 
             cefBrowser.RegisterJsObject("callbackObj", cbo);
             LoadHtml();
+        }
+
+        public void WasSelected()
+        {
+            this.Foreground = System.Windows.Media.Brushes.Black;
         }
 
         private string appdataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
@@ -78,12 +87,16 @@ namespace LxBTSCWPF1
             var m = e.Message;
             if (m.Length > 0)
             {
-                MessageReceived(true, "Test", m);
+                MessageReceived(true, "Test", m, true);
             }
         }
 
-        public void MessageReceived(bool outgoing, string name, string s)
+        public void MessageReceived(bool outgoing, string name, string s, bool isSelected)
         {
+            if (!isSelected)
+            {
+                this.Foreground = System.Windows.Media.Brushes.Teal;
+            }
             var message = ToHTML(s.Replace("\r", ""));
             if (message.Length > 0)
             {

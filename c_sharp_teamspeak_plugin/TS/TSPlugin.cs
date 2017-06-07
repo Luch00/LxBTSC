@@ -3,6 +3,8 @@ using LxBTSCForm;
 using LxBTSCWPF1;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Runtime.InteropServices;
+using System.Windows;
 
 namespace TS
 {
@@ -41,19 +43,41 @@ namespace TS
         public int Init()
         {
             //chatGui = new Form1();
-            //Thread thread = new Thread(() =>
-            //{
-                chatGui = new Window2();
-                chatGui.Show();
-            //    chatGui.Closed += (sender, e) => chatGui.Dispatcher.InvokeShutdown();
-            //    System.Windows.Threading.Dispatcher.Run();
-            //});
-            //thread.SetApartmentState(ApartmentState.STA);
-            //thread.IsBackground = true;
-            //thread.Start();
-            
-            //chatGui2.Show();
+            chatGui = new Window2();
+            chatGui.MessageSent += ChatGui_MessageSent;
+            chatGui.Show();
             return 0;
+        }
+
+        private void ChatGui_MessageSent(object sender, MessageSentEventArgs e)
+        {
+            //MessageBox.Show(e.Message);
+            //IntPtr msg = Marshal.StringToHGlobalAnsi(e.Message);
+            IntPtr msg = UsefulFuncs.NativeUtf8FromString(e.Message);
+            switch (e.ChatID)
+            {
+                case 1:
+                    if (Functions.requestSendPrivateTextMsg(e.ServerID, msg, e.ToID, null) != Errors.ERROR_ok)
+                        Functions.logMessage("Failed Chat", LogLevel.LogLevel_WARNING, "lxbtsc", e.ServerID);
+                    break;
+                case 2:
+                    ushort id = 0;
+                    if (Functions.getClientID(e.ServerID, ref id) != Errors.ERROR_ok)
+                        Functions.logMessage("Failed Chat", LogLevel.LogLevel_WARNING, "lxbtsc", e.ServerID);
+
+                    ulong channelid = 0;
+                    if (Functions.getChannelOfClient(e.ServerID, id, ref channelid) != Errors.ERROR_ok)
+                        Functions.logMessage("Failed Chat", LogLevel.LogLevel_WARNING, "lxbtsc", e.ServerID);
+                    
+                    if (Functions.requestSendChannelTextMsg(e.ServerID, msg, channelid, null) != Errors.ERROR_ok)
+                        Functions.logMessage("Failed Chat", LogLevel.LogLevel_WARNING, "lxbtsc", e.ServerID);
+                    break;
+                default:
+                    if (Functions.requestSendServerTextMsg(e.ServerID, msg, null) != Errors.ERROR_ok)
+                        Functions.logMessage("Failed Chat", LogLevel.LogLevel_WARNING, "lxbtsc", e.ServerID);
+                    break;
+            }
+            Functions.freeMemory(msg);
         }
 
         public void ServerConnected(UInt64 serverConnectionHandlerID, string name)
