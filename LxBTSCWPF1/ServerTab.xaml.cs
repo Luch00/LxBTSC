@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
@@ -61,13 +64,36 @@ namespace LxBTSCWPF1
             }
         }
 
-        public ServerTab(ulong serverConnectionHandlerID, string header)
+        private ObservableCollection<User> users = new ObservableCollection<User>();
+        public ObservableCollection<User> Users
         {
-            InitializeComponent();
+            get { return users; }
+            set
+            {
+                users = value;
+            }
+        }
 
+        public Global Global
+        {
+            get { return Global.Instance; }
+        }
+
+        public ServerTab(ulong serverConnectionHandlerID, string header, List<User> users)
+        {
+            //var result = string.Join(",", (object[])users.ToArray());
+            //MessageBox.Show(result);
+            
+            InitializeComponent();
+            
             ServerConnectionHandlerID = serverConnectionHandlerID;
             Header = header;
-
+            foreach (var item in users)
+            {
+                Users.Add(item);
+                //item.SetImage(@"F:\pics\zmSFw4D.png");
+                
+            }
             var server = new BrowserTab("Server", 3);
             var channel = new BrowserTab("Channel", 2);
             ChatTabs.Add(-2, server);
@@ -76,6 +102,36 @@ namespace LxBTSCWPF1
             ChatTabs2.Add(channel);
             
             chatTabControl.SelectedIndex = 0;
+        }
+
+        public void UserConnected(User user)
+        {
+            Users.Add(user);
+        }
+
+        public void UserDisconnected(ushort clientID)
+        {
+            var user = Users.Where(x => x.ClientID == clientID).FirstOrDefault();
+            if (user != null)
+            {
+                Users.Remove(user);
+            }
+        }
+
+        public event EventHandler<GetAvatarEventArgs> GetAvatarFUCK;
+        public virtual void OnGetAvatar(GetAvatarEventArgs e)
+        {
+            GetAvatarFUCK?.Invoke(this, e);
+        }
+
+        public void SetUserAvatar(ushort clientID, string path)
+        {
+            var user = Users.Where(x => x.ClientID == clientID).FirstOrDefault();
+            if (user != null)
+            {
+                MessageBox.Show(path);
+                user.SetImage(path);
+            }
         }
         
         public void MessageReceived(ushort target, bool outgoing, string name, string s, bool isSelected)
@@ -116,6 +172,17 @@ namespace LxBTSCWPF1
             //ForegroundBrush = BRUSH_BLACK;
             //this.Foreground = BRUSH_BLACK;
             this.Foreground = Brushes.Black;
+        }
+
+        private void TabItem_Loaded(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in Users)
+            {
+                var args = new GetAvatarEventArgs();
+                args.ServerID = ServerConnectionHandlerID;
+                args.ClientID = item.ClientID;
+                OnGetAvatar(args);
+            }
         }
     }
 }

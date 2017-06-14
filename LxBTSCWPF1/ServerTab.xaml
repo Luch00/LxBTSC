@@ -5,9 +5,24 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:LxBTSCWPF1"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300" DataContext="{Binding RelativeSource={RelativeSource Self}}">
+             d:DesignHeight="390" d:DesignWidth="390" DataContext="{Binding RelativeSource={RelativeSource Self}}" Loaded="TabItem_Loaded">
     <Grid>
-        <TabControl x:Name="chatTabControl" SelectedItem="{Binding SelectedTab}" TabStripPlacement="Bottom" ItemsSource="{Binding ChatTabs2}">
-        </TabControl>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="90"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <ListBox x:Name="userList" Grid.Column="0" ItemsSource="{Binding Users}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Height="48" Source="{Binding Image}"/>
+                        <TextBlock Text="{Binding Name}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+        <TabControl x:Name="chatTabControl" Grid.Column="2" SelectedItem="{Binding SelectedTab}" TabStripPlacement="Bottom" ItemsSource="{Binding ChatTabs2}"/>
     </Grid>
 </TabItem>

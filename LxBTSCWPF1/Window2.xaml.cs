@@ -7,10 +7,10 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace LxBTSCWPF1
 {
@@ -28,7 +28,7 @@ namespace LxBTSCWPF1
             InitializeComponent();
             TaskbarManager.Instance.SetApplicationIdForSpecificWindow(new WindowInteropHelper(this).EnsureHandle(), "lxbtsc_separate__window");
             //ServerConnected(1, "Test");
-            //ServerConnected(4, "test");
+            //ServerConnected(4, "test", new List<User> { new User {ClientID = 1, Name = "TEST" } });
         }
 
         private Dictionary<ulong, ServerTab> serverTabs = new Dictionary<ulong, ServerTab>();
@@ -41,6 +41,7 @@ namespace LxBTSCWPF1
                 serverTabs2 = value;
             }
         }
+
 
         public static readonly SolidColorBrush BRUSH_BLACK = new SolidColorBrush(Colors.Black);
         public static readonly SolidColorBrush BRUSH_TEAL = new SolidColorBrush(Colors.Teal);
@@ -55,124 +56,36 @@ namespace LxBTSCWPF1
             }
         }
 
-        //public class ChatTab : TabItem
-        //{
-        //    public BrowserTab Browser { get; set; }
-        //    public int Target { get; set; }
-        //    public int From { get; set; }
-        //    //public bool HasNewMessages { get; set; }
-
-        //    public ChatTab(string header, int target)
-        //    {
-        //        Browser = new BrowserTab();
-        //        Target = target;
-        //        this.Header = header;
-        //        this.Content = Browser;
-        //    }
-
-        //    public void MessageReceived(bool outgoing, string name, string s, bool isSelected)
-        //    {
-        //        if (!isSelected)
-        //        {
-        //            //HasNewMessages = true;
-        //            this.Foreground = BRUSH_TEAL;
-        //        }
-        //        Browser.MessageReceived(outgoing, name, s);
-        //    }
-
-        //    public void WasSelected()
-        //    {
-        //        this.Foreground = BRUSH_BLACK;
-        //    }
-        //}
-
-        //public class ServerTab : TabItem
-        //{
-        //    public ulong ServerConnectionHandlerID { get; private set; }
-        //    public Dictionary<int, ChatTab> chatTabs;
-        //    //public ChatTabControl chatTabControl;
-        //    public TabControl chatTabControl;
-        //    public SolidColorBrush ForegroundBrush
-        //    {
-        //        get { return foregroundBrush; }
-        //        set
-        //        {
-        //            if (foregroundBrush != value)
-        //            {
-        //                foregroundBrush = value;
-        //            }
-        //        }
-        //    }
-        //    private SolidColorBrush foregroundBrush;
-        //    public ServerTab(ulong serverConnectionHandlerID, string header)
-        //    {
-        //        ServerConnectionHandlerID = serverConnectionHandlerID;
-        //        this.Header = header;
-
-        //        chatTabs = new Dictionary<int, ChatTab>
-        //        {
-        //            { -2, new ChatTab("Server", 3) },
-        //            { -1, new ChatTab("Channel", 2) }
-        //        };
-        //        chatTabControl = new TabControl();
-        //        chatTabControl.TabStripPlacement = Dock.Bottom;
-        //        chatTabControl.Items.Add(chatTabs[-2]);
-        //        chatTabControl.Items.Add(chatTabs[-1]);
-        //        this.Content = chatTabControl;
-        //        chatTabControl.SelectedIndex = 0;
-        //    }
-
-        //    public void MessageReceived(ushort target, bool outgoing, string name, string s, bool isSelected)
-        //    {
-        //        if (!isSelected)
-        //        {
-        //            this.Foreground = BRUSH_TEAL;
-        //        }
-        //        bool chatIsSelected;
-        //        switch (target)
-        //        {
-        //            case 1:
-        //                // private message
-        //                break;
-        //            case 2:
-        //                chatIsSelected = chatTabs[-2] == chatTabControl.SelectedItem;
-        //                chatTabs[-1].MessageReceived(outgoing, name, s, chatIsSelected);
-        //                break;
-        //            case 3:
-        //                chatIsSelected = chatTabs[-2] == chatTabControl.SelectedItem;
-        //                chatTabs[-2].MessageReceived(outgoing, name, s, chatIsSelected);
-        //                break;
-        //            default:
-        //                break;
-        //        }
-        //    }
-
-        //    public void AddChatTab(int id, string name)
-        //    {
-        //        chatTabs.Add(id, new ChatTab(name, id));
-        //        chatTabControl.Items.Add(chatTabs[id]);
-        //    }
-
-        //    public void WasSelected()
-        //    {
-        //        //ForegroundBrush = BRUSH_BLACK;
-        //        this.Foreground = BRUSH_BLACK;
-        //    }
-        //}
-
-        public void ServerConnected(ulong serverConnectionHandlerID, string name)
+        public void ServerConnected(ulong serverConnectionHandlerID, string name, List<User> users)
         {
+            //MessageBox.Show(name);
+            //if (!serverTabs.ContainsKey(serverConnectionHandlerID))
+            //{
+            //    try
+            //    {
+            //        var serverTab = new ServerTab(serverConnectionHandlerID, name, users);
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        MessageBox.Show(e.Message);
+            //    }
+            //    //serverTab.GetAvatarFUCK += ServerTab_GetAvatarFUCK;
+            //    //serverTabs.Add(serverConnectionHandlerID, serverTab);
+            //    //ServerTabs2.Add(serverTab);
+
+            //    //serverTabControl.SelectedIndex = (serverTabControl.Items.Count - 1);
+            //}
             Dispatcher.Invoke(() =>
             {
                 try
                 {
                     if (!serverTabs.ContainsKey(serverConnectionHandlerID))
                     {
-                        var serverTab = new ServerTab(serverConnectionHandlerID, name);
+                        var serverTab = new ServerTab(serverConnectionHandlerID, name, users);
+                        serverTab.GetAvatarFUCK += ServerTab_GetAvatarFUCK; ;
                         serverTabs.Add(serverConnectionHandlerID, serverTab);
                         ServerTabs2.Add(serverTab);
 
-                        //serverTabControl.Items.Add(serverTab);
                         serverTabControl.SelectedIndex = (serverTabControl.Items.Count - 1);
                     }
                 }
@@ -181,6 +94,21 @@ namespace LxBTSCWPF1
                     MessageBox.Show(e.Message);
                 }
             });
+        }
+
+        private void ServerTab_GetAvatarFUCK(object sender, GetAvatarEventArgs e)
+        {
+            OnGetAvatar(e);
+        }
+
+        public void UserConnected(ulong serverConnectionHandlerID, User user)
+        {
+            serverTabs[serverConnectionHandlerID].UserConnected(user);
+        }
+
+        public void UserDisconnected(ulong serverConnectionHandlerID, ushort clientID)
+        {
+            serverTabs[serverConnectionHandlerID].UserDisconnected(clientID);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -215,6 +143,14 @@ namespace LxBTSCWPF1
             }
         }
 
+        public void SetAvatarPath(ulong server, ushort target, string path)
+        {
+            if (serverTabs.ContainsKey(server))
+            {
+                serverTabs[server].SetUserAvatar(target, path);
+            }
+        }
+
         private void Window_Closed(object sender, EventArgs e)
         {
             //this.Dispose();
@@ -238,8 +174,7 @@ namespace LxBTSCWPF1
                 MessageBox.Show("null");
             }
         }
-
-        //public ChatTab CurrentChatTab { get; set; }
+        
         private ServerTab currentServerTab;
         public ServerTab CurrentServerTab
         {
@@ -278,20 +213,21 @@ namespace LxBTSCWPF1
                     OnPropertyChanged("ChatboxText");
                     e.Handled = true;
                 }
-                //else
-                //{
-                //    ChatboxText += Environment.NewLine;
-                //    OnPropertyChanged("ChatboxText");
-                //}
             }
         }
 
         public event EventHandler<MessageSentEventArgs> MessageSent;
+        public event EventHandler<GetAvatarEventArgs> GetAvatar;
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnMessageSent(MessageSentEventArgs e)
         {
             MessageSent?.Invoke(this, e);
+        }
+
+        protected virtual void OnGetAvatar(GetAvatarEventArgs e)
+        {
+            GetAvatar?.Invoke(this, e);
         }
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -306,5 +242,46 @@ namespace LxBTSCWPF1
         public ushort ChatID { get; set; }
         public ushort ToID { get; set; }
         public string Message { get; set; }
+    }
+
+    public class GetAvatarEventArgs : EventArgs
+    {
+        public ulong ServerID { get; set; }
+        public ushort ClientID { get; set; }
+    }
+
+    public class User : INotifyPropertyChanged
+    {
+        public ushort ClientID { get; set; }
+        public string Name { get; set; }
+
+        private BitmapImage thumbnail;
+        public BitmapImage Image
+        {
+            get { return thumbnail; }
+            set
+            {
+                thumbnail = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public void SetImage(string path)
+        {
+            BitmapImage img = new BitmapImage();
+            img.BeginInit();
+            img.CacheOption = BitmapCacheOption.None;
+            img.DecodePixelWidth = 48;
+            img.UriSource = new Uri(path);
+            img.EndInit();
+            Image = img;
+        }
     }
 }

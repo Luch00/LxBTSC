@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.26430.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TS", "c_sharp_teamspeak_plugin\TS\TS.csproj", "{187684E8-E9D9-4B62-BAE7-553BBC6992CC}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LxBTSCWPF1", "LxBTSCWPF1\LxBTSCWPF1.csproj", "{1FF5F739-FB16-4B59-BE11-E4BCF71978E9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFTest", "WPFTest\WPFTest.csproj", "{58A27F3E-5F21-4DBE-82B8-BC9474311828}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LxBTSC", "ts_plugin\src\LxBTSC.vcxproj", "{192D646D-748B-450B-AF3D-BF8EDD5FC897}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -127,6 +129,28 @@ Global
 		{58A27F3E-5F21-4DBE-82B8-BC9474311828}.ReleaseUnsigned|x64.Build.0 = Release|Any CPU
 		{58A27F3E-5F21-4DBE-82B8-BC9474311828}.ReleaseUnsigned|x86.ActiveCfg = Release|Any CPU
 		{58A27F3E-5F21-4DBE-82B8-BC9474311828}.ReleaseUnsigned|x86.Build.0 = Release|Any CPU
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.Debug|x64.ActiveCfg = Debug|x64
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.Debug|x64.Build.0 = Debug|x64
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.Debug|x86.ActiveCfg = Debug|Win32
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.Debug|x86.Build.0 = Debug|Win32
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.Release|Any CPU.ActiveCfg = Release|Win32
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.Release|x64.ActiveCfg = Release|x64
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.Release|x64.Build.0 = Release|x64
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.Release|x86.ActiveCfg = Release|Win32
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.Release|x86.Build.0 = Release|Win32
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.ReleaseSigned|Any CPU.ActiveCfg = Release|x64
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.ReleaseSigned|Any CPU.Build.0 = Release|x64
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.ReleaseSigned|x64.ActiveCfg = Release|x64
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.ReleaseSigned|x64.Build.0 = Release|x64
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.ReleaseSigned|x86.ActiveCfg = Release|Win32
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.ReleaseSigned|x86.Build.0 = Release|Win32
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.ReleaseUnsigned|Any CPU.ActiveCfg = Release|x64
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.ReleaseUnsigned|Any CPU.Build.0 = Release|x64
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.ReleaseUnsigned|x64.ActiveCfg = Release|x64
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.ReleaseUnsigned|x64.Build.0 = Release|x64
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.ReleaseUnsigned|x86.ActiveCfg = Release|Win32
+		{192D646D-748B-450B-AF3D-BF8EDD5FC897}.ReleaseUnsigned|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
