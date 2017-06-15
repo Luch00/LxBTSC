@@ -106,7 +106,19 @@ namespace LxBTSCWPF1
 
         public void UserConnected(User user)
         {
-            Users.Add(user);
+            try
+            {
+                Users.Add(user);
+                MessageBox.Show("connected: " + user.Name);
+                var args = new GetAvatarEventArgs();
+                args.ServerID = ServerConnectionHandlerID;
+                args.ClientID = user.ClientID;
+                OnGetAvatar(args);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
         }
 
         public void UserDisconnected(ushort clientID)

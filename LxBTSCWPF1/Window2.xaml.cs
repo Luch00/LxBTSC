@@ -88,6 +88,13 @@ namespace LxBTSCWPF1
 
                         serverTabControl.SelectedIndex = (serverTabControl.Items.Count - 1);
                     }
+                    else
+                    {
+                        foreach (var item in users)
+                        {
+                            serverTabs[serverConnectionHandlerID].UserConnected(item);
+                        }
+                    }
                 }
                 catch (Exception e)
                 {
@@ -275,13 +282,21 @@ namespace LxBTSCWPF1
 
         public void SetImage(string path)
         {
-            BitmapImage img = new BitmapImage();
-            img.BeginInit();
-            img.CacheOption = BitmapCacheOption.None;
-            img.DecodePixelWidth = 48;
-            img.UriSource = new Uri(path);
-            img.EndInit();
-            Image = img;
+            try
+            {
+                BitmapImage img = new BitmapImage();
+                RenderOptions.SetBitmapScalingMode(img, BitmapScalingMode.HighQuality);
+                img.BeginInit();
+                img.CacheOption = BitmapCacheOption.None;
+                img.DecodePixelHeight = 48;
+                img.UriSource = new Uri(path);
+                img.EndInit();
+                Image = img;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
         }
     }
 }
