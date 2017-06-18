@@ -21,15 +21,22 @@ namespace LxBTSCWPF1
     {
         private string appdataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
         private CefLibraryHandle libraryLoader;
-        public Window2()
+        public Window2(
+            Action<ulong, ushort, ushort, string> messageSendAction,
+            Func<ulong, ushort, string> getAvatarAction)
         {
             libraryLoader = new CefLibraryHandle(Path.Combine(appdataPath, @"Luch\LxBTSC\CefLib\libcef.dll"));
             InitCef();
             InitializeComponent();
+            messageSend = messageSendAction;
+            getAvatar = getAvatarAction;
             TaskbarManager.Instance.SetApplicationIdForSpecificWindow(new WindowInteropHelper(this).EnsureHandle(), "lxbtsc_separate__window");
             //ServerConnected(1, "Test");
             //ServerConnected(4, "test", new List<User> { new User {ClientID = 1, Name = "TEST" } });
         }
+
+        private Action<ulong, ushort, ushort, string> messageSend;
+        private Func<ulong, ushort, string> getAvatar;
 
         private Dictionary<ulong, ServerTab> serverTabs = new Dictionary<ulong, ServerTab>();
         private ObservableCollection<ServerTab> serverTabs2 = new ObservableCollection<ServerTab>();
@@ -58,35 +65,23 @@ namespace LxBTSCWPF1
 
         public void ServerConnected(ulong serverConnectionHandlerID, string name, List<User> users)
         {
-            //MessageBox.Show(name);
-            //if (!serverTabs.ContainsKey(serverConnectionHandlerID))
-            //{
-            //    try
-            //    {
-            //        var serverTab = new ServerTab(serverConnectionHandlerID, name, users);
-            //    }
-            //    catch (Exception e)
-            //    {
-            //        MessageBox.Show(e.Message);
-            //    }
-            //    //serverTab.GetAvatarFUCK += ServerTab_GetAvatarFUCK;
-            //    //serverTabs.Add(serverConnectionHandlerID, serverTab);
-            //    //ServerTabs2.Add(serverTab);
-
-            //    //serverTabControl.SelectedIndex = (serverTabControl.Items.Count - 1);
-            //}
             Dispatcher.Invoke(() =>
             {
                 try
                 {
                     if (!serverTabs.ContainsKey(serverConnectionHandlerID))
                     {
-                        var serverTab = new ServerTab(serverConnectionHandlerID, name, users);
+                        var serverTab = new ServerTab(serverConnectionHandlerID, name);
                         serverTab.GetAvatarFUCK += ServerTab_GetAvatarFUCK; ;
                         serverTabs.Add(serverConnectionHandlerID, serverTab);
                         ServerTabs2.Add(serverTab);
 
                         serverTabControl.SelectedIndex = (serverTabControl.Items.Count - 1);
+
+                        foreach (var item in users)
+                        {
+                            serverTabs[serverConnectionHandlerID].UserConnected(item);
+                        }
                     }
                     else
                     {
@@ -105,7 +100,15 @@ namespace LxBTSCWPF1
 
         private void ServerTab_GetAvatarFUCK(object sender, GetAvatarEventArgs e)
         {
-            OnGetAvatar(e);
+            //OnGetAvatar(e);
+            //MessageBox.Show(e.ServerID + " " + e.ClientID);
+            var path = getAvatar(e.ServerID, e.ClientID);
+            if (path == "")
+            {
+                return;
+            }
+            //MessageBox.Show(path);
+            SetAvatarPath(e.ServerID, e.ClientID, path);
         }
 
         public void UserConnected(ulong serverConnectionHandlerID, User user)
@@ -152,6 +155,7 @@ namespace LxBTSCWPF1
 
         public void SetAvatarPath(ulong server, ushort target, string path)
         {
+            //MessageBox.Show("setavatarpath: " + server + " " + target + " " + path);
             if (serverTabs.ContainsKey(server))
             {
                 serverTabs[server].SetUserAvatar(target, path);
@@ -215,7 +219,8 @@ namespace LxBTSCWPF1
                     eventargs.ChatID = (ushort)chatID;
                     eventargs.ToID = (ushort)to;
                     eventargs.Message = ChatboxText;
-                    OnMessageSent(eventargs);
+                    messageSend(serverID, (ushort)chatID, (ushort)to, ChatboxText);
+                    //OnMessageSent(eventargs);
                     ChatboxText = string.Empty;
                     OnPropertyChanged("ChatboxText");
                     e.Handled = true;

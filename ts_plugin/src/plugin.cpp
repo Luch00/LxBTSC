@@ -158,22 +158,24 @@ std::string utf16StringToUtf8String(String^ utf16) {
 	delete context;
 	return utf8;
 }
-String^ GetClientAvatar(uint64 serverID, anyID clientID) {
-	char* path;
+String^ GetClientAvatar(uint64 serverID, unsigned short clientID) {
+	//Windows::MessageBox::Show("WOOT");
+	char path[512];
 	if (ts3Functions.getAvatar(serverID, clientID, path, 512) != ERROR_ok) {
 		// nothing
-		path = "";
+		//path = "";
 	}
+	//ts3Functions.printMessageToCurrentTab(path);
+	//Windows::MessageBox::Show(gcnew String(path));
 	return gcnew String(path);
 }
 
-void OnGetAvatar(Object^ sender, LxBTSCWPF1::GetAvatarEventArgs^ args) {
-	System::Windows::MessageBox::Show("OnGetAvatar");
-	String^ path = GetClientAvatar(args->ServerID, args->ClientID);
-	System::Windows::MessageBox::Show(path);
-	ManagedGlobals3::chatGui->SetAvatarPath(args->ServerID, args->ClientID, path);
-	
-}
+//void OnGetAvatar(Object^ sender, LxBTSCWPF1::GetAvatarEventArgs^ args) {
+//	System::Windows::MessageBox::Show("OnGetAvatar");
+//	String^ path = GetClientAvatar(args->ServerID, args->ClientID);
+//	System::Windows::MessageBox::Show(path);
+//	ManagedGlobals3::chatGui->SetAvatarPath(args->ServerID, args->ClientID, path);
+//}
 
 void OnMessageSent(Object^ sender, LxBTSCWPF1::MessageSentEventArgs^ args) {
 	std::string utf8 = utf16StringToUtf8String(args->Message);
@@ -203,6 +205,34 @@ void OnMessageSent(Object^ sender, LxBTSCWPF1::MessageSentEventArgs^ args) {
 	}
 }
 
+void MessageSent(UInt64 serverConnectionHandlerID, unsigned short ChatID, unsigned short ToID, String^ message) {
+	std::string utf8 = utf16StringToUtf8String(message);
+
+	switch (ChatID)
+	{
+	case 1:
+		if (ts3Functions.requestSendPrivateTextMsg(serverConnectionHandlerID, utf8.c_str(), ToID, NULL) != ERROR_ok)
+			ts3Functions.logMessage("Send private message error", LogLevel_ERROR, "lxbtsc", serverConnectionHandlerID);
+		break;
+	case 2:
+		anyID myID;
+		if (ts3Functions.getClientID(serverConnectionHandlerID, &myID) != ERROR_ok) {
+			ts3Functions.logMessage("Get own id error", LogLevel_ERROR, "lxbtsc", serverConnectionHandlerID);
+		}
+		uint64 channelID;
+		if (ts3Functions.getChannelOfClient(serverConnectionHandlerID, myID, &channelID) != ERROR_ok) {
+			ts3Functions.logMessage("Get channel id error", LogLevel_ERROR, "lxbtsc", serverConnectionHandlerID);
+		}
+		if (ts3Functions.requestSendChannelTextMsg(serverConnectionHandlerID, utf8.c_str(), channelID, NULL) != ERROR_ok)
+			ts3Functions.logMessage("Send channel message error", LogLevel_ERROR, "lxbtsc", serverConnectionHandlerID);
+		break;
+	default:
+		if (ts3Functions.requestSendServerTextMsg(serverConnectionHandlerID, utf8.c_str(), NULL) != ERROR_ok)
+			ts3Functions.logMessage("Send server message error", LogLevel_ERROR, "lxbtsc", serverConnectionHandlerID);
+		break;
+	}
+}
+
 /*
 * Custom code called right after loading the plugin. Returns 0 on success, 1 on failure.
 * If the function returns 1 on failure, the plugin will be unloaded again.
@@ -225,9 +255,10 @@ int ts3plugin_init() {
 	ManagedGlobals2::PluginPath = gcnew String(pluginPath);
 	AppDomain::CurrentDomain->AssemblyResolve += gcnew System::ResolveEventHandler(&OnAssemblyResolve);
 	//AppDomain::CurrentDomain->AssemblyLoad += gcnew System::AssemblyLoadEventHandler(&OnAssemblyLoad);
-	ManagedGlobals3::chatGui = gcnew Window2();
+	ManagedGlobals3::chatGui = gcnew Window2(
+		gcnew Action<uint64, unsigned short, unsigned short, String^>(&MessageSent),
+		gcnew Func<uint64, unsigned short, String^>(&GetClientAvatar));
 	ManagedGlobals3::chatGui->MessageSent += gcnew System::EventHandler<LxBTSCWPF1::MessageSentEventArgs ^>(&OnMessageSent);
-	ManagedGlobals3::chatGui->GetAvatar += gcnew System::EventHandler<GetAvatarEventArgs^>(&OnGetAvatar);
 	ManagedGlobals3::chatGui->Show();
 
     return 0;  /* 0 = success, 1 = failure, -2 = failure but client will not show a "failed to load" warning */

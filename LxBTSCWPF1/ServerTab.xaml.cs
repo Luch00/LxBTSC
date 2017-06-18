@@ -79,7 +79,7 @@ namespace LxBTSCWPF1
             get { return Global.Instance; }
         }
 
-        public ServerTab(ulong serverConnectionHandlerID, string header, List<User> users)
+        public ServerTab(ulong serverConnectionHandlerID, string header)
         {
             //var result = string.Join(",", (object[])users.ToArray());
             //MessageBox.Show(result);
@@ -88,12 +88,12 @@ namespace LxBTSCWPF1
             
             ServerConnectionHandlerID = serverConnectionHandlerID;
             Header = header;
-            foreach (var item in users)
-            {
-                Users.Add(item);
-                //item.SetImage(@"F:\pics\zmSFw4D.png");
+            //foreach (var item in users)
+            //{
+            //    Users.Add(item);
+            //    //item.SetImage(@"F:\pics\zmSFw4D.png");
                 
-            }
+            //}
             var server = new BrowserTab("Server", 3);
             var channel = new BrowserTab("Channel", 2);
             ChatTabs.Add(-2, server);
@@ -109,7 +109,7 @@ namespace LxBTSCWPF1
             try
             {
                 Users.Add(user);
-                MessageBox.Show("connected: " + user.Name);
+                //MessageBox.Show("connected: " + user.Name);
                 var args = new GetAvatarEventArgs();
                 args.ServerID = ServerConnectionHandlerID;
                 args.ClientID = user.ClientID;
@@ -141,7 +141,7 @@ namespace LxBTSCWPF1
             var user = Users.Where(x => x.ClientID == clientID).FirstOrDefault();
             if (user != null)
             {
-                MessageBox.Show(path);
+                //MessageBox.Show(path);
                 user.SetImage(path);
             }
         }
@@ -188,13 +188,13 @@ namespace LxBTSCWPF1
 
         private void TabItem_Loaded(object sender, RoutedEventArgs e)
         {
-            foreach (var item in Users)
-            {
-                var args = new GetAvatarEventArgs();
-                args.ServerID = ServerConnectionHandlerID;
-                args.ClientID = item.ClientID;
-                OnGetAvatar(args);
-            }
+            //foreach (var item in Users)
+            //{
+            //    var args = new GetAvatarEventArgs();
+            //    args.ServerID = ServerConnectionHandlerID;
+            //    args.ClientID = item.ClientID;
+            //    OnGetAvatar(args);
+            //}
         }
     }
 }

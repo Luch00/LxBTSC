@@ -17,6 +17,7 @@
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <Image Height="48" Source="{Binding Image}" Stretch="Fill"/>
+                        <!--<MediaElement Height="48" Source="{Binding Image}" Stretch="Fill"/>-->
                         <TextBlock Text="{Binding Name}"/>
                     </StackPanel>
                 </DataTemplate>
