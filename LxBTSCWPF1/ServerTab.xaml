@@ -8,7 +8,7 @@
              d:DesignHeight="390" d:DesignWidth="390" DataContext="{Binding RelativeSource={RelativeSource Self}}" Loaded="TabItem_Loaded">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="90"/>
+            <ColumnDefinition Width="120"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
@@ -18,7 +18,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Image Height="48" Source="{Binding Image}" Stretch="Fill"/>
                         <!--<MediaElement Height="48" Source="{Binding Image}" Stretch="Fill"/>-->
-                        <TextBlock Text="{Binding Name}"/>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
