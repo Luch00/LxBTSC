@@ -29,6 +29,8 @@
 #include <qjsonvalue.h>
 #include <qmap.h>
 #include <qmetaobject.h>
+#include "bbcode_parser.h";
+//#include "bbcode_lexer.h"
 
 static struct TS3Functions ts3Functions;
 
@@ -720,7 +722,7 @@ static void nom(QString text, int id)
 			ts3Functions.logMessage("Send server message error", LogLevel_ERROR, "lxbtsc", currentServerID);
 		break;
 	default:
-		if (ts3Functions.requestSendPrivateTextMsg(currentServerID, msg.data(), 0/*toidhere*/, NULL) != ERROR_ok)
+		if (ts3Functions.requestSendPrivateTextMsg(currentServerID, msg.data(), id, NULL) != ERROR_ok)
 			ts3Functions.logMessage("Send private message error", LogLevel_ERROR, "lxbtsc", currentServerID);
 		break;
 	}
@@ -939,7 +941,12 @@ QString direction(bool outgoing)
 QString format(const char* message, const char* name, bool outgoing)
 {
 	QTime t = QTime::currentTime();
-	return QString("<img class=\"%1\"><%2> <span class=\"name\">\"%3\"</span>: %4").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), emoticonize(QString(message)));
+	bbcode::parser parser;
+	parser.source_stream(stringstream(message));
+	parser.parse();
+	//parser.content();
+	//return QString("<img class=\"%1\"><%2> <span class=\"name\">\"%3\"</span>: %4").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), emoticonize(QString(message)));
+	return QString("<img class=\"%1\"><%2> <span class=\"name\">\"%3\"</span>: %4").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), emoticonize(QString::fromStdString(parser.content())));
 }
 
 int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID, const char* fromName, const char* fromUniqueIdentifier, const char* message, int ffIgnored) {

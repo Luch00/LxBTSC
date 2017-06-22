@@ -21,12 +21,13 @@ public:
 public slots:
 	void textGet(QString text);
 	void tabSelected(int index);
+	void tabLoaded(int index);
 
 signals:
 	void tsTextMessage(QString text, int id);
 
 private:
 	Ui::QtGuiClass ui;
-	QMap<int, QWebEngineView*> *tabs;
+	QMap<int, TsChatTabWidget*> *tabs;
 	int tabIndex;
 };

@@ -20,6 +20,8 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 #include <TsTextEdit.h>
+#include <TsChatTabWidget.h>
+#include <TsTabWidget.h>
 
 QT_BEGIN_NAMESPACE
 
