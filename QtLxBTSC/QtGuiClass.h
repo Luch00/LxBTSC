@@ -1,7 +1,19 @@
 #pragma once
 
 #include <QWidget>
-#include "ui_QtGuiClass.h"
+#include <QtCore/QVariant>
+#include <QtWebEngineWidgets/QWebEngineView>
+#include <QtWidgets/QAction>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QPlainTextEdit>
+#include <QtWidgets/QTabWidget>
+#include <QtWidgets/QVBoxLayout>
+#include <TsTextEdit.h>
+#include <TsChatTabWidget.h>
+#include <TsTabWidget.h>
+#include <TsWebEnginePage.h>
 
 class QtGuiClass : public QWidget
 {
@@ -9,25 +21,29 @@ class QtGuiClass : public QWidget
 
 public:
 	QtGuiClass(QWidget *parent = Q_NULLPTR);
+	QtGuiClass(unsigned long long serverID);
 	~QtGuiClass();
 	void messageReceived2(QString s, int id);
 	void addTab(QString name, int id);
 	TsTextEdit* getTextEdit();
 
-	//protected slots:
+	QVBoxLayout *verticalLayout;
+	QVBoxLayout *verticalLayout_2;
+	QVBoxLayout *verticalLayout_3;
+	QTabWidget *tabWidget;
+	TsTextEdit *plainTextEdit;
 
-	//void messageReceived(QString s);
+signals:
+	void tsTextMessage(QString text, int id);
 
 public slots:
 	void textGet(QString text);
 	void tabSelected(int index);
 	void tabLoaded(int index);
 
-signals:
-	void tsTextMessage(QString text, int id);
-
 private:
-	Ui::QtGuiClass ui;
 	QMap<int, TsChatTabWidget*> *tabs;
 	int tabIndex;
+	unsigned long long serverID;
+	void setupUi(QWidget *QtGuiClass);
 };

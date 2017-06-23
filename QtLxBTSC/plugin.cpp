@@ -20,6 +20,7 @@
 #include "teamspeak/clientlib_publicdefinitions.h"
 #include "ts3_functions.h"
 #include "plugin.h"
+#include <QtGuiClass.h>
 #include <qapplication.h>
 #include <qmainwindow.h>
 #include <QtWidgets\qdockwidget.h>
@@ -28,9 +29,9 @@
 #include <qjsonobject.h>
 #include <qjsonvalue.h>
 #include <qmap.h>
-#include <qmetaobject.h>
+//#include <qmetaobject.h>
 #include "bbcode_parser.h";
-//#include "bbcode_lexer.h"
+
 
 static struct TS3Functions ts3Functions;
 
@@ -151,6 +152,7 @@ int ts3plugin_init() {
     ts3Functions.getResourcesPath(resourcesPath, PATH_BUFSIZE);
     ts3Functions.getConfigPath(configPath, PATH_BUFSIZE);
 	ts3Functions.getPluginPath(pluginPath, PATH_BUFSIZE, pluginID);
+	//blerrh = new MyClass();
 	readEmoteJson(QString(pluginPath));
 	servers = new QMap<uint64, QtGuiClass*>();
 	QWidget* main = NULL;
@@ -162,13 +164,10 @@ int ts3plugin_init() {
 			break;
 		}
 	}
-	QWidget *o = qApp->findChild<QWidget*>("chatAreaDock");
 	widget = new QDockWidget("Better Chat");
-	//myClass = new QtGuiClass();
 	widget->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
 	widget->setAllowedAreas(Qt::DockWidgetAreas::enum_type::AllDockWidgetAreas);
-	//widget->setWidget(myClass);
-	//widget->show();
+
 	QMainWindow* window = qobject_cast<QMainWindow*>(main);
 	window->addDockWidget(Qt::DockWidgetArea::BottomDockWidgetArea, widget);
 	Qt::DockWidgetArea area = window->dockWidgetArea(widget);
@@ -184,6 +183,7 @@ int ts3plugin_init() {
 /* Custom code called right before the plugin is unloaded */
 void ts3plugin_shutdown() {
     /* Your plugin cleanup code here */
+	delete myClass;
 	widget->close();
 	delete widget;
 	
@@ -241,269 +241,13 @@ const char* ts3plugin_commandKeyword() {
 	return "";
 }
 
-//static void print_and_free_bookmarks_list(struct PluginBookmarkList* list)
-//{
-//    int i;
-//    for (i = 0; i < list->itemcount; ++i) {
-//        if (list->items[i].isFolder) {
-//            printf("Folder: name=%s\n", list->items[i].name);
-//            print_and_free_bookmarks_list(list->items[i].folder);
-//            ts3Functions.freeMemory(list->items[i].name);
-//        } else {
-//            printf("Bookmark: name=%s uuid=%s\n", list->items[i].name, list->items[i].uuid);
-//            ts3Functions.freeMemory(list->items[i].name);
-//            ts3Functions.freeMemory(list->items[i].uuid);
-//        }
-//    }
-//    ts3Functions.freeMemory(list);
-//}
-
 /* Plugin processes console command. Return 0 if plugin handled the command, 1 if not handled. */
 int ts3plugin_processCommand(uint64 serverConnectionHandlerID, const char* command) {
-//	char buf[COMMAND_BUFSIZE];
-//	char *s, *param1 = NULL, *param2 = NULL;
-//	int i = 0;
-//	enum { CMD_NONE = 0, CMD_JOIN, CMD_COMMAND, CMD_SERVERINFO, CMD_CHANNELINFO, CMD_AVATAR, CMD_ENABLEMENU, CMD_SUBSCRIBE, CMD_UNSUBSCRIBE, CMD_SUBSCRIBEALL, CMD_UNSUBSCRIBEALL, CMD_BOOKMARKSLIST } cmd = CMD_NONE;
-//#ifdef _WIN32
-//	char* context = NULL;
-//#endif
-//
-//	printf("PLUGIN: process command: '%s'\n", command);
-//
-//	_strcpy(buf, COMMAND_BUFSIZE, command);
-//#ifdef _WIN32
-//	s = strtok_s(buf, " ", &context);
-//#else
-//	s = strtok(buf, " ");
-//#endif
-//	while(s != NULL) {
-//		if(i == 0) {
-//			if(!strcmp(s, "join")) {
-//				cmd = CMD_JOIN;
-//			} else if(!strcmp(s, "command")) {
-//				cmd = CMD_COMMAND;
-//			} else if(!strcmp(s, "serverinfo")) {
-//				cmd = CMD_SERVERINFO;
-//			} else if(!strcmp(s, "channelinfo")) {
-//				cmd = CMD_CHANNELINFO;
-//			} else if(!strcmp(s, "avatar")) {
-//				cmd = CMD_AVATAR;
-//			} else if(!strcmp(s, "enablemenu")) {
-//				cmd = CMD_ENABLEMENU;
-//			} else if(!strcmp(s, "subscribe")) {
-//				cmd = CMD_SUBSCRIBE;
-//			} else if(!strcmp(s, "unsubscribe")) {
-//				cmd = CMD_UNSUBSCRIBE;
-//			} else if(!strcmp(s, "subscribeall")) {
-//				cmd = CMD_SUBSCRIBEALL;
-//			} else if(!strcmp(s, "unsubscribeall")) {
-//				cmd = CMD_UNSUBSCRIBEALL;
-//            } else if (!strcmp(s, "bookmarkslist")) {
-//                cmd = CMD_BOOKMARKSLIST;
-//            }
-//		} else if(i == 1) {
-//			param1 = s;
-//		} else {
-//			param2 = s;
-//		}
-//#ifdef _WIN32
-//		s = strtok_s(NULL, " ", &context);
-//#else
-//		s = strtok(NULL, " ");
-//#endif
-//		i++;
-//	}
-//
-//	switch(cmd) {
-//		case CMD_NONE:
-//			return 1;  /* Command not handled by plugin */
-//		case CMD_JOIN:  /* /test join <channelID> [optionalCannelPassword] */
-//			if(param1) {
-//				uint64 channelID = (uint64)atoi(param1);
-//				char* password = param2 ? param2 : "";
-//				char returnCode[RETURNCODE_BUFSIZE];
-//				anyID myID;
-//
-//				/* Get own clientID */
-//				if(ts3Functions.getClientID(serverConnectionHandlerID, &myID) != ERROR_ok) {
-//					ts3Functions.logMessage("Error querying client ID", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
-//					break;
-//				}
-//
-//				/* Create return code for requestClientMove function call. If creation fails, returnCode will be NULL, which can be
-//				 * passed into the client functions meaning no return code is used.
-//				 * Note: To use return codes, the plugin needs to register a plugin ID using ts3plugin_registerPluginID */
-//				ts3Functions.createReturnCode(pluginID, returnCode, RETURNCODE_BUFSIZE);
-//
-//				/* In a real world plugin, the returnCode should be remembered (e.g. in a dynamic STL vector, if it's a C++ plugin).
-//				 * onServerErrorEvent can then check the received returnCode, compare with the remembered ones and thus identify
-//				 * which function call has triggered the event and react accordingly. */
-//
-//				/* Request joining specified channel using above created return code */
-//				if(ts3Functions.requestClientMove(serverConnectionHandlerID, myID, channelID, password, returnCode) != ERROR_ok) {
-//					ts3Functions.logMessage("Error requesting client move", LogLevel_INFO, "Plugin", serverConnectionHandlerID);
-//				}
-//			} else {
-//				ts3Functions.printMessageToCurrentTab("Missing channel ID parameter.");
-//			}
-//			break;
-//		case CMD_COMMAND:  /* /test command <command> */
-//			if(param1) {
-//				/* Send plugin command to all clients in current channel. In this case targetIds is unused and can be NULL. */
-//				if(pluginID) {
-//					/* See ts3plugin_registerPluginID for how to obtain a pluginID */
-//					printf("PLUGIN: Sending plugin command to current channel: %s\n", param1);
-//					ts3Functions.sendPluginCommand(serverConnectionHandlerID, pluginID, param1, PluginCommandTarget_CURRENT_CHANNEL, NULL, NULL);
-//				} else {
-//					printf("PLUGIN: Failed to send plugin command, was not registered.\n");
-//				}
-//			} else {
-//				ts3Functions.printMessageToCurrentTab("Missing command parameter.");
-//			}
-//			break;
-//		case CMD_SERVERINFO: {  /* /test serverinfo */
-//			/* Query host, port and server password of current server tab.
-//			 * The password parameter can be NULL if the plugin does not want to receive the server password.
-//			 * Note: Server password is only available if the user has actually used it when connecting. If a user has
-//			 * connected with the permission to ignore passwords (b_virtualserver_join_ignore_password) and the password,
-//			 * was not entered, it will not be available.
-//			 * getServerConnectInfo returns 0 on success, 1 on error or if current server tab is disconnected. */
-//			char host[SERVERINFO_BUFSIZE];
-//			/*char password[SERVERINFO_BUFSIZE];*/
-//			char* password = NULL;  /* Don't receive server password */
-//			unsigned short port;
-//			if(!ts3Functions.getServerConnectInfo(serverConnectionHandlerID, host, &port, password, SERVERINFO_BUFSIZE)) {
-//				char msg[SERVERINFO_BUFSIZE];
-//				snprintf(msg, sizeof(msg), "Server Connect Info: %s:%d", host, port);
-//				ts3Functions.printMessageToCurrentTab(msg);
-//			} else {
-//				ts3Functions.printMessageToCurrentTab("No server connect info available.");
-//			}
-//			break;
-//		}
-//		case CMD_CHANNELINFO: {  /* /test channelinfo */
-//			/* Query channel path and password of current server tab.
-//			 * The password parameter can be NULL if the plugin does not want to receive the channel password.
-//			 * Note: Channel password is only available if the user has actually used it when entering the channel. If a user has
-//			 * entered a channel with the permission to ignore passwords (b_channel_join_ignore_password) and the password,
-//			 * was not entered, it will not be available.
-//			 * getChannelConnectInfo returns 0 on success, 1 on error or if current server tab is disconnected. */
-//			char path[CHANNELINFO_BUFSIZE];
-//			/*char password[CHANNELINFO_BUFSIZE];*/
-//			char* password = NULL;  /* Don't receive channel password */
-//
-//			/* Get own clientID and channelID */
-//			anyID myID;
-//			uint64 myChannelID;
-//			if(ts3Functions.getClientID(serverConnectionHandlerID, &myID) != ERROR_ok) {
-//				ts3Functions.logMessage("Error querying client ID", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
-//				break;
-//			}
-//			/* Get own channel ID */
-//			if(ts3Functions.getChannelOfClient(serverConnectionHandlerID, myID, &myChannelID) != ERROR_ok) {
-//				ts3Functions.logMessage("Error querying channel ID", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
-//				break;
-//			}
-//
-//			/* Get channel connect info of own channel */
-//			if(!ts3Functions.getChannelConnectInfo(serverConnectionHandlerID, myChannelID, path, password, CHANNELINFO_BUFSIZE)) {
-//				char msg[CHANNELINFO_BUFSIZE];
-//				snprintf(msg, sizeof(msg), "Channel Connect Info: %s", path);
-//				ts3Functions.printMessageToCurrentTab(msg);
-//			} else {
-//				ts3Functions.printMessageToCurrentTab("No channel connect info available.");
-//			}
-//			break;
-//		}
-//		case CMD_AVATAR: {  /* /test avatar <clientID> */
-//			char avatarPath[PATH_BUFSIZE];
-//			anyID clientID = (anyID)atoi(param1);
-//			unsigned int error;
-//
-//			memset(avatarPath, 0, PATH_BUFSIZE);
-//			error = ts3Functions.getAvatar(serverConnectionHandlerID, clientID, avatarPath, PATH_BUFSIZE);
-//			if(error == ERROR_ok) {  /* ERROR_ok means the client has an avatar set. */
-//				if(strlen(avatarPath)) {  /* Avatar path contains the full path to the avatar image in the TS3Client cache directory */
-//					printf("Avatar path: %s\n", avatarPath);
-//				} else { /* Empty avatar path means the client has an avatar but the image has not yet been cached. The TeamSpeak
-//						  * client will automatically start the download and call onAvatarUpdated when done */
-//					printf("Avatar not yet downloaded, waiting for onAvatarUpdated...\n");
-//				}
-//			} else if(error == ERROR_database_empty_result) {  /* Not an error, the client simply has no avatar set */
-//				printf("Client has no avatar\n");
-//			} else { /* Other error occured (invalid server connection handler ID, invalid client ID, file io error etc) */
-//				printf("Error getting avatar: %d\n", error);
-//			}
-//			break;
-//		}
-//		case CMD_ENABLEMENU:  /* /test enablemenu <menuID> <0|1> */
-//			if(param1) {
-//				int menuID = atoi(param1);
-//				int enable = param2 ? atoi(param2) : 0;
-//				ts3Functions.setPluginMenuEnabled(pluginID, menuID, enable);
-//			} else {
-//				ts3Functions.printMessageToCurrentTab("Usage is: /test enablemenu <menuID> <0|1>");
-//			}
-//			break;
-//		case CMD_SUBSCRIBE:  /* /test subscribe <channelID> */
-//			if(param1) {
-//				char returnCode[RETURNCODE_BUFSIZE];
-//				uint64 channelIDArray[2];
-//				channelIDArray[0] = (uint64)atoi(param1);
-//				channelIDArray[1] = 0;
-//				ts3Functions.createReturnCode(pluginID, returnCode, RETURNCODE_BUFSIZE);
-//				if(ts3Functions.requestChannelSubscribe(serverConnectionHandlerID, channelIDArray, returnCode) != ERROR_ok) {
-//					ts3Functions.logMessage("Error subscribing channel", LogLevel_INFO, "Plugin", serverConnectionHandlerID);
-//				}
-//			}
-//			break;
-//		case CMD_UNSUBSCRIBE:  /* /test unsubscribe <channelID> */
-//			if(param1) {
-//				char returnCode[RETURNCODE_BUFSIZE];
-//				uint64 channelIDArray[2];
-//				channelIDArray[0] = (uint64)atoi(param1);
-//				channelIDArray[1] = 0;
-//				ts3Functions.createReturnCode(pluginID, returnCode, RETURNCODE_BUFSIZE);
-//				if(ts3Functions.requestChannelUnsubscribe(serverConnectionHandlerID, channelIDArray, NULL) != ERROR_ok) {
-//					ts3Functions.logMessage("Error unsubscribing channel", LogLevel_INFO, "Plugin", serverConnectionHandlerID);
-//				}
-//			}
-//			break;
-//		case CMD_SUBSCRIBEALL: {  /* /test subscribeall */
-//			char returnCode[RETURNCODE_BUFSIZE];
-//			ts3Functions.createReturnCode(pluginID, returnCode, RETURNCODE_BUFSIZE);
-//			if(ts3Functions.requestChannelSubscribeAll(serverConnectionHandlerID, returnCode) != ERROR_ok) {
-//				ts3Functions.logMessage("Error subscribing channel", LogLevel_INFO, "Plugin", serverConnectionHandlerID);
-//			}
-//			break;
-//		}
-//		case CMD_UNSUBSCRIBEALL: {  /* /test unsubscribeall */
-//			char returnCode[RETURNCODE_BUFSIZE];
-//			ts3Functions.createReturnCode(pluginID, returnCode, RETURNCODE_BUFSIZE);
-//			if(ts3Functions.requestChannelUnsubscribeAll(serverConnectionHandlerID, returnCode) != ERROR_ok) {
-//				ts3Functions.logMessage("Error subscribing channel", LogLevel_INFO, "Plugin", serverConnectionHandlerID);
-//			}
-//			break;
-//		}
-//        case CMD_BOOKMARKSLIST: {  /* test bookmarkslist */
-//            struct PluginBookmarkList* list;
-//            unsigned int error = ts3Functions.getBookmarkList(&list);
-//            if (error == ERROR_ok) {
-//                print_and_free_bookmarks_list(list);
-//            }
-//            else {
-//                ts3Functions.logMessage("Error getting bookmarks list", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
-//            }
-//            break;
-//        }
-//	}
-
 	return 0;  /* Plugin handled command */
 }
 
 /* Client changed current server connection handler */
 void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID) {
-    ////printf("PLUGIN: currentServerConnectionChanged %llu (%llu)\n", (long long unsigned int)serverConnectionHandlerID, (long long unsigned int)ts3Functions.getCurrentServerConnectionHandlerID());
 	currentServerID = serverConnectionHandlerID;
 	if (servers->contains(serverConnectionHandlerID))
 	{
@@ -511,56 +255,6 @@ void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID) 
 		widget->setWidget(servers->value(serverConnectionHandlerID));
 	}
 }
-
-/*
- * Implement the following three functions when the plugin should display a line in the server/channel/client info.
- * If any of ts3plugin_infoTitle, ts3plugin_infoData or ts3plugin_freeMemory is missing, the info text will not be displayed.
- */
-
-/* Static title shown in the left column in the info frame */
-//const char* ts3plugin_infoTitle() {
-//	//return "Test plugin info";
-//}
-
-/*
- * Dynamic content shown in the right column in the info frame. Memory for the data string needs to be allocated in this
- * function. The client will call ts3plugin_freeMemory once done with the string to release the allocated memory again.
- * Check the parameter "type" if you want to implement this feature only for specific item types. Set the parameter
- * "data" to NULL to have the client ignore the info data.
- */
-//void ts3plugin_infoData(uint64 serverConnectionHandlerID, uint64 id, enum PluginItemType type, char** data) {
-//	//char* name;
-//
-//	///* For demonstration purpose, display the name of the currently selected server, channel or client. */
-//	//switch(type) {
-//	//	case PLUGIN_SERVER:
-//	//		if(ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &name) != ERROR_ok) {
-//	//			printf("Error getting virtual server name\n");
-//	//			return;
-//	//		}
-//	//		break;
-//	//	case PLUGIN_CHANNEL:
-//	//		if(ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, id, CHANNEL_NAME, &name) != ERROR_ok) {
-//	//			printf("Error getting channel name\n");
-//	//			return;
-//	//		}
-//	//		break;
-//	//	case PLUGIN_CLIENT:
-//	//		if(ts3Functions.getClientVariableAsString(serverConnectionHandlerID, (anyID)id, CLIENT_NICKNAME, &name) != ERROR_ok) {
-//	//			printf("Error getting client nickname\n");
-//	//			return;
-//	//		}
-//	//		break;
-//	//	default:
-//	//		printf("Invalid item type: %d\n", type);
-//	//		data = NULL;  /* Ignore */
-//	//		return;
-//	//}
-//
-//	//*data = (char*)malloc(INFODATA_BUFSIZE * sizeof(char));  /* Must be allocated in the plugin! */
-//	//snprintf(*data, INFODATA_BUFSIZE, "The nickname is [I]\"%s\"[/I]", name);  /* bbCode is supported. HTML is not supported */
-//	//ts3Functions.freeMemory(name);
-//}
 
 /* Required to release the memory for parameter "data" allocated in ts3plugin_infoData and ts3plugin_initMenus */
 void ts3plugin_freeMemory(void* data) {
@@ -576,121 +270,6 @@ int ts3plugin_requestAutoload() {
 	return 0;  /* 1 = request autoloaded, 0 = do not request autoload */
 }
 
-/* Helper function to create a menu item */
-//static struct PluginMenuItem* createMenuItem(enum PluginMenuType type, int id, const char* text, const char* icon) {
-//	struct PluginMenuItem* menuItem = (struct PluginMenuItem*)malloc(sizeof(struct PluginMenuItem));
-//	menuItem->type = type;
-//	menuItem->id = id;
-//	_strcpy(menuItem->text, PLUGIN_MENU_BUFSZ, text);
-//	_strcpy(menuItem->icon, PLUGIN_MENU_BUFSZ, icon);
-//	return menuItem;
-//}
-
-/* Some makros to make the code to create menu items a bit more readable */
-//#define BEGIN_CREATE_MENUS(x) const size_t sz = x + 1; size_t n = 0; *menuItems = (struct PluginMenuItem**)malloc(sizeof(struct PluginMenuItem*) * sz);
-//#define CREATE_MENU_ITEM(a, b, c, d) (*menuItems)[n++] = createMenuItem(a, b, c, d);
-//#define END_CREATE_MENUS (*menuItems)[n++] = NULL; assert(n == sz);
-
-/*
- * Menu IDs for this plugin. Pass these IDs when creating a menuitem to the TS3 client. When the menu item is triggered,
- * ts3plugin_onMenuItemEvent will be called passing the menu ID of the triggered menu item.
- * These IDs are freely choosable by the plugin author. It's not really needed to use an enum, it just looks prettier.
- */
-//enum {
-//	MENU_ID_CLIENT_1 = 1,
-//	MENU_ID_CLIENT_2,
-//	MENU_ID_CHANNEL_1,
-//	MENU_ID_CHANNEL_2,
-//	MENU_ID_CHANNEL_3,
-//	MENU_ID_GLOBAL_1,
-//	MENU_ID_GLOBAL_2
-//};
-
-/*
- * Initialize plugin menus.
- * This function is called after ts3plugin_init and ts3plugin_registerPluginID. A pluginID is required for plugin menus to work.
- * Both ts3plugin_registerPluginID and ts3plugin_freeMemory must be implemented to use menus.
- * If plugin menus are not used by a plugin, do not implement this function or return NULL.
- */
-//void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
-	/*
-	 * Create the menus
-	 * There are three types of menu items:
-	 * - PLUGIN_MENU_TYPE_CLIENT:  Client context menu
-	 * - PLUGIN_MENU_TYPE_CHANNEL: Channel context menu
-	 * - PLUGIN_MENU_TYPE_GLOBAL:  "Plugins" menu in menu bar of main window
-	 *
-	 * Menu IDs are used to identify the menu item when ts3plugin_onMenuItemEvent is called
-	 *
-	 * The menu text is required, max length is 128 characters
-	 *
-	 * The icon is optional, max length is 128 characters. When not using icons, just pass an empty string.
-	 * Icons are loaded from a subdirectory in the TeamSpeak client plugins folder. The subdirectory must be named like the
-	 * plugin filename, without dll/so/dylib suffix
-	 * e.g. for "test_plugin.dll", icon "1.png" is loaded from <TeamSpeak 3 Client install dir>\plugins\test_plugin\1.png
-	 */
-
-	//BEGIN_CREATE_MENUS(7);  /* IMPORTANT: Number of menu items must be correct! */
-	//CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CLIENT,  MENU_ID_CLIENT_1,  "Client item 1",  "1.png");
-	//CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CLIENT,  MENU_ID_CLIENT_2,  "Client item 2",  "2.png");
-	//CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_1, "Channel item 1", "1.png");
-	//CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_2, "Channel item 2", "2.png");
-	//CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_3, "Channel item 3", "3.png");
-	//CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL,  MENU_ID_GLOBAL_1,  "Global item 1",  "1.png");
-	//CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL,  MENU_ID_GLOBAL_2,  "Global item 2",  "2.png");
-	//END_CREATE_MENUS;  /* Includes an assert checking if the number of menu items matched */
-
-	///*
-	// * Specify an optional icon for the plugin. This icon is used for the plugins submenu within context and main menus
-	// * If unused, set menuIcon to NULL
-	// */
-	//*menuIcon = (char*)malloc(PLUGIN_MENU_BUFSZ * sizeof(char));
-	//_strcpy(*menuIcon, PLUGIN_MENU_BUFSZ, "t.png");
-
-	/*
-	 * Menus can be enabled or disabled with: ts3Functions.setPluginMenuEnabled(pluginID, menuID, 0|1);
-	 * Test it with plugin command: /test enablemenu <menuID> <0|1>
-	 * Menus are enabled by default. Please note that shown menus will not automatically enable or disable when calling this function to
-	 * ensure Qt menus are not modified by any thread other the UI thread. The enabled or disable state will change the next time a
-	 * menu is displayed.
-	 */
-	/* For example, this would disable MENU_ID_GLOBAL_2: */
-	/* ts3Functions.setPluginMenuEnabled(pluginID, MENU_ID_GLOBAL_2, 0); */
-
-	/* All memory allocated in this function will be automatically released by the TeamSpeak client later by calling ts3plugin_freeMemory */
-//}
-
-/* Helper function to create a hotkey */
-//static struct PluginHotkey* createHotkey(const char* keyword, const char* description) {
-//	struct PluginHotkey* hotkey = (struct PluginHotkey*)malloc(sizeof(struct PluginHotkey));
-//	_strcpy(hotkey->keyword, PLUGIN_HOTKEY_BUFSZ, keyword);
-//	_strcpy(hotkey->description, PLUGIN_HOTKEY_BUFSZ, description);
-//	return hotkey;
-//}
-
-/* Some makros to make the code to create hotkeys a bit more readable */
-//#define BEGIN_CREATE_HOTKEYS(x) const size_t sz = x + 1; size_t n = 0; *hotkeys = (struct PluginHotkey**)malloc(sizeof(struct PluginHotkey*) * sz);
-//#define CREATE_HOTKEY(a, b) (*hotkeys)[n++] = createHotkey(a, b);
-//#define END_CREATE_HOTKEYS (*hotkeys)[n++] = NULL; assert(n == sz);
-
-/*
- * Initialize plugin hotkeys. If your plugin does not use this feature, this function can be omitted.
- * Hotkeys require ts3plugin_registerPluginID and ts3plugin_freeMemory to be implemented.
- * This function is automatically called by the client after ts3plugin_init.
- */
-//void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
-	/* Register hotkeys giving a keyword and a description.
-	 * The keyword will be later passed to ts3plugin_onHotkeyEvent to identify which hotkey was triggered.
-	 * The description is shown in the clients hotkey dialog. */
-	//BEGIN_CREATE_HOTKEYS(3);  /* Create 3 hotkeys. Size must be correct for allocating memory. */
-	//CREATE_HOTKEY("keyword_1", "Test hotkey 1");
-	//CREATE_HOTKEY("keyword_2", "Test hotkey 2");
-	//CREATE_HOTKEY("keyword_3", "Test hotkey 3");
-	//END_CREATE_HOTKEYS;
-
-	/* The client will call ts3plugin_freeMemory to release all allocated memory */
-//}
-
 /************************** TeamSpeak callbacks ***************************/
 /*
  * Following functions are optional, feel free to remove unused callbacks.
@@ -701,7 +280,6 @@ int ts3plugin_requestAutoload() {
 
 static void nom(QString text, int id)
 {
-	//s3Functions.printMessageToCurrentTab(text.toStdString().c_str());
 	QByteArray msg = text.toLocal8Bit();
 	switch (id)
 	{
@@ -730,7 +308,7 @@ static void nom(QString text, int id)
 
 void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber) {
     /* Some example code following to show how to use the information query functions. */
-
+	
 	if (newStatus == STATUS_CONNECTION_ESTABLISHED)
 	{
 		//QWidgetList list = qApp->allWidgets();
@@ -757,99 +335,11 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 		//}
 		if (!servers->contains(serverConnectionHandlerID))
 		{
-			//QtGuiClass server = new QtGuiClass();
-			servers->insert(serverConnectionHandlerID, new QtGuiClass());
+			servers->insert(serverConnectionHandlerID, new QtGuiClass(serverConnectionHandlerID));
 			QObject::connect(servers->value(serverConnectionHandlerID), &QtGuiClass::tsTextMessage, nom);
 			widget->setWidget(servers->value(serverConnectionHandlerID));
 		}
 	}
-
-  //  if(newStatus == STATUS_CONNECTION_ESTABLISHED) {  /* connection established and we have client and channels available */
-  //      char* s;
-  //      char msg[1024];
-  //      anyID myID;
-  //      uint64* ids;
-  //      size_t i;
-		//unsigned int error;
-
-  //      /* Print clientlib version */
-  //      if(ts3Functions.getClientLibVersion(&s) == ERROR_ok) {
-  //          printf("PLUGIN: Client lib version: %s\n", s);
-  //          ts3Functions.freeMemory(s);  /* Release string */
-  //      } else {
-  //          ts3Functions.logMessage("Error querying client lib version", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
-  //          return;
-  //      }
-
-		///* Write plugin name and version to log */
-  //      snprintf(msg, sizeof(msg), "Plugin %s, Version %s, Author: %s", ts3plugin_name(), ts3plugin_version(), ts3plugin_author());
-  //      ts3Functions.logMessage(msg, LogLevel_INFO, "Plugin", serverConnectionHandlerID);
-
-  //      /* Print virtual server name */
-  //      if((error = ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &s)) != ERROR_ok) {
-		//	if(error != ERROR_not_connected) {  /* Don't spam error in this case (failed to connect) */
-		//		ts3Functions.logMessage("Error querying server name", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
-		//	}
-  //          return;
-  //      }
-  //      printf("PLUGIN: Server name: %s\n", s);
-  //      ts3Functions.freeMemory(s);
-
-  //      /* Print virtual server welcome message */
-  //      if(ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_WELCOMEMESSAGE, &s) != ERROR_ok) {
-  //          ts3Functions.logMessage("Error querying server welcome message", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
-  //          return;
-  //      }
-  //      printf("PLUGIN: Server welcome message: %s\n", s);
-  //      ts3Functions.freeMemory(s);  /* Release string */
-
-  //      /* Print own client ID and nickname on this server */
-  //      if(ts3Functions.getClientID(serverConnectionHandlerID, &myID) != ERROR_ok) {
-  //          ts3Functions.logMessage("Error querying client ID", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
-  //          return;
-  //      }
-  //      if(ts3Functions.getClientSelfVariableAsString(serverConnectionHandlerID, CLIENT_NICKNAME, &s) != ERROR_ok) {
-  //          ts3Functions.logMessage("Error querying client nickname", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
-  //          return;
-  //      }
-  //      printf("PLUGIN: My client ID = %d, nickname = %s\n", myID, s);
-  //      ts3Functions.freeMemory(s);
-
-  //      /* Print list of all channels on this server */
-  //      if(ts3Functions.getChannelList(serverConnectionHandlerID, &ids) != ERROR_ok) {
-  //          ts3Functions.logMessage("Error getting channel list", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
-  //          return;
-  //      }
-  //      printf("PLUGIN: Available channels:\n");
-  //      for(i=0; ids[i]; i++) {
-  //          /* Query channel name */
-  //          if(ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, ids[i], CHANNEL_NAME, &s) != ERROR_ok) {
-  //              ts3Functions.logMessage("Error querying channel name", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
-  //              return;
-  //          }
-  //          printf("PLUGIN: Channel ID = %llu, name = %s\n", (long long unsigned int)ids[i], s);
-  //          ts3Functions.freeMemory(s);
-  //      }
-  //      ts3Functions.freeMemory(ids);  /* Release array */
-
-  //      /* Print list of existing server connection handlers */
-  //      printf("PLUGIN: Existing server connection handlers:\n");
-  //      if(ts3Functions.getServerConnectionHandlerList(&ids) != ERROR_ok) {
-  //          ts3Functions.logMessage("Error getting server list", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
-  //          return;
-  //      }
-  //      for(i=0; ids[i]; i++) {
-  //          if((error = ts3Functions.getServerVariableAsString(ids[i], VIRTUALSERVER_NAME, &s)) != ERROR_ok) {
-		//		if(error != ERROR_not_connected) {  /* Don't spam error in this case (failed to connect) */
-		//			ts3Functions.logMessage("Error querying server name", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
-		//		}
-  //              continue;
-  //          }
-  //          printf("- %llu - %s\n", (long long unsigned int)ids[i], s);
-  //          ts3Functions.freeMemory(s);
-  //      }
-  //      ts3Functions.freeMemory(ids);
-  //  }
 }
 
 void ts3plugin_onNewChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID) {
@@ -904,7 +394,6 @@ void ts3plugin_onServerUpdatedEvent(uint64 serverConnectionHandlerID) {
 }
 
 int ts3plugin_onServerErrorEvent(uint64 serverConnectionHandlerID, const char* errorMessage, unsigned int error, const char* returnCode, const char* extraMessage) {
-	//printf("PLUGIN: onServerErrorEvent %llu %s %d %s\n", (long long unsigned int)serverConnectionHandlerID, errorMessage, error, (returnCode ? returnCode : ""));
 	if(returnCode) {
 		/* A plugin could now check the returnCode with previously (when calling a function) remembered returnCodes and react accordingly */
 		/* In case of using a a plugin return code, the plugin can return:
@@ -937,15 +426,14 @@ QString direction(bool outgoing)
 	}
 	return "incoming";
 }
-
+bbcode::parser parser;
 QString format(const char* message, const char* name, bool outgoing)
 {
 	QTime t = QTime::currentTime();
-	bbcode::parser parser;
-	parser.source_stream(stringstream(message));
+	stringstream str;
+	str << message;
+	parser.source_stream(str);
 	parser.parse();
-	//parser.content();
-	//return QString("<img class=\"%1\"><%2> <span class=\"name\">\"%3\"</span>: %4").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), emoticonize(QString(message)));
 	return QString("<img class=\"%1\"><%2> <span class=\"name\">\"%3\"</span>: %4").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), emoticonize(QString::fromStdString(parser.content())));
 }
 
@@ -974,14 +462,12 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 	//	//ts3Functions.printMessageToCurrentTab((s.toStdString()).c_str());
 	//}
 	
-	
 	/*QWidgetList list = qApp->allWidgets();
 	for (int i = 0; i < list.count(); i++)
 	{
 		QString s = list[i]->objectName();
 		ts3Functions.printMessageToCurrentTab((s.toStdString()).c_str());
 	}*/
-	//printf("PLUGIN: onTextMessageEvent %llu %d %d %s %s %d\n", (long long unsigned int)serverConnectionHandlerID, targetMode, fromID, fromName, message, ffIgnored);
 
 	/* Friend/Foe manager has ignored the message, so ignore here as well. */
 	if(ffIgnored) {
@@ -1010,26 +496,13 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 	{
 		id = fromID;
 	}
-
 	
-	//myClass->messageReceived2(QString::number(emotes.count()));
-	//myClass->messageReceived2(emoticonize(QString(message)));
-	/*QtGuiClass x = */servers->value(serverConnectionHandlerID)->messageReceived2(format(message, fromName, outgoing), id);
-	//x.messageReceived2(emoticonize(QString(message)));
+	servers->value(serverConnectionHandlerID)->messageReceived2(format(message, fromName, outgoing), id);
 
     return 0;  /* 0 = handle normally, 1 = client will ignore the text message */
 }
 
 void ts3plugin_onTalkStatusChangeEvent(uint64 serverConnectionHandlerID, int status, int isReceivedWhisper, anyID clientID) {
-	/* Demonstrate usage of getClientDisplayName */
-	/*char name[512];
-	if(ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientID, name, 512) == ERROR_ok) {
-		if(status == STATUS_TALKING) {
-			printf("--> %s starts talking\n", name);
-		} else {
-			printf("--> %s stops talking\n", name);
-		}
-	}*/
 }
 
 void ts3plugin_onConnectionInfoEvent(uint64 serverConnectionHandlerID, anyID clientID) {
@@ -1089,26 +562,6 @@ void ts3plugin_onClientBanFromServerEvent(uint64 serverConnectionHandlerID, anyI
 }
 
 int ts3plugin_onClientPokeEvent(uint64 serverConnectionHandlerID, anyID fromClientID, const char* pokerName, const char* pokerUniqueIdentity, const char* message, int ffIgnored) {
- //   anyID myID;
-
- //   printf("PLUGIN onClientPokeEvent: %llu %d %s %s %d\n", (long long unsigned int)serverConnectionHandlerID, fromClientID, pokerName, message, ffIgnored);
-
-	///* Check if the Friend/Foe manager has already blocked this poke */
-	//if(ffIgnored) {
-	//	return 0;  /* Client will block anyways, doesn't matter what we return */
-	//}
-
- //   /* Example code: Send text message back to poking client */
- //   if(ts3Functions.getClientID(serverConnectionHandlerID, &myID) != ERROR_ok) {  /* Get own client ID */
- //       ts3Functions.logMessage("Error querying own client id", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
- //       return 0;
- //   }
- //   if(fromClientID != myID) {  /* Don't reply when source is own client */
- //       if(ts3Functions.requestSendPrivateTextMsg(serverConnectionHandlerID, "Received your poke!", fromClientID, NULL) != ERROR_ok) {
- //           ts3Functions.logMessage("Error requesting send text message", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
- //       }
- //   }
-
     return 0;  /* 0 = handle normally, 1 = client will ignore the poke */
 }
 
@@ -1247,7 +700,6 @@ void ts3plugin_onClientServerQueryLoginPasswordEvent(uint64 serverConnectionHand
 }
 
 void ts3plugin_onPluginCommandEvent(uint64 serverConnectionHandlerID, const char* pluginName, const char* pluginCommand) {
-	//printf("ON PLUGIN COMMAND: %s %s\n", pluginName, pluginCommand);
 }
 
 void ts3plugin_onIncomingClientQueryEvent(uint64 serverConnectionHandlerID, const char* commandText) {
@@ -1263,13 +715,6 @@ void ts3plugin_onServerTemporaryPasswordListEvent(uint64 serverConnectionHandler
  * This callback can be called spontaneously or in response to ts3Functions.getAvatar()
  */
 void ts3plugin_onAvatarUpdated(uint64 serverConnectionHandlerID, anyID clientID, const char* avatarPath) {
-	/* If avatarPath is NULL, the avatar got deleted */
-	/* If not NULL, avatarPath contains the path to the avatar file in the TS3Client cache */
-	/*if(avatarPath != NULL) {
-		printf("onAvatarUpdated: %llu %d %s\n", (long long unsigned int)serverConnectionHandlerID, clientID, avatarPath);
-	} else {
-		printf("onAvatarUpdated: %llu %d - deleted\n", (long long unsigned int)serverConnectionHandlerID, clientID);
-	}*/
 }
 
 /*
@@ -1282,59 +727,10 @@ void ts3plugin_onAvatarUpdated(uint64 serverConnectionHandlerID, anyID clientID,
  * - selectedItemID: Channel or Client ID in the case of PLUGIN_MENU_TYPE_CHANNEL and PLUGIN_MENU_TYPE_CLIENT. 0 for PLUGIN_MENU_TYPE_GLOBAL.
  */
 void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenuType type, int menuItemID, uint64 selectedItemID) {
-	//printf("PLUGIN: onMenuItemEvent: serverConnectionHandlerID=%llu, type=%d, menuItemID=%d, selectedItemID=%llu\n", (long long unsigned int)serverConnectionHandlerID, type, menuItemID, (long long unsigned int)selectedItemID);
-	//switch(type) {
-	//	case PLUGIN_MENU_TYPE_GLOBAL:
-	//		/* Global menu item was triggered. selectedItemID is unused and set to zero. */
-	//		switch(menuItemID) {
-	//			case MENU_ID_GLOBAL_1:
-	//				/* Menu global 1 was triggered */
-	//				break;
-	//			case MENU_ID_GLOBAL_2:
-	//				/* Menu global 2 was triggered */
-	//				break;
-	//			default:
-	//				break;
-	//		}
-	//		break;
-	//	case PLUGIN_MENU_TYPE_CHANNEL:
-	//		/* Channel contextmenu item was triggered. selectedItemID is the channelID of the selected channel */
-	//		switch(menuItemID) {
-	//			case MENU_ID_CHANNEL_1:
-	//				/* Menu channel 1 was triggered */
-	//				break;
-	//			case MENU_ID_CHANNEL_2:
-	//				/* Menu channel 2 was triggered */
-	//				break;
-	//			case MENU_ID_CHANNEL_3:
-	//				/* Menu channel 3 was triggered */
-	//				break;
-	//			default:
-	//				break;
-	//		}
-	//		break;
-	//	case PLUGIN_MENU_TYPE_CLIENT:
-	//		/* Client contextmenu item was triggered. selectedItemID is the clientID of the selected client */
-	//		switch(menuItemID) {
-	//			case MENU_ID_CLIENT_1:
-	//				/* Menu client 1 was triggered */
-	//				break;
-	//			case MENU_ID_CLIENT_2:
-	//				/* Menu client 2 was triggered */
-	//				break;
-	//			default:
-	//				break;
-	//		}
-	//		break;
-	//	default:
-	//		break;
-	//}
 }
 
 /* This function is called if a plugin hotkey was pressed. Omit if hotkeys are unused. */
 void ts3plugin_onHotkeyEvent(const char* keyword) {
-	//printf("PLUGIN: Hotkey event: %s\n", keyword);
-	/* Identify the hotkey by keyword ("keyword_1", "keyword_2" or "keyword_3" in this example) and handle here... */
 }
 
 /* Called when recording a hotkey has finished after calling ts3Functions.requestHotkeyInputDialog */

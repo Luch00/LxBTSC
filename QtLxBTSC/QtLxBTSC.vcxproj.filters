@@ -37,41 +37,44 @@
     <ClCompile Include="plugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_QtGuiClass.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_QtGuiClass.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="QtGuiClass.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_TsTextEdit.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_TsTextEdit.cpp">
-      <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="TsTextEdit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_TsChatTabWidget.cpp">
+    <ClCompile Include="TsChatTabWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TsTabWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DebugPublic\bbcodelib\bbcode_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DebugPublic\bbcodelib\bbcode_lexer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DebugPublic\bbcodelib\bbcode_parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TsWebEnginePage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_QtGuiClass.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_TsChatTabWidget.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="TsChatTabWidget.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_TsTabWidget.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_TsTabWidget.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="TsTabWidget.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="GeneratedFiles\Release\moc_TsTextEdit.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_TsWebEnginePage.cpp">
+      <Filter>Generated Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -81,8 +84,17 @@
     <ClInclude Include="plugin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_QtGuiClass.h">
-      <Filter>Generated Files</Filter>
+    <ClInclude Include="..\DebugPublic\bbcodelib\bbcode_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DebugPublic\bbcodelib\bbcode_config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DebugPublic\bbcodelib\bbcode_lexer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DebugPublic\bbcodelib\bbcode_parser.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -94,9 +106,6 @@
     <CustomBuild Include="QtGuiClass.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="QtGuiClass.ui">
-      <Filter>Form Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="TsTextEdit.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
@@ -104,6 +113,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="TsTabWidget.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="TsWebEnginePage.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
