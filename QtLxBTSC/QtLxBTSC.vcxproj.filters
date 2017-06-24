@@ -76,6 +76,15 @@
     <ClCompile Include="GeneratedFiles\Release\moc_TsWebEnginePage.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_MyClass.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_MyClass.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MyClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="QtLxBTSC.h">
@@ -116,6 +125,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="TsWebEnginePage.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MyClass.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

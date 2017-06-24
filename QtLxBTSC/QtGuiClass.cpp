@@ -11,13 +11,14 @@ QtGuiClass::QtGuiClass(QWidget *parent)
 	addTab("Channel", -1);
 }
 
-QtGuiClass::QtGuiClass(unsigned long long server)
+QtGuiClass::QtGuiClass(unsigned long long server, QString path)
 	: QWidget()
 {
 	setupUi(this);
 	QObject::connect(tabWidget, &QTabWidget::currentChanged, this, &QtGuiClass::tabSelected);
 	QObject::connect(plainTextEdit, &TsTextEdit::textSend, this, &QtGuiClass::textGet);
 	serverID = server;
+	pathToPage = QString("file:///%1LxBTSC/template/chat.html").arg(path);
 	tabs = new QMap<int, TsChatTabWidget*>();
 	addTab("Server", -2);
 	addTab("Channel", -1);
@@ -39,7 +40,7 @@ void QtGuiClass::setupUi(QWidget *QtGuiClass)
 	tabWidget = new QTabWidget(QtGuiClass);
 	tabWidget->setObjectName(QStringLiteral("tabWidget"));
 	tabWidget->setTabPosition(QTabWidget::South);
-
+	
 	verticalLayout->addWidget(tabWidget);
 
 	plainTextEdit = new TsTextEdit(QtGuiClass);
@@ -124,7 +125,8 @@ void QtGuiClass::addTab(QString name, int id)
 	
 	QObject::connect(webEngineView, &TsChatTabWidget::loadFinished, tab, &TsTabWidget::browserLoaded);
 	webEngineView->setObjectName(QStringLiteral("webEngineView"));
-	webEngineView->setUrl(QUrl(QStringLiteral("file:///C:/Users/TURSAS/AppData/Roaming/TS3Client/plugins/LxBTSC/template/chat.html")));
+	//webEngineView->setUrl(QUrl(QStringLiteral("file:///C:/Users/TURSAS/AppData/Roaming/TS3Client/plugins/LxBTSC/template/chat.html")));
+	webEngineView->setUrl(QUrl(pathToPage));
 	verticalLayout_2->addWidget(webEngineView);
 	tabs->insert(id, webEngineView);
 	tabWidget->addTab(tab, name);

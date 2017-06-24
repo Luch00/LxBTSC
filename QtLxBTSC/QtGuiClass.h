@@ -21,7 +21,7 @@ class QtGuiClass : public QWidget
 
 public:
 	QtGuiClass(QWidget *parent = Q_NULLPTR);
-	QtGuiClass(unsigned long long serverID);
+	QtGuiClass(unsigned long long serverID, QString path);
 	~QtGuiClass();
 	void messageReceived2(QString s, int id);
 	void addTab(QString name, int id);
@@ -46,4 +46,5 @@ private:
 	int tabIndex;
 	unsigned long long serverID;
 	void setupUi(QWidget *QtGuiClass);
+	QString pathToPage;
 };

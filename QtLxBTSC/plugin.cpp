@@ -29,7 +29,9 @@
 #include <qjsonobject.h>
 #include <qjsonvalue.h>
 #include <qmap.h>
-//#include <qmetaobject.h>
+#include <qmetaobject.h>
+#include <MyClass.h>
+#include <QMessageBox>
 #include "bbcode_parser.h";
 
 
@@ -137,10 +139,91 @@ void readEmoteJson(QString path)
 	emotes = dox.object();
 }
 
+static void receive(int i)
+{
+	ts3Functions.printMessageToCurrentTab(QString::number(i).toStdString().c_str());
+}
+
+//class MyClass2 : public QObject
+//{
+//	Q_OBJECT
+//public:
+//	MyClass2();
+//	~MyClass2();
+//
+//	public slots:
+//	void receive(int index);
+//
+//private:
+//
+//};
+//
+//MyClass2::MyClass2() : QObject()
+//{
+//}
+//
+//MyClass2::~MyClass2()
+//{
+//}
+//
+//void MyClass2::receive(int index)
+//{
+//	ts3Functions.printMessageToCurrentTab("");
+//}
+
+MyClass *testClass;
+
+void connectTabChange()
+{
+	QMessageBox::information(myClass, "boo", "ok", QMessageBox::Ok);
+	QObject::connect(testClass, &MyClass::changed, receive);
+	QWidgetList list = qApp->allWidgets();
+	for (int i = 0; i < list.count(); i++)
+	{
+		QString s = list[i]->objectName();
+		if (s == "qt_tabwidget_stackedwidget") //ChatTabWidget->onSelectionChanged(int)     ChatLineEdit->insertPlainText(QString)  currentChanged(int)
+		{
+			ts3Functions.printMessageToCurrentTab("ok");
+			QObject *w = list[i];
+			QObject::connect(w, SIGNAL(currentChanged(int)), testClass, SLOT(receive(int)));
+			//break;
+
+			//w->setHidden(true);
+			//w->setMinimumHeight(0);
+			//w->updateGeometry();
+			
+			//const QMetaObject* meta = w->metaObject();
+
+			//QStringList methods; 
+			//////////MainWindowChatWidget  ChatTab   ChatTabWidget    qt_tabwidget_tabbar  QtGuiClass   ChatLineEdit   qt_tabwidget_stackedwidget
+
+			//for (int i = meta->methodOffset(); i < meta->methodCount(); ++i)
+			//{
+			//	QMetaMethod method = meta->method(i);
+			//	QString type;
+			//	if (method.methodType() == QMetaMethod::Slot)
+			//	{
+			//		type = "slot";
+			//	}
+			//	else
+			//	{
+			//		type = "signal";
+			//	}
+			//	QString name(method.typeName());
+			//	QString hurp = QString("%1: %2 - %3").arg(type, QString(method.methodSignature()), name);
+			//	ts3Functions.printMessageToCurrentTab(hurp.toStdString().c_str());
+			//	//
+			//}
+		}
+		//ts3Functions.printMessageToCurrentTab((s.toStdString()).c_str());
+	}
+}
+
+QString pathToPlugin;
 int ts3plugin_init() {
-    char appPath[PATH_BUFSIZE];
-    char resourcesPath[PATH_BUFSIZE];
-    char configPath[PATH_BUFSIZE];
+    //char appPath[PATH_BUFSIZE];
+    //char resourcesPath[PATH_BUFSIZE];
+    //char configPath[PATH_BUFSIZE];
 	char pluginPath[PATH_BUFSIZE];
 
     /* Your plugin init code here */
@@ -148,12 +231,14 @@ int ts3plugin_init() {
 	
     /* Example on how to query application, resources and configuration paths from client */
     /* Note: Console client returns empty string for app and resources path */
-    ts3Functions.getAppPath(appPath, PATH_BUFSIZE);
-    ts3Functions.getResourcesPath(resourcesPath, PATH_BUFSIZE);
-    ts3Functions.getConfigPath(configPath, PATH_BUFSIZE);
+    //ts3Functions.getAppPath(appPath, PATH_BUFSIZE);
+    //ts3Functions.getResourcesPath(resourcesPath, PATH_BUFSIZE);
+    //ts3Functions.getConfigPath(configPath, PATH_BUFSIZE);
 	ts3Functions.getPluginPath(pluginPath, PATH_BUFSIZE, pluginID);
 	//blerrh = new MyClass();
-	readEmoteJson(QString(pluginPath));
+	pathToPlugin = QString(pluginPath);
+	readEmoteJson(pathToPlugin);
+	//readEmoteJson(QString(pluginPath));
 	servers = new QMap<uint64, QtGuiClass*>();
 	QWidget* main = NULL;
 	foreach (QWidget* widget1, qApp->topLevelWidgets())
@@ -171,6 +256,7 @@ int ts3plugin_init() {
 	QMainWindow* window = qobject_cast<QMainWindow*>(main);
 	window->addDockWidget(Qt::DockWidgetArea::BottomDockWidgetArea, widget);
 	Qt::DockWidgetArea area = window->dockWidgetArea(widget);
+	testClass = new MyClass();
 	
 	//printf("PLUGIN: App path: %s\nResources path: %s\nConfig path: %s\nPlugin path: %s\n", appPath, resourcesPath, configPath, pluginPath);
 
@@ -335,10 +421,11 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 		//}
 		if (!servers->contains(serverConnectionHandlerID))
 		{
-			servers->insert(serverConnectionHandlerID, new QtGuiClass(serverConnectionHandlerID));
+			servers->insert(serverConnectionHandlerID, new QtGuiClass(serverConnectionHandlerID, pathToPlugin));
 			QObject::connect(servers->value(serverConnectionHandlerID), &QtGuiClass::tsTextMessage, nom);
 			widget->setWidget(servers->value(serverConnectionHandlerID));
 		}
+		
 	}
 }
 
@@ -364,6 +451,14 @@ void ts3plugin_onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clien
 }
 
 void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* moveMessage) {
+	if (oldChannelID == 0)
+	{
+		//client connected
+	}
+	if (newChannelID == 0)
+	{
+		//client disconnected
+	}
 }
 
 void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility) {
@@ -442,32 +537,44 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 	//for (int i = 0; i < list.count(); i++)
 	//{
 	//	QString s = list[i]->objectName();
-	//	if (s == "MainWindowChatWidget")
+	//	if (s == "qt_tabwidget_tabbar") //ChatTabWidget->onSelectionChanged(int)     ChatLineEdit->insertPlainText(QString)  currentChanged(int)
 	//	{
 	//		ts3Functions.printMessageToCurrentTab("ok");
 	//		QWidget *w = list[i];
-	//		w->setHidden(true);
-	//		w->setMinimumHeight(0);
-	//		w->updateGeometry();
+	//		//w->setHidden(true);
+	//		//w->setMinimumHeight(0);
+	//		//w->updateGeometry();
 	//		const QMetaObject* meta = w->metaObject();
-	//		//QStringList methods; MainWindowChatWidget  ChatTab   ChatTabWidget   weLog
+	//		//QStringList methods; MainWindowChatWidget  ChatTab   ChatTabWidget    qt_tabwidget_tabbar  QtGuiClass   ChatLineEdit
 	//		
-	//		ts3Functions.printMessageToCurrentTab(QString::number(meta->propertyCount()).toStdString().c_str());
-	//		for (int i = meta->propertyOffset(); i < meta->propertyCount(); i++)
+	//		//ts3Functions.printMessageToCurrentTab(QString::number(meta->propertyCount()).toStdString().c_str());
+	//		for (int i = meta->methodOffset(); i < meta->methodCount(); ++i)
 	//		{
-	//			ts3Functions.printMessageToCurrentTab(QString::fromLatin1(meta->property(i).name()).toStdString().c_str());
+	//			QMetaMethod method = meta->method(i);
+	//			QString type;
+	//			if (method.methodType() == QMetaMethod::Slot)
+	//			{
+	//				type = "slot";
+	//			}
+	//			else
+	//			{
+	//				type = "signal";
+	//			}
+	//			QString name(method.typeName());
+	//			QString hurp = QString("%1: %2 - %3").arg(type, QString(method.methodSignature()), name);
+	//			ts3Functions.printMessageToCurrentTab(hurp.toStdString().c_str());
 	//			//methods << QString::fromLatin1(meta->method(i).methodSignature());
 	//		}
 	//	}
 	//	//ts3Functions.printMessageToCurrentTab((s.toStdString()).c_str());
 	//}
-	
-	/*QWidgetList list = qApp->allWidgets();
+	//
+	QWidgetList list = qApp->allWidgets();
 	for (int i = 0; i < list.count(); i++)
 	{
 		QString s = list[i]->objectName();
 		ts3Functions.printMessageToCurrentTab((s.toStdString()).c_str());
-	}*/
+	}
 
 	/* Friend/Foe manager has ignored the message, so ignore here as well. */
 	if(ffIgnored) {
@@ -494,11 +601,18 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 	}
 	else
 	{
-		id = fromID;
+		if (fromID == myID)
+		{
+			id = toID;
+		}
+		else
+		{
+			id = fromID;
+		}
 	}
 	
 	servers->value(serverConnectionHandlerID)->messageReceived2(format(message, fromName, outgoing), id);
-
+	connectTabChange();
     return 0;  /* 0 = handle normally, 1 = client will ignore the text message */
 }
 
