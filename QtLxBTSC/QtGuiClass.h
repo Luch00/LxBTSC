@@ -10,6 +10,7 @@
 #include <QtWidgets/QPlainTextEdit>
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QVBoxLayout>
+#include <QStackedWidget>
 #include <TsTextEdit.h>
 #include <TsChatTabWidget.h>
 #include <TsTabWidget.h>
@@ -28,10 +29,11 @@ public:
 	TsTextEdit* getTextEdit();
 
 	QVBoxLayout *verticalLayout;
-	QVBoxLayout *verticalLayout_2;
-	QVBoxLayout *verticalLayout_3;
-	QTabWidget *tabWidget;
-	TsTextEdit *plainTextEdit;
+	//QVBoxLayout *verticalLayout_2;
+	//QVBoxLayout *verticalLayout_3;
+	//QTabWidget *tabWidget;
+	QStackedWidget *stack;
+	//TsTextEdit *plainTextEdit;
 
 signals:
 	void tsTextMessage(QString text, int id);
