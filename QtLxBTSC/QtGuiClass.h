@@ -11,7 +11,6 @@
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QVBoxLayout>
 #include <QStackedWidget>
-#include <TsTextEdit.h>
 #include <TsChatTabWidget.h>
 #include <TsTabWidget.h>
 #include <TsWebEnginePage.h>
@@ -26,20 +25,15 @@ public:
 	~QtGuiClass();
 	void messageReceived2(QString s, int id);
 	void addTab(QString name, int id);
-	TsTextEdit* getTextEdit();
 
 	QVBoxLayout *verticalLayout;
-	//QVBoxLayout *verticalLayout_2;
-	//QVBoxLayout *verticalLayout_3;
-	//QTabWidget *tabWidget;
 	QStackedWidget *stack;
-	//TsTextEdit *plainTextEdit;
 
 signals:
-	void tsTextMessage(QString text, int id);
+	//void tsTextMessage(QString text, int id);
 
 public slots:
-	void textGet(QString text);
+	//void textGet(QString text);
 	void tabSelected(int index);
 	void tabLoaded(int index);
 

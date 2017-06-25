@@ -4,8 +4,6 @@ QtGuiClass::QtGuiClass(QWidget *parent)
 	: QWidget(parent)
 {
 	setupUi(this);
-	//QObject::connect(tabWidget, &QTabWidget::currentChanged, this, &QtGuiClass::tabSelected);
-	//QObject::connect(plainTextEdit, &TsTextEdit::textSend, this, &QtGuiClass::textGet);
 	tabs = new QMap<int, TsChatTabWidget*>();
 	addTab("Server", -2);
 	addTab("Channel", -1);
@@ -15,8 +13,6 @@ QtGuiClass::QtGuiClass(unsigned long long server, QString path)
 	: QWidget()
 {
 	setupUi(this);
-	//QObject::connect(tabWidget, &QTabWidget::currentChanged, this, &QtGuiClass::tabSelected);
-	//QObject::connect(plainTextEdit, &TsTextEdit::textSend, this, &QtGuiClass::textGet);
 	serverID = server;
 	pathToPage = QString("file:///%1LxBTSC/template/chat.html").arg(path);
 	tabs = new QMap<int, TsChatTabWidget*>();
@@ -40,48 +36,17 @@ void QtGuiClass::setupUi(QWidget *QtGuiClass)
 	stack = new QStackedWidget(QtGuiClass);
 	stack->setObjectName(QStringLiteral("myStack"));
 	
-	//tabWidget = new QTabWidget(QtGuiClass);
-	//tabWidget->setObjectName(QStringLiteral("tabWidget"));
-	//tabWidget->setTabPosition(QTabWidget::South);
-	
 	verticalLayout->addWidget(stack);
-	//verticalLayout->addWidget(tabWidget);
-
-	//plainTextEdit = new TsTextEdit(QtGuiClass);
-	//plainTextEdit->setObjectName(QStringLiteral("plainTextEdit"));
-	//plainTextEdit->setEnabled(true);
-	//QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-	//sizePolicy.setHorizontalStretch(0);
-	//sizePolicy.setVerticalStretch(120);
-	//sizePolicy.setHeightForWidth(plainTextEdit->sizePolicy().hasHeightForWidth());
-	//plainTextEdit->setSizePolicy(sizePolicy);
-	//plainTextEdit->setMinimumSize(QSize(0, 24));
-	//plainTextEdit->setMaximumSize(QSize(16777215, 120));
-	//plainTextEdit->setSizeIncrement(QSize(0, 24));
-	//plainTextEdit->setBaseSize(QSize(0, 0));
-	//plainTextEdit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	//plainTextEdit->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
-
-	//verticalLayout->addWidget(plainTextEdit);
 
 	QtGuiClass->setWindowTitle(QApplication::translate("QtGuiClass", "QtGuiClass", 0));
-	//plainTextEdit->setPlainText(QString());
 
 	stack->setCurrentIndex(0);
-	//tabWidget->setCurrentIndex(0);
 
 	QMetaObject::connectSlotsByName(QtGuiClass);
 }
 
-TsTextEdit* QtGuiClass::getTextEdit()
-{
-	//return plainTextEdit;
-	return NULL;
-}
-
 void QtGuiClass::tabSelected(int index)
 {
-	//tabIndex = tabWidget->currentWidget()->property("chatindex").toInt();
 	stack->setCurrentIndex(index);
 	tabIndex = stack->currentWidget()->property("chatindex").toInt();
 }
@@ -95,10 +60,10 @@ void QtGuiClass::tabLoaded(int index)
 	tabs->value(index)->isLoaded = true;
 }
 
-void QtGuiClass::textGet(QString text)
-{
-	emit tsTextMessage(text, tabIndex);
-}
+//void QtGuiClass::textGet(QString text)
+//{
+//	emit tsTextMessage(text, tabIndex);
+//}
 
 void QtGuiClass::messageReceived2(QString s, int id)
 {
@@ -138,5 +103,4 @@ void QtGuiClass::addTab(QString name, int id)
 	verticalLayout_2->addWidget(webEngineView);
 	tabs->insert(id, webEngineView);
 	stack->addWidget(tab);
-	//tabWidget->addTab(tab, name);
 }
