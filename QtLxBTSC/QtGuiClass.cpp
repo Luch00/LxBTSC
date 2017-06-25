@@ -34,8 +34,8 @@ void QtGuiClass::setupUi(QWidget *QtGuiClass)
 		QtGuiClass->setObjectName(QStringLiteral("QtGuiClass"));
 	QtGuiClass->resize(636, 534);
 	verticalLayout = new QVBoxLayout(QtGuiClass);
-	verticalLayout->setSpacing(6);
-	verticalLayout->setContentsMargins(11, 11, 11, 11);
+	verticalLayout->setSpacing(1);
+	verticalLayout->setContentsMargins(1, 1, 1, 1);
 	verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
 	stack = new QStackedWidget(QtGuiClass);
 	stack->setObjectName(QStringLiteral("myStack"));

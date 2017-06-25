@@ -126,12 +126,13 @@ void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
 uint64 currentServerID;
 QMap<uint64, QtGuiClass*> *servers;
 QJsonObject emotes;
-QDockWidget* widget;
+//QDockWidget* widget;
 QtGuiClass* myClass;
 QWidget *lWidget;
 QBoxLayout *layout;
 QStackedWidget *chatStack;
 QWidget *chatTabWidget;
+QWidget *chatLineEdit;
 
 // read the emotes file
 void readEmoteJson(QString path)
@@ -166,11 +167,43 @@ void findChatTabWidget()
 		{
 			//QMessageBox::information(myClass, "info", "found", QMessageBox::Ok);
 			chatTabWidget = list[i];
+			QWidget *parent = chatTabWidget->parentWidget();
+			ts3Functions.printMessageToCurrentTab(parent->objectName().toStdString().c_str());
+			static_cast<QBoxLayout*>(parent->layout())->insertWidget(0, lWidget);
+
+			//parent->layout()->removeWidget(chatTabWidget);
+			//QSize s = chatTabWidget->size();
+			chatTabWidget->setMinimumHeight(24);
+			chatTabWidget->setMaximumHeight(24);
+			//chatTabWidget->resize(s.width(), 24);
+			//chatTabWidget->updateGeometry();
+			//layout->addWidget(chatTabWidget);
+			//parent->repaint();
+			//layout->update();
+			
 			break;
 		}
 	}
-	
 }
+
+//void findChatLineEdit()
+//{
+//	QWidgetList list = qApp->allWidgets();
+//	for (int i = 0; i < list.count(); i++)
+//	{
+//		if (list[i]->objectName() == "ChatLineEdit")
+//		{
+//			chatLineEdit = list[i];
+//			QWidget *parent = chatLineEdit->parentWidget();
+//			parent->layout()->removeWidget(chatLineEdit);
+//			layout->addWidget(chatLineEdit);
+//			parent->repaint();
+//			layout->update();
+//
+//			break;
+//		}
+//	}
+//}
 
 // connect every servers tabs change signal to my slot
 void connectTabChange()
@@ -179,6 +212,9 @@ void connectTabChange()
 	{
 		if (w->objectName() == "qt_tabwidget_stackedwidget")
 		{
+			//static_cast<QWidget*>(w)->setMinimumHeight(1);
+			//static_cast<QWidget*>(w)->resize(1, 1);
+			//static_cast<QWidget*>(w)->updateGeometry();
 			QObject::connect(w, SIGNAL(currentChanged(int)), testClass, SLOT(receive(int)), Qt::UniqueConnection);
 		}
 	}
@@ -279,7 +315,7 @@ int ts3plugin_init() {
 	readEmoteJson(pathToPlugin);
 
 	servers = new QMap<uint64, QtGuiClass*>();
-	QWidget* main = NULL;
+	/*QWidget* main = NULL;
 	foreach (QWidget* widget1, qApp->topLevelWidgets())
 	{
 		if (widget1->inherits("QMainWindow"))
@@ -287,12 +323,12 @@ int ts3plugin_init() {
 			main = widget1;
 			break;
 		}
-	}
-	widget = new QDockWidget("Better Chat");
-	widget->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
-	widget->setAllowedAreas(Qt::DockWidgetAreas::enum_type::AllDockWidgetAreas);
+	}*/
+	//widget = new QDockWidget("Better Chat");
+	//widget->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
+	//widget->setAllowedAreas(Qt::DockWidgetAreas::enum_type::AllDockWidgetAreas);
 
-	lWidget = new QWidget(widget);
+	lWidget = new QWidget();
 	layout = new QVBoxLayout(lWidget);
 	layout->setSpacing(1);
 	layout->setContentsMargins(1, 1, 1, 1);
@@ -300,15 +336,17 @@ int ts3plugin_init() {
 	chatStack = new QStackedWidget(lWidget);
 	chatStack->setCurrentIndex(0);
 	layout->addWidget(chatStack);
-
-	widget->setWidget(lWidget);
-	QMainWindow* window = qobject_cast<QMainWindow*>(main);
-	window->addDockWidget(Qt::DockWidgetArea::BottomDockWidgetArea, widget);
-	Qt::DockWidgetArea area = window->dockWidgetArea(widget);
+	//findChatTabWidget();
+	layout->addWidget(chatTabWidget);
+	//widget->setWidget(lWidget);
+	//QMainWindow* window = qobject_cast<QMainWindow*>(main);
+	//window->addDockWidget(Qt::DockWidgetArea::BottomDockWidgetArea, widget);
+	//Qt::DockWidgetArea area = window->dockWidgetArea(widget);
 
 	testClass = new MyClass();
-	QObject::connect(testClass, &MyClass::changed, receive);
-	findChatTabWidget();
+	//QObject::connect(testClass, &MyClass::changed, receive);
+	
+	
 
     return 0;  /* 0 = success, 1 = failure, -2 = failure but client will not show a "failed to load" warning */
 	/* -2 is a very special case and should only be used if a plugin displays a dialog (e.g. overlay) asking the user to disable
@@ -323,8 +361,11 @@ void ts3plugin_shutdown() {
 	delete testClass;
 	delete layout;
 	delete chatStack;
-	widget->close();
-	delete widget;
+	delete chatTabWidget;
+	delete chatLineEdit;
+	delete lWidget;
+	//widget->close();
+	//delete widget;
 
 	/*
 	 * Note:
@@ -452,6 +493,7 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 		if (first)
 		{
 			findChatTabWidget();
+			//findChatLineEdit();
 			first = false;
 		}
 		connectTabChange();
