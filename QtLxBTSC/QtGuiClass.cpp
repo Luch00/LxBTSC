@@ -1,4 +1,5 @@
 #include "QtGuiClass.h"
+#include "QString"
 
 QtGuiClass::QtGuiClass(QWidget *parent)
 	: QWidget(parent)
@@ -42,7 +43,7 @@ void QtGuiClass::setupUi(QWidget *QtGuiClass)
 
 	stack->setCurrentIndex(0);
 
-	QMetaObject::connectSlotsByName(QtGuiClass);
+	//QMetaObject::connectSlotsByName(QtGuiClass);
 }
 
 void QtGuiClass::tabSelected(int index)
@@ -60,14 +61,11 @@ void QtGuiClass::tabLoaded(int index)
 	tabs->value(index)->isLoaded = true;
 }
 
-//void QtGuiClass::textGet(QString text)
-//{
-//	emit tsTextMessage(text, tabIndex);
-//}
-
 void QtGuiClass::messageReceived2(QString s, int id)
 {
-	QString js = "AddServerLine('<div>" + s + "</div>');";
+	//QString js = "AddServerLine(\"<div>" + s + "</div>\");";
+
+	QString js = QString("AddServerLine('<div>%1</div>');").arg(s);
 
 	if (tabs->contains(id))
 	{

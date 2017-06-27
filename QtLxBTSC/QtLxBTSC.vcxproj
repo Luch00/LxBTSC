@@ -81,7 +81,9 @@
     <ClCompile Include="GeneratedFiles\Release\moc_QtGuiClass.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_TsChatTabWidget.cpp" />
+    <ClCompile Include="GeneratedFiles\Release\moc_TsChatTabWidget.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_TsTabWidget.cpp" />
     <ClCompile Include="GeneratedFiles\Release\moc_TsTextEdit.cpp" />
     <ClCompile Include="GeneratedFiles\Release\moc_TsWebEnginePage.cpp">

@@ -33,7 +33,6 @@ signals:
 	//void tsTextMessage(QString text, int id);
 
 public slots:
-	//void textGet(QString text);
 	void tabSelected(int index);
 	void tabLoaded(int index);
 

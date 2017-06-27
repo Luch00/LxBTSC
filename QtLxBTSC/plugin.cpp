@@ -1,4 +1,4 @@
-/*
+﻿/*
  * TeamSpeak 3 demo plugin
  *
  * Copyright (c) 2008-2017 TeamSpeak Systems GmbH
@@ -34,7 +34,7 @@
 #include <QMessageBox>
 #include <QtWidgets/QVBoxLayout>
 #include <QStackedWidget>
-#include "bbcode_parser.h";
+#include "bbcode_parser.h"
 
 
 static struct TS3Functions ts3Functions;
@@ -49,10 +49,10 @@ static struct TS3Functions ts3Functions;
 #define PLUGIN_API_VERSION 22
 
 #define PATH_BUFSIZE 512
-#define COMMAND_BUFSIZE 128
-#define INFODATA_BUFSIZE 128
-#define SERVERINFO_BUFSIZE 256
-#define CHANNELINFO_BUFSIZE 512
+//#define COMMAND_BUFSIZE 128
+//#define INFODATA_BUFSIZE 128
+//#define SERVERINFO_BUFSIZE 256
+//#define CHANNELINFO_BUFSIZE 512
 #define RETURNCODE_BUFSIZE 128
 
 static char* pluginID = NULL;
@@ -131,6 +131,8 @@ QWidget *lWidget;
 QBoxLayout *layout;
 QStackedWidget *chatStack;
 QWidget *chatTabWidget;
+QString pathToPlugin;
+bbcode::parser parser;
 
 // read the emotes file
 void readEmoteJson(QString path)
@@ -192,8 +194,6 @@ void connectTabChange()
 		}
 	}
 }
-
-QString pathToPlugin;
 
 // init plugin
 int ts3plugin_init() {
@@ -415,17 +415,25 @@ int ts3plugin_onServerErrorEvent(uint64 serverConnectionHandlerID, const char* e
 void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage) {
 }
 
-
 // replace emote text with html <img>
 QString emoticonize(QString original)
 {
-	QString emoticonized;
+	original.replace(QRegExp("[\r\n]"), "</br>");
+	//original.replace("\n\r", "</br>");
+	original.replace("'", "\\'");
+	QRegExp yt("http(?:s?):\\/\\/(?:www\\.)?youtu(?:be\\.com\\/watch\\?v=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?[\\w\\?=]*)?");
+	int i = yt.indexIn(original);
+	if (i > 0)
+	{
+		QStringList list = yt.capturedTexts();
+		original.append(QString("</br><iframe frameborder=\"0\" src=\"https://www.youtube.com/embed/%1\" allowfullscreen></iframe>").arg(list.value(1)));
+	}
 	QStringList keys = emotes.keys();
 	foreach(QString value, keys)
 	{
-		emoticonized = original.replace(value, QString("<img class=\"%1\" />").arg(emotes[value].toString()));
+		original.replace(value, QString("<img class=\"%1\" />").arg(emotes[value].toString()));
 	}
-	return emoticonized;
+	return original;
 }
 
 // was message received or sent
@@ -438,8 +446,6 @@ QString direction(bool outgoing)
 	return "incoming";
 }
 
-
-bbcode::parser parser;
 // parse bbcode, emoticonize
 QString format(const char* message, const char* name, bool outgoing)
 {
