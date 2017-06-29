@@ -16,7 +16,10 @@ class TsWebEnginePage : public QWebEnginePage
 public:
 	TsWebEnginePage(QObject *parent = 0);
 	~TsWebEnginePage();
-	virtual void contextMenuEvent(QContextMenuEvent *e);
+	void setIndex(int);
+	int getIndex();
+	void addBufferLine(QString);
+	//virtual void contextMenuEvent(QContextMenuEvent *e);
 	
 	// clicked links open in external browser
 	bool acceptNavigationRequest(const QUrl & url, QWebEnginePage::NavigationType type, bool isMainFrame)
@@ -28,10 +31,14 @@ public:
 		}
 		return true;
 	}
+signals:
+	void pageLoaded(int);
 
 public slots:
-	void copied(bool);
+	void loaded(bool);
 
 private:
-	QAction *copy;
+	int index;
+	QList<QString> buffer;
+	//QAction *copy;
 };

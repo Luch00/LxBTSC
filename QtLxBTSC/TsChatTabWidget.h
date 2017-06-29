@@ -8,6 +8,7 @@
 #include <QApplication>
 #include <QMenu>
 #include <QContextMenuEvent>
+#include "TsWebEnginePage.h"
 
 class TsChatTabWidget : public QWebEngineView
 {
@@ -19,7 +20,7 @@ public:
 	bool isLoaded;
 	void addLine(QString text);
 	QList<QString> getBuffer();
-	virtual void contextMenuEvent(QContextMenuEvent *e);
+	//virtual void contextMenuEvent(QContextMenuEvent *e);
 
 private:
 	QList<QString> buffer;

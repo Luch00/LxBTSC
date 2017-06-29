@@ -30,6 +30,7 @@
 #include <QJsonValue>
 #include <QMap>
 #include <QMetaObject>
+#include <QMetaProperty>
 #include <MyClass.h>
 #include <QMessageBox>
 #include <QtWidgets/QVBoxLayout>
@@ -130,7 +131,8 @@ QtGuiClass* myClass;
 QWidget *lWidget;
 QBoxLayout *layout;
 QStackedWidget *chatStack;
-QWidget *chatTabWidget;
+//QWidget *chatTabWidget;
+QTabWidget *chatTabWidget;
 QString pathToPlugin;
 bbcode::parser parser;
 
@@ -151,7 +153,18 @@ void readEmoteJson(QString path)
 // some info
 static void receive(int i)
 {
-	ts3Functions.printMessageToCurrentTab(QString::number(i).toStdString().c_str());
+	//ts3Functions.printMessageToCurrentTab(QString::number(i).toStdString().c_str());
+	QString name;
+	if (i > 1)
+	{
+		name = chatTabWidget->tabText(i);
+	}
+	else
+	{
+		name = QString::number(i);
+	}
+	//QMessageBox::information(0, "boo", name, QMessageBox::Ok);
+	servers->value(currentServerID)->switchTab(name);
 }
 
 bool first = true;
@@ -165,13 +178,30 @@ void findChatTabWidget()
 	{
 		if (list[i]->objectName() == "ChatTabWidget")
 		{
-			chatTabWidget = list[i];
+			chatTabWidget = static_cast<QTabWidget*>(list[i]);
 			QWidget *parent = chatTabWidget->parentWidget();
-			ts3Functions.printMessageToCurrentTab(parent->objectName().toStdString().c_str());
+			//ts3Functions.printMessageToCurrentTab(parent->objectName().toStdString().c_str());
 			static_cast<QBoxLayout*>(parent->layout())->insertWidget(0, lWidget);
 
 			chatTabWidget->setMinimumHeight(24);
 			chatTabWidget->setMaximumHeight(24);
+
+			//QTabWidget* t = static_cast<QTabWidget*>(chatTabWidget);
+			QObject::connect(chatTabWidget, &QTabWidget::currentChanged, receive);
+			chatTabWidget->setMovable(false);
+			//chatTabWidget->setProperty("movable", false);
+			//QObject *o = t->currentWidget();
+			//int i = t->currentIndex();
+			//QString name = t->tabText(i);
+			/*const QMetaObject *m = parent->metaObject();
+			QStringList pl;
+			for (int y = 0; y < m->propertyCount(); ++y)
+			{
+				pl.append(m->property(y).name());
+			}
+			QString text = pl.join(",");
+			ts3Functions.printMessageToCurrentTab(text.toStdString().c_str());*/
+			//QMessageBox::information(0, "boo", text, QMessageBox::Ok);
 			//chatTabWidget->resize(s.width(), 24);
 			//chatTabWidget->updateGeometry();
 			//layout->addWidget(chatTabWidget);
@@ -226,7 +256,7 @@ int ts3plugin_init() {
 /* Custom code called right before the plugin is unloaded */
 void ts3plugin_shutdown() {
     /* Your plugin cleanup code here */
-	delete myClass;
+	//delete myClass;
 	delete testClass;
 	delete layout;
 	delete chatStack;
@@ -329,13 +359,13 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 			findChatTabWidget();
 			first = false;
 		}
-		connectTabChange();
+		//connectTabChange();
 
 		// create new better chat widget for a new server       ??does serverConnectionHandlerID stay same during teamspeak session even if disconnect/connect several times??
 		if (!servers->contains(serverConnectionHandlerID))
 		{
 			servers->insert(serverConnectionHandlerID, new QtGuiClass(serverConnectionHandlerID, pathToPlugin));
-			QObject::connect(testClass, &MyClass::changed, servers->value(serverConnectionHandlerID), &QtGuiClass::tabSelected);
+			//QObject::connect(testClass, &MyClass::changed, servers->value(serverConnectionHandlerID), &QtGuiClass::tabSelected);
 			chatStack->addWidget(servers->value(serverConnectionHandlerID));
 			chatStack->setCurrentWidget(servers->value(serverConnectionHandlerID));
 		}
@@ -454,7 +484,7 @@ QString format(const char* message, const char* name, bool outgoing)
 	str << message;
 	parser.source_stream(str);
 	parser.parse();
-	return QString("<img class=\"%1\"><%2> <span class=\"name\">\"%3\"</span>: %4").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), emoticonize(QString::fromStdString(parser.content())));
+	return QString("<img class=\"%1\"><span><%2> <span class=\"name\">\"%3\"</span>: %4</span>").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), emoticonize(QString::fromStdString(parser.content())));
 }
 
 // ts3 client received a text message
@@ -482,7 +512,7 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 		outgoing = true;
 	}
 	//// ??do clientid stay same across session even if disconnect/reconnect multiple times??
-	int id;
+	/*int id;
 	if (targetMode == 3)
 	{
 		id = -2;
@@ -501,9 +531,31 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 		{
 			id = fromID;
 		}
+	}*/
+	QString key;
+	if (targetMode == 3)
+	{
+		key = "0";
+	}
+	else if (targetMode == 2)
+	{
+		key = "1";
+	}
+	else
+	{
+		if (fromID == myID)
+		{
+			char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
+			ts3Functions.getClientDisplayName(serverConnectionHandlerID, toID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
+			key = res;
+		}
+		else
+		{
+			key = fromName;
+		}
 	}
 	
-	servers->value(serverConnectionHandlerID)->messageReceived2(format(message, fromName, outgoing), id);
+	servers->value(serverConnectionHandlerID)->messageReceived2(format(message, fromName, outgoing), key);
     return 0;  /* 0 = handle normally, 1 = client will ignore the text message */
 }
 
@@ -761,4 +813,5 @@ const char* ts3plugin_keyPrefix() {
 
 /* Called when client custom nickname changed */
 void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, const char* displayName, const char* uniqueClientIdentifier) {
+	//servers->value(serverConnectionHandlerID)->nicknameChanged(QString(displa))
 }

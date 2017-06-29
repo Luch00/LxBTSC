@@ -20,11 +20,12 @@ QList<QString> TsChatTabWidget::getBuffer()
 	return buffer;
 }
 
-void TsChatTabWidget::contextMenuEvent(QContextMenuEvent *event)
-{
-	//QMenu *menu = this->createStandardContextMenu();
-	QMenu *menu = new QMenu();
-	//menu->addAction(copy);
-	menu->popup(event->globalPos());
-	//const QList<QAction*> actions = menu->actions();
-}
+//void TsChatTabWidget::contextMenuEvent(QContextMenuEvent *event)
+//{
+//	//QMenu *menu = this->createStandardContextMenu();
+//	QMenu *menu = new QMenu();
+//	menu->addAction(page()->action(TsWebEnginePage::Copy));
+//	menu->addAction(page()->action(TsWebEnginePage::WebAction::CopyLinkToClipboard));
+//	menu->popup(event->globalPos());
+//	//const QList<QAction*> actions = menu->actions();
+//}
