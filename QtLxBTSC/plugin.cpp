@@ -23,7 +23,6 @@
 #include <QtGuiClass.h>
 #include <QApplication>
 #include <QMainWindow>
-#include <QDockWidget>
 #include <QtGuiClass.h>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -31,10 +30,10 @@
 #include <QMap>
 #include <QMetaObject>
 #include <QMetaProperty>
-#include <MyClass.h>
 #include <QMessageBox>
 #include <QtWidgets/QVBoxLayout>
 #include <QStackedWidget>
+#include <QFile>
 #include "bbcode_parser.h"
 
 
@@ -125,16 +124,14 @@ void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
  * If the function returns 1 on failure, the plugin will be unloaded again.
  */
 uint64 currentServerID;
-QMap<uint64, QtGuiClass*> *servers;
+QMap<uint64, QtGuiClass*> servers;
 QJsonObject emotes;
-QtGuiClass* myClass;
-QWidget *lWidget;
-QBoxLayout *layout;
 QStackedWidget *chatStack;
-//QWidget *chatTabWidget;
 QTabWidget *chatTabWidget;
+QMetaObject::Connection c;
 QString pathToPlugin;
 bbcode::parser parser;
+bool first = true;
 
 // read the emotes file
 void readEmoteJson(QString path)
@@ -153,7 +150,6 @@ void readEmoteJson(QString path)
 // some info
 static void receive(int i)
 {
-	//ts3Functions.printMessageToCurrentTab(QString::number(i).toStdString().c_str());
 	QString name;
 	if (i > 1)
 	{
@@ -163,12 +159,8 @@ static void receive(int i)
 	{
 		name = QString::number(i);
 	}
-	//QMessageBox::information(0, "boo", name, QMessageBox::Ok);
-	servers->value(currentServerID)->switchTab(name);
+	servers.value(currentServerID)->switchTab(name);
 }
-
-bool first = true;
-MyClass *testClass;
 
 // find the widget containing chat tabs and store it for later use
 void findChatTabWidget()
@@ -180,15 +172,14 @@ void findChatTabWidget()
 		{
 			chatTabWidget = static_cast<QTabWidget*>(list[i]);
 			QWidget *parent = chatTabWidget->parentWidget();
-			//ts3Functions.printMessageToCurrentTab(parent->objectName().toStdString().c_str());
-			static_cast<QBoxLayout*>(parent->layout())->insertWidget(0, lWidget);
+			static_cast<QBoxLayout*>(parent->layout())->insertWidget(0, chatStack);
 
 			chatTabWidget->setMinimumHeight(24);
 			chatTabWidget->setMaximumHeight(24);
 
-			//QTabWidget* t = static_cast<QTabWidget*>(chatTabWidget);
-			QObject::connect(chatTabWidget, &QTabWidget::currentChanged, receive);
+			c = QObject::connect(chatTabWidget, &QTabWidget::currentChanged, receive);
 			chatTabWidget->setMovable(false);
+			
 			//chatTabWidget->setProperty("movable", false);
 			//QObject *o = t->currentWidget();
 			//int i = t->currentIndex();
@@ -213,16 +204,10 @@ void findChatTabWidget()
 	}
 }
 
-// connect every servers tabs change signal to my slot
-void connectTabChange()
+void disconnectChatWidget()
 {
-	foreach(QObject *w, chatTabWidget->children())
-	{
-		if (w->objectName() == "qt_tabwidget_stackedwidget")
-		{
-			QObject::connect(w, SIGNAL(currentChanged(int)), testClass, SLOT(receive(int)), Qt::UniqueConnection);
-		}
-	}
+	// disconnect or crash
+	QObject::disconnect(c);
 }
 
 // init plugin
@@ -233,19 +218,8 @@ int ts3plugin_init() {
 	pathToPlugin = QString(pluginPath);
 	readEmoteJson(pathToPlugin);
 
-	servers = new QMap<uint64, QtGuiClass*>();
-
-	lWidget = new QWidget();
-	layout = new QVBoxLayout(lWidget);
-	layout->setSpacing(1);
-	layout->setContentsMargins(1, 1, 1, 1);
-	layout->setObjectName(QStringLiteral("myLayout"));
-	chatStack = new QStackedWidget(lWidget);
+	chatStack = new QStackedWidget();
 	chatStack->setCurrentIndex(0);
-	layout->addWidget(chatStack);
-	layout->addWidget(chatTabWidget);
-
-	testClass = new MyClass();
 
     return 0;  /* 0 = success, 1 = failure, -2 = failure but client will not show a "failed to load" warning */
 	/* -2 is a very special case and should only be used if a plugin displays a dialog (e.g. overlay) asking the user to disable
@@ -256,14 +230,14 @@ int ts3plugin_init() {
 /* Custom code called right before the plugin is unloaded */
 void ts3plugin_shutdown() {
     /* Your plugin cleanup code here */
-	//delete myClass;
-	delete testClass;
-	delete layout;
+	//qDeleteAll(servers);
+	//servers.clear();
+	disconnectChatWidget();
 	delete chatStack;
-	delete chatTabWidget;
-	delete testClass;
-	delete lWidget;
+	//delete lWidget;
+	//delete chatTabWidget;
 
+	
 	/*
 	 * Note:
 	 * If your plugin implements a settings dialog, it must be closed and deleted here, else the
@@ -321,9 +295,9 @@ int ts3plugin_processCommand(uint64 serverConnectionHandlerID, const char* comma
 /* Client changed current server connection handler */
 void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID) {
 	currentServerID = serverConnectionHandlerID;
-	if (servers->contains(serverConnectionHandlerID))
+	if (servers.contains(serverConnectionHandlerID))
 	{
-		chatStack->setCurrentWidget(servers->value(serverConnectionHandlerID));
+		chatStack->setCurrentWidget(servers.value(serverConnectionHandlerID));
 	}
 }
 
@@ -358,16 +332,15 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 		{
 			findChatTabWidget();
 			first = false;
+			//chatStack->repaint();
 		}
-		//connectTabChange();
 
 		// create new better chat widget for a new server       ??does serverConnectionHandlerID stay same during teamspeak session even if disconnect/connect several times??
-		if (!servers->contains(serverConnectionHandlerID))
+		if (!servers.contains(serverConnectionHandlerID))
 		{
-			servers->insert(serverConnectionHandlerID, new QtGuiClass(serverConnectionHandlerID, pathToPlugin));
-			//QObject::connect(testClass, &MyClass::changed, servers->value(serverConnectionHandlerID), &QtGuiClass::tabSelected);
-			chatStack->addWidget(servers->value(serverConnectionHandlerID));
-			chatStack->setCurrentWidget(servers->value(serverConnectionHandlerID));
+			servers.insert(serverConnectionHandlerID, new QtGuiClass(pathToPlugin));
+			chatStack->addWidget(servers.value(serverConnectionHandlerID));
+			chatStack->setCurrentWidget(servers.value(serverConnectionHandlerID));
 		}
 	}
 }
@@ -489,12 +462,6 @@ QString format(const char* message, const char* name, bool outgoing)
 
 // ts3 client received a text message
 int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID, const char* fromName, const char* fromUniqueIdentifier, const char* message, int ffIgnored) {
-	/*QWidgetList list = qApp->allWidgets();
-	for (int i = 0; i < list.count(); i++)
-	{
-		QString s = list[i]->objectName();
-		ts3Functions.printMessageToCurrentTab((s.toStdString()).c_str());
-	}*/
 
 	/* Friend/Foe manager has ignored the message, so ignore here as well. */
 	if(ffIgnored) {
@@ -512,26 +479,6 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 		outgoing = true;
 	}
 	//// ??do clientid stay same across session even if disconnect/reconnect multiple times??
-	/*int id;
-	if (targetMode == 3)
-	{
-		id = -2;
-	}
-	else if(targetMode == 2)
-	{
-		id = -1;
-	}
-	else
-	{
-		if (fromID == myID)
-		{
-			id = toID;
-		}
-		else
-		{
-			id = fromID;
-		}
-	}*/
 	QString key;
 	if (targetMode == 3)
 	{
@@ -555,7 +502,7 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 		}
 	}
 	
-	servers->value(serverConnectionHandlerID)->messageReceived2(format(message, fromName, outgoing), key);
+	servers.value(serverConnectionHandlerID)->messageReceived2(format(message, fromName, outgoing), key);
     return 0;  /* 0 = handle normally, 1 = client will ignore the text message */
 }
 
