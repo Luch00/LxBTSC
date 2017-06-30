@@ -34,6 +34,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QStackedWidget>
 #include <QFile>
+#include <QRegularExpression>
 #include "bbcode_parser.h"
 
 
@@ -125,6 +126,7 @@ void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
  */
 uint64 currentServerID;
 QMap<uint64, QtGuiClass*> servers;
+QMap<uint64, QMap<anyID, QString> > clients;
 QJsonObject emotes;
 QStackedWidget *chatStack;
 QTabWidget *chatTabWidget;
@@ -219,6 +221,7 @@ int ts3plugin_init() {
 	readEmoteJson(pathToPlugin);
 
 	chatStack = new QStackedWidget();
+	chatStack->setStyleSheet("border: 1px solid gray");
 	chatStack->setCurrentIndex(0);
 
     return 0;  /* 0 = success, 1 = failure, -2 = failure but client will not show a "failed to load" warning */
@@ -322,6 +325,19 @@ int ts3plugin_requestAutoload() {
  */
 
 /* Clientlib */
+QMap<unsigned short, QString> getAllClientNicks(uint64 serverConnectionHandlerID)
+{
+	QMap<unsigned short, QString> map;
+	anyID *list;
+	ts3Functions.getClientList(serverConnectionHandlerID, &list);
+	for(size_t i = 0; list[i]; i++)
+	{
+		char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
+		ts3Functions.getClientDisplayName(serverConnectionHandlerID, list[i], res, TS3_MAX_SIZE_CLIENT_NICKNAME);
+		map.insert(list[i], QString(res));
+	}
+	return map;
+}
 
 void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber) {
     /* Some example code following to show how to use the information query functions. */
@@ -342,6 +358,13 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 			chatStack->addWidget(servers.value(serverConnectionHandlerID));
 			chatStack->setCurrentWidget(servers.value(serverConnectionHandlerID));
 		}
+		clients.insert(serverConnectionHandlerID, getAllClientNicks(serverConnectionHandlerID));
+		servers.value(serverConnectionHandlerID)->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">Server Connected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), "0");
+	}
+	if (newStatus == STATUS_DISCONNECTED)
+	{
+		servers.value(serverConnectionHandlerID)->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">Server Disconnected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), "0");
+		clients.remove(serverConnectionHandlerID);
 	}
 }
 
@@ -370,10 +393,19 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 	if (oldChannelID == 0)
 	{
 		//client connected
+		char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
+		ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
+		clients[serverConnectionHandlerID].insert(clientID, QString(res));
+
+		servers.value(serverConnectionHandlerID)->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">%2 Joined</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), QString(res)), "0");
 	}
 	if (newChannelID == 0)
 	{
 		//client disconnected
+		//char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
+		//ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
+		QString name = clients[serverConnectionHandlerID].take(clientID);
+		servers.value(serverConnectionHandlerID)->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">%2 Left</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), name), "0");
 	}
 }
 
@@ -434,7 +466,9 @@ QString emoticonize(QString original)
 	QStringList keys = emotes.keys();
 	foreach(QString value, keys)
 	{
-		original.replace(value, QString("<img class=\"%1\" />").arg(emotes[value].toString()));
+		QRegularExpression rx(QString("(?!<a[^>]*?>)(%1)(?![^<]*?</a>)").arg(value));
+		
+		original.replace(rx, QString("<img class=\"%1\" />").arg(emotes[value].toString()));
 	}
 	return original;
 }
@@ -761,4 +795,5 @@ const char* ts3plugin_keyPrefix() {
 /* Called when client custom nickname changed */
 void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, const char* displayName, const char* uniqueClientIdentifier) {
 	//servers->value(serverConnectionHandlerID)->nicknameChanged(QString(displa))
+	clients[serverConnectionHandlerID].insert(clientID, QString(displayName));
 }

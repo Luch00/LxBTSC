@@ -21,6 +21,11 @@ public:
 			QDesktopServices::openUrl(url);
 			return false;
 		}
+		/*if (isMainFrame == true)
+		{
+			QDesktopServices::openUrl(url);
+			return false;
+		}*/
 		return true;
 	}
 
