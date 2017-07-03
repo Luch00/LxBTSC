@@ -7,6 +7,10 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QStackedWidget>
 #include <TsWebEnginePage.h>
+#include <QShortcut>
+#include <QClipboard>
+#include <QGuiApplication>
+#include <QMenu>
 
 class QtGuiClass : public QWidget
 {
@@ -23,8 +27,18 @@ public:
 	QVBoxLayout *verticalLayout;
 	QWebEngineView *view;
 
+	private slots:
+	void copyActivated();
+	void copyUrlActivated();
+	void showContextMenu(const QPoint &);
+	void linkHovered(QUrl);
+
 private:
 	QMap<QString, TsWebEnginePage*> tabs;
 	void setupUi(QWidget *QtGuiClass);
 	QString pathToPage;
+	QUrl currentHoveredUrl;
+	QShortcut *copy;
+	QAction *copyAction;
+	QAction *copyUrlAction;
 };

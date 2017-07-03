@@ -152,16 +152,20 @@ void readEmoteJson(QString path)
 // some info
 static void receive(int i)
 {
-	QString name;
-	if (i > 1)
+	if (i >= 0)
 	{
-		name = chatTabWidget->tabText(i);
+		QString name;
+		if (i > 1)
+		{
+			name = chatTabWidget->tabText(i);
+		}
+		else
+		{
+			name = QString::number(i);
+		}
+		QMessageBox::information(0, "switchtab", name, QMessageBox::Ok);
+		servers.value(currentServerID)->switchTab(name);
 	}
-	else
-	{
-		name = QString::number(i);
-	}
-	servers.value(currentServerID)->switchTab(name);
 }
 
 // find the widget containing chat tabs and store it for later use

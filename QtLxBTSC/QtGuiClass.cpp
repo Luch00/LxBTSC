@@ -28,10 +28,50 @@ void QtGuiClass::setupUi(QWidget *QtGuiClass)
 	verticalLayout->setContentsMargins(1, 1, 1, 1);
 	verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
 	view = new QWebEngineView(QtGuiClass);
-	QWebEngineProfile::defaultProfile()->setPersistentCookiesPolicy(QWebEngineProfile::ForcePersistentCookies);
+	view->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+	copy = new QShortcut(QKeySequence::Copy, view);
+	copyAction = new QAction("Copy", this);
+	copyUrlAction = new QAction("Copy Link", this);
 	
+	QObject::connect(copyAction, &QAction::triggered, this, &QtGuiClass::copyActivated);
+	QObject::connect(copyUrlAction, &QAction::triggered, this, &QtGuiClass::copyUrlActivated);
+	QObject::connect(view, &QWebEngineView::customContextMenuRequested, this, &QtGuiClass::showContextMenu);
+	QObject::connect(copy, &QShortcut::activated, this, &QtGuiClass::copyActivated);
 	
 	verticalLayout->addWidget(view);
+}
+
+void QtGuiClass::showContextMenu(const QPoint &p)
+{
+	QMenu *menu = new QMenu(this);
+	if (view->hasSelection())
+	{
+		menu->addAction(copyAction);
+	}
+	if (currentHoveredUrl.isEmpty() == false)
+	{
+		menu->addAction(copyUrlAction);
+	}
+	if (menu->actions().isEmpty() == false)
+	{
+		menu->popup(view->mapToGlobal(p));
+	}
+}
+
+void QtGuiClass::linkHovered(QUrl u)
+{
+	currentHoveredUrl = u;
+}
+
+void QtGuiClass::copyActivated()
+{
+	QString s = view->selectedText();
+	QGuiApplication::clipboard()->setText(s, QClipboard::Clipboard);
+}
+
+void QtGuiClass::copyUrlActivated()
+{
+	QGuiApplication::clipboard()->setText(currentHoveredUrl.toString(), QClipboard::Clipboard);
 }
 
 void QtGuiClass::switchTab(QString key)
@@ -76,7 +116,9 @@ void QtGuiClass::messageReceived2(QString s, QString key)
 
 void QtGuiClass::addTab(QString key)
 {
+	//QMessageBox::information(this, "tabname", key, QMessageBox::Ok);
 	TsWebEnginePage *page = new TsWebEnginePage();
+	QObject::connect(page, &TsWebEnginePage::linkHovered, this, &QtGuiClass::linkHovered);
 	page->setUrl(QUrl(pathToPage));
 	tabs.insert(key, page);
 }

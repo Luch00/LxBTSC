@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QtWebEngineWidgets\QWebEnginePage>
 #include <QDesktopServices>
+#include <QShortcut>
 
 class TsWebEnginePage : public QWebEnginePage
 {
@@ -29,9 +30,12 @@ public:
 		return true;
 	}
 
+	
+
 public slots:
 	void loaded(bool);
 
 private:
 	QList<QString> buffer;
+	QShortcut *copy;
 };
