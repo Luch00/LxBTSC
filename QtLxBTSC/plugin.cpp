@@ -35,6 +35,7 @@
 #include <QStackedWidget>
 #include <QFile>
 #include <QRegularExpression>
+#include <QTimer>
 #include "bbcode_parser.h"
 
 
@@ -131,7 +132,9 @@ QJsonObject emotes;
 QStackedWidget *chatStack;
 QTabWidget *chatTabWidget;
 QMetaObject::Connection c;
+QMetaObject::Connection d;
 QString pathToPlugin;
+QTimer *timer;
 bbcode::parser parser;
 bool first = true;
 
@@ -161,10 +164,42 @@ static void receive(int i)
 		}
 		else
 		{
+			/*if (i == 0)
+			{
+				timer->stop();
+				timer->start(400);
+			}*/
 			name = QString::number(i);
 		}
-		QMessageBox::information(0, "switchtab", name, QMessageBox::Ok);
+		//QMessageBox::information(0, "switchtab", name, QMessageBox::Ok);
 		servers.value(currentServerID)->switchTab(name);
+	}
+}
+
+static void recheck()
+{
+	int i = chatTabWidget->currentIndex();
+	if (i >= 0)
+	{
+		QString name;
+		if (i > 1)
+		{
+			name = chatTabWidget->tabText(i);
+		}
+		else
+		{
+			name = QString::number(i);
+		}
+		//QMessageBox::information(0, "recheck", name, QMessageBox::Ok);
+		servers.value(currentServerID)->switchTab(name);
+	}
+}
+
+static void tabCloseReceive(int i)
+{
+	if (i > 1)
+	{
+		servers.value(currentServerID)->switchTab(QString::number(0));
 	}
 }
 
@@ -184,6 +219,8 @@ void findChatTabWidget()
 			chatTabWidget->setMaximumHeight(24);
 
 			c = QObject::connect(chatTabWidget, &QTabWidget::currentChanged, receive);
+			//c = QObject::connect(chatTabWidget, &QTabWidget::tabBarClicked, receive);
+			d = QObject::connect(chatTabWidget, &QTabWidget::tabCloseRequested, tabCloseReceive);
 			chatTabWidget->setMovable(false);
 			
 			//chatTabWidget->setProperty("movable", false);
@@ -214,6 +251,7 @@ void disconnectChatWidget()
 {
 	// disconnect or crash
 	QObject::disconnect(c);
+	QObject::disconnect(d);
 }
 
 // init plugin
@@ -224,6 +262,9 @@ int ts3plugin_init() {
 	pathToPlugin = QString(pluginPath);
 	readEmoteJson(pathToPlugin);
 
+	timer = new QTimer();
+	timer->setSingleShot(true);
+	QObject::connect(timer, &QTimer::timeout, recheck);
 	chatStack = new QStackedWidget();
 	chatStack->setStyleSheet("border: 1px solid gray");
 	chatStack->setCurrentIndex(0);
@@ -240,6 +281,7 @@ void ts3plugin_shutdown() {
 	//qDeleteAll(servers);
 	//servers.clear();
 	disconnectChatWidget();
+	delete timer;
 	delete chatStack;
 	//delete lWidget;
 	//delete chatTabWidget;
@@ -305,6 +347,8 @@ void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID) 
 	if (servers.contains(serverConnectionHandlerID))
 	{
 		chatStack->setCurrentWidget(servers.value(serverConnectionHandlerID));
+		timer->stop();
+		timer->start(500);
 	}
 }
 
@@ -454,12 +498,51 @@ int ts3plugin_onServerErrorEvent(uint64 serverConnectionHandlerID, const char* e
 void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage) {
 }
 
+QString isAnimated(bool animated)
+{
+	if (animated)
+	{
+		return "gif";
+	}
+	return "png";
+}
+
+QString urltags(QString original)
+{
+	// replace url bbcode tags
+	//QMessageBox::information(0, "url", original, QMessageBox::Ok);
+	original = original.toHtmlEscaped();
+	QRegularExpression url(QString("\\[URL(=(.*?))?\\](.*?)\\[\\/URL\\]"));
+	QRegularExpressionMatchIterator iterator = url.globalMatch(original);
+	while (iterator.hasNext())
+	{
+		QRegularExpressionMatch match = iterator.next();
+		//QMessageBox::information(0, "url", match.captured(0), QMessageBox::Ok);
+		QString htmlurl;
+		if (!match.captured(2).isNull())
+		{
+			htmlurl = QString("<a href=\"%1\">%2</a>").arg(match.captured(2), match.captured(3));
+		}
+		else
+		{
+			htmlurl = QString("<a href=\"%1\">%2</a>").arg(match.captured(3), match.captured(3));
+		}
+		
+		original.replace(match.captured(0), htmlurl);
+	}
+	return original;
+}
+
 // replace emote text with html <img>
 QString emoticonize(QString original)
 {
+	// newlines to br
 	original.replace(QRegExp("[\r\n]"), "</br>");
+	
 	//original.replace("\n\r", "</br>");
+	// escape single quotes
 	original.replace("'", "\\'");
+	// add embedded youtube video
 	QRegExp yt("http(?:s?):\\/\\/(?:www\\.)?youtu(?:be\\.com\\/watch\\?v=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?[\\w\\?=]*)?");
 	int i = yt.indexIn(original);
 	if (i > 0)
@@ -467,12 +550,14 @@ QString emoticonize(QString original)
 		QStringList list = yt.capturedTexts();
 		original.append(QString("</br><iframe frameborder=\"0\" src=\"https://www.youtube.com/embed/%1\" allowfullscreen></iframe>").arg(list.value(1)));
 	}
+	// replace emoticons
 	QStringList keys = emotes.keys();
 	foreach(QString value, keys)
 	{
 		QRegularExpression rx(QString("(?!<a[^>]*?>)(%1)(?![^<]*?</a>)").arg(value));
 		
-		original.replace(rx, QString("<img class=\"%1\" />").arg(emotes[value].toString()));
+		//original.replace(rx, QString("<img class=\"%1\" />").arg(emotes[value].toString()));
+		original.replace(rx, QString("<img class=\"%1\" src=\"Emotes/%1.%2\" title=\"%1\" />").arg(emotes[value].toObject()["name"].toString(), isAnimated(emotes[value].toObject()["animated"].toBool())));
 	}
 	return original;
 }
@@ -488,11 +573,12 @@ QString direction(bool outgoing)
 }
 
 // parse bbcode, emoticonize
-QString format(const char* message, const char* name, bool outgoing)
+QString format(QString message, const char* name, bool outgoing)
 {
 	QTime t = QTime::currentTime();
 	stringstream str;
-	str << message;
+	//str << message;
+	str << urltags(message).toStdString();
 	parser.source_stream(str);
 	parser.parse();
 	return QString("<img class=\"%1\"><span><%2> <span class=\"name\">\"%3\"</span>: %4</span>").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), emoticonize(QString::fromStdString(parser.content())));
@@ -537,6 +623,17 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 		else
 		{
 			key = fromName;
+		}
+	}
+	QString m(message);
+	if (m.startsWith("!embed "))
+	{
+		QStringList l = m.split(' ');
+		if (l.count() > 1)
+		{
+			l[1].remove(QRegularExpression("\\[\\/?URL\\]"));
+			servers.value(serverConnectionHandlerID)->messageReceived2(QString("<img class=\"%1 embedded-image\"><span><%2> <span class=\"name\">\"%3\"</span>:<a href=\"%4\"><img src=\"%4\"/></a></span>").arg(direction(outgoing), QTime::currentTime().toString("hh:mm:ss"), QString(fromName), l.value(1)), key);
+			return 0;
 		}
 	}
 	
