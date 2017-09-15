@@ -200,6 +200,7 @@ static void tabCloseReceive(int i)
 	if (i > 1)
 	{
 		servers.value(currentServerID)->switchTab(QString::number(0));
+		chatTabWidget->setCurrentIndex(0);
 	}
 }
 
@@ -411,8 +412,11 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 	}
 	if (newStatus == STATUS_DISCONNECTED)
 	{
-		servers.value(serverConnectionHandlerID)->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">Server Disconnected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), "0");
-		clients.remove(serverConnectionHandlerID);
+		if (servers.contains(serverConnectionHandlerID))
+		{
+			servers.value(serverConnectionHandlerID)->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">Server Disconnected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), "0");
+			clients.remove(serverConnectionHandlerID);
+		}
 	}
 }
 
@@ -548,7 +552,7 @@ QString emoticonize(QString original)
 	if (i > 0)
 	{
 		QStringList list = yt.capturedTexts();
-		original.append(QString("</br><iframe frameborder=\"0\" src=\"https://www.youtube.com/embed/%1\" allowfullscreen></iframe>").arg(list.value(1)));
+		original.append(QString("</br><iframe frameborder=\"0\" src=\"https://www.youtube.com/embed/%1\" ></iframe>").arg(list.value(1)));
 	}
 	// replace emoticons
 	QStringList keys = emotes.keys();
