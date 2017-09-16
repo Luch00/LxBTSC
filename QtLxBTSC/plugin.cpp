@@ -261,6 +261,7 @@ int ts3plugin_init() {
 
 	//QMessageBox::information(0, "debug", "init", QMessageBox::Ok);
 	chat = new QtGuiClass(pathToPlugin);
+	chat->setStyleSheet("border: 1px solid gray");
 	//QMessageBox::information(0, "debug", "init_done", QMessageBox::Ok);
 
     return 0;  /* 0 = success, 1 = failure, -2 = failure but client will not show a "failed to load" warning */
