@@ -20,9 +20,10 @@ public:
 	QtGuiClass(QString path, QWidget *parent = Q_NULLPTR);
 	~QtGuiClass();
 	void messageReceived2(QString s, QString key);
-	void addTab(QString key);
+	void createPage();
 	void switchTab(QString key);
 	void nicknameChanged(QString key);
+	void addServer(unsigned long long);
 
 	QVBoxLayout *verticalLayout;
 	QWebEngineView *view;
@@ -34,7 +35,7 @@ public:
 	void linkHovered(QUrl);
 
 private:
-	QMap<QString, TsWebEnginePage*> tabs;
+	TsWebEnginePage *page;
 	void setupUi(QWidget *QtGuiClass);
 	QString pathToPage;
 	QUrl currentHoveredUrl;

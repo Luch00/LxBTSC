@@ -32,7 +32,7 @@
 #include <QMetaProperty>
 #include <QMessageBox>
 #include <QtWidgets/QVBoxLayout>
-#include <QStackedWidget>
+//#include <QStackedWidget>
 #include <QFile>
 #include <QRegularExpression>
 #include <QTimer>
@@ -126,10 +126,9 @@ void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
  * If the function returns 1 on failure, the plugin will be unloaded again.
  */
 uint64 currentServerID;
-QMap<uint64, QtGuiClass*> servers;
+QtGuiClass *chat;
 QMap<uint64, QMap<anyID, QString> > clients;
 QJsonObject emotes;
-QStackedWidget *chatStack;
 QTabWidget *chatTabWidget;
 QMetaObject::Connection c;
 QMetaObject::Connection d;
@@ -155,43 +154,51 @@ void readEmoteJson(QString path)
 // some info
 static void receive(int i)
 {
+	//QMessageBox::information(0, "debug", "tabchange_trigger", QMessageBox::Ok);
 	if (i >= 0)
 	{
-		QString name;
-		if (i > 1)
+		QString tabName;
+		if (i == 0)
 		{
-			name = chatTabWidget->tabText(i);
+			tabName = QString("tab-%1-server").arg(currentServerID);
+		}
+		else if (i == 1)
+		{
+			tabName = QString("tab-%1-channel").arg(currentServerID);
 		}
 		else
 		{
-			/*if (i == 0)
-			{
-				timer->stop();
-				timer->start(400);
-			}*/
-			name = QString::number(i);
+			tabName = QString("tab-%1-%2").arg(currentServerID).arg(chatTabWidget->tabText(i));
 		}
-		//QMessageBox::information(0, "switchtab", name, QMessageBox::Ok);
-		servers.value(currentServerID)->switchTab(name);
+		chat->switchTab(tabName);
 	}
+	//QMessageBox::information(0, "debug", "tabchange_done", QMessageBox::Ok);
 }
 
 static void recheck()
 {
-	int i = chatTabWidget->currentIndex();
-	if (i >= 0)
+	if (currentServerID != NULL)
 	{
-		QString name;
-		if (i > 1)
+		//QMessageBox::information(0, "debug", QString("recheck_trigger: %1").arg(currentServerID), QMessageBox::Ok);
+		int i = chatTabWidget->currentIndex();
+		if (i >= 0)
 		{
-			name = chatTabWidget->tabText(i);
+			QString tabName;
+			if (i == 0)
+			{
+				tabName = QString("tab-%1-server").arg(currentServerID);
+			}
+			else if (i == 1)
+			{
+				tabName = QString("tab-%1-channel").arg(currentServerID);
+			}
+			else
+			{
+				tabName = QString("tab-%1-%2").arg(currentServerID).arg(chatTabWidget->tabText(i));
+			}
+			chat->switchTab(tabName);
 		}
-		else
-		{
-			name = QString::number(i);
-		}
-		//QMessageBox::information(0, "recheck", name, QMessageBox::Ok);
-		servers.value(currentServerID)->switchTab(name);
+		//QMessageBox::information(0, "debug", "recheck_done", QMessageBox::Ok);
 	}
 }
 
@@ -199,7 +206,8 @@ static void tabCloseReceive(int i)
 {
 	if (i > 1)
 	{
-		servers.value(currentServerID)->switchTab(QString::number(0));
+		QString tabName = QString("tab-%1-server").arg(currentServerID);
+		chat->switchTab(tabName);
 		chatTabWidget->setCurrentIndex(0);
 	}
 }
@@ -214,7 +222,10 @@ void findChatTabWidget()
 		{
 			chatTabWidget = static_cast<QTabWidget*>(list[i]);
 			QWidget *parent = chatTabWidget->parentWidget();
-			static_cast<QBoxLayout*>(parent->layout())->insertWidget(0, chatStack);
+			
+			//QMessageBox::information(0, "debug", "widget_add", QMessageBox::Ok);
+			static_cast<QBoxLayout*>(parent->layout())->insertWidget(0, chat);
+			//QMessageBox::information(0, "debug", "widget_add_done", QMessageBox::Ok);
 
 			chatTabWidget->setMinimumHeight(24);
 			chatTabWidget->setMaximumHeight(24);
@@ -223,25 +234,6 @@ void findChatTabWidget()
 			//c = QObject::connect(chatTabWidget, &QTabWidget::tabBarClicked, receive);
 			d = QObject::connect(chatTabWidget, &QTabWidget::tabCloseRequested, tabCloseReceive);
 			chatTabWidget->setMovable(false);
-			
-			//chatTabWidget->setProperty("movable", false);
-			//QObject *o = t->currentWidget();
-			//int i = t->currentIndex();
-			//QString name = t->tabText(i);
-			/*const QMetaObject *m = parent->metaObject();
-			QStringList pl;
-			for (int y = 0; y < m->propertyCount(); ++y)
-			{
-				pl.append(m->property(y).name());
-			}
-			QString text = pl.join(",");
-			ts3Functions.printMessageToCurrentTab(text.toStdString().c_str());*/
-			//QMessageBox::information(0, "boo", text, QMessageBox::Ok);
-			//chatTabWidget->resize(s.width(), 24);
-			//chatTabWidget->updateGeometry();
-			//layout->addWidget(chatTabWidget);
-			//parent->repaint();
-			//layout->update();
 			
 			break;
 		}
@@ -266,9 +258,10 @@ int ts3plugin_init() {
 	timer = new QTimer();
 	timer->setSingleShot(true);
 	QObject::connect(timer, &QTimer::timeout, recheck);
-	chatStack = new QStackedWidget();
-	chatStack->setStyleSheet("border: 1px solid gray");
-	chatStack->setCurrentIndex(0);
+
+	//QMessageBox::information(0, "debug", "init", QMessageBox::Ok);
+	chat = new QtGuiClass(pathToPlugin);
+	//QMessageBox::information(0, "debug", "init_done", QMessageBox::Ok);
 
     return 0;  /* 0 = success, 1 = failure, -2 = failure but client will not show a "failed to load" warning */
 	/* -2 is a very special case and should only be used if a plugin displays a dialog (e.g. overlay) asking the user to disable
@@ -279,14 +272,11 @@ int ts3plugin_init() {
 /* Custom code called right before the plugin is unloaded */
 void ts3plugin_shutdown() {
     /* Your plugin cleanup code here */
-	//qDeleteAll(servers);
-	//servers.clear();
 	disconnectChatWidget();
 	delete timer;
-	delete chatStack;
+	delete chat;
 	//delete lWidget;
 	//delete chatTabWidget;
-
 	
 	/*
 	 * Note:
@@ -307,19 +297,19 @@ void ts3plugin_shutdown() {
  */
 
 /* Tell client if plugin offers a configuration window. If this function is not implemented, it's an assumed "does not offer" (PLUGIN_OFFERS_NO_CONFIGURE). */
-int ts3plugin_offersConfigure() {
-	/*
-	 * Return values:
-	 * PLUGIN_OFFERS_NO_CONFIGURE         - Plugin does not implement ts3plugin_configure
-	 * PLUGIN_OFFERS_CONFIGURE_NEW_THREAD - Plugin does implement ts3plugin_configure and requests to run this function in an own thread
-	 * PLUGIN_OFFERS_CONFIGURE_QT_THREAD  - Plugin does implement ts3plugin_configure and requests to run this function in the Qt GUI thread
-	 */
-	return PLUGIN_OFFERS_NO_CONFIGURE;  /* In this case ts3plugin_configure does not need to be implemented */
-}
+//int ts3plugin_offersConfigure() {
+//	/*
+//	 * Return values:
+//	 * PLUGIN_OFFERS_NO_CONFIGURE         - Plugin does not implement ts3plugin_configure
+//	 * PLUGIN_OFFERS_CONFIGURE_NEW_THREAD - Plugin does implement ts3plugin_configure and requests to run this function in an own thread
+//	 * PLUGIN_OFFERS_CONFIGURE_QT_THREAD  - Plugin does implement ts3plugin_configure and requests to run this function in the Qt GUI thread
+//	 */
+//	return PLUGIN_OFFERS_NO_CONFIGURE;  /* In this case ts3plugin_configure does not need to be implemented */
+//}
 
 /* Plugin might offer a configuration window. If ts3plugin_offersConfigure returns 0, this function does not need to be implemented. */
-void ts3plugin_configure(void* handle, void* qParentWidget) {
-}
+//void ts3plugin_configure(void* handle, void* qParentWidget) {
+//}
 
 /*
  * If the plugin wants to use error return codes, plugin commands, hotkeys or menu items, it needs to register a command ID. This function will be
@@ -345,9 +335,8 @@ int ts3plugin_processCommand(uint64 serverConnectionHandlerID, const char* comma
 /* Client changed current server connection handler */
 void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID) {
 	currentServerID = serverConnectionHandlerID;
-	if (servers.contains(serverConnectionHandlerID))
+	if (first == false)
 	{
-		chatStack->setCurrentWidget(servers.value(serverConnectionHandlerID));
 		timer->stop();
 		timer->start(500);
 	}
@@ -395,51 +384,45 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 	{
 		if (first)
 		{
+			//QMessageBox::information(0, "debug", "first_connect", QMessageBox::Ok);
+			// Add new chat widget to the UI       ??does serverConnectionHandlerID stay same during teamspeak session even if disconnect/connect several times??
 			findChatTabWidget();
 			first = false;
-			//chatStack->repaint();
+			//QMessageBox::information(0, "debug", "first_connect_done", QMessageBox::Ok);
 		}
-
-		// create new better chat widget for a new server       ??does serverConnectionHandlerID stay same during teamspeak session even if disconnect/connect several times??
-		if (!servers.contains(serverConnectionHandlerID))
-		{
-			servers.insert(serverConnectionHandlerID, new QtGuiClass(pathToPlugin));
-			chatStack->addWidget(servers.value(serverConnectionHandlerID));
-			chatStack->setCurrentWidget(servers.value(serverConnectionHandlerID));
-		}
+		//QMessageBox::information(0, "debug", "add_server", QMessageBox::Ok);
+		chat->addServer(serverConnectionHandlerID);
+		//QMessageBox::information(0, "debug", "add_server_done", QMessageBox::Ok);
 		clients.insert(serverConnectionHandlerID, getAllClientNicks(serverConnectionHandlerID));
-		servers.value(serverConnectionHandlerID)->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">Server Connected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), "0");
+		chat->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">Server Connected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), QString("tab-%1-server").arg(serverConnectionHandlerID));
 	}
 	if (newStatus == STATUS_DISCONNECTED)
 	{
-		if (servers.contains(serverConnectionHandlerID))
-		{
-			servers.value(serverConnectionHandlerID)->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">Server Disconnected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), "0");
-			clients.remove(serverConnectionHandlerID);
-		}
+		chat->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">Server Disconnected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), QString("tab-%1-server").arg(serverConnectionHandlerID));
+		clients.remove(serverConnectionHandlerID);
 	}
 }
 
-void ts3plugin_onNewChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID) {
-}
+//void ts3plugin_onNewChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID) {
+//}
 
-void ts3plugin_onNewChannelCreatedEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
-}
+//void ts3plugin_onNewChannelCreatedEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
+//}
 
-void ts3plugin_onDelChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
-}
+//void ts3plugin_onDelChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
+//}
 
-void ts3plugin_onChannelMoveEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 newChannelParentID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
-}
+//void ts3plugin_onChannelMoveEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 newChannelParentID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
+//}
 
-void ts3plugin_onUpdateChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID) {
-}
+//void ts3plugin_onUpdateChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID) {
+//}
 
-void ts3plugin_onUpdateChannelEditedEvent(uint64 serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
-}
+//void ts3plugin_onUpdateChannelEditedEvent(uint64 serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
+//}
 
-void ts3plugin_onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clientID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
-}
+//void ts3plugin_onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clientID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
+//}
 
 void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* moveMessage) {
 	if (oldChannelID == 0)
@@ -449,7 +432,8 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 		ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
 		clients[serverConnectionHandlerID].insert(clientID, QString(res));
 
-		servers.value(serverConnectionHandlerID)->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">%2 Joined</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), QString(res)), "0");
+		//servers.value(serverConnectionHandlerID)->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">%2 Joined</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), QString(res)), "0");
+		chat->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">%2 Joined</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), QString(res)), QString("tab-%1-server").arg(serverConnectionHandlerID));
 	}
 	if (newChannelID == 0)
 	{
@@ -457,24 +441,24 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 		//char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
 		//ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
 		QString name = clients[serverConnectionHandlerID].take(clientID);
-		servers.value(serverConnectionHandlerID)->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">%2 Left</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), name), "0");
+		chat->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">%2 Left</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), name), QString("tab-%1-server").arg(serverConnectionHandlerID));
 	}
 }
 
-void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility) {
-}
+//void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility) {
+//}
 
-void ts3plugin_onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* timeoutMessage) {
-}
+//void ts3plugin_onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* timeoutMessage) {
+//}
 
-void ts3plugin_onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID moverID, const char* moverName, const char* moverUniqueIdentifier, const char* moveMessage) {
-}
+//void ts3plugin_onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID moverID, const char* moverName, const char* moverUniqueIdentifier, const char* moveMessage) {
+//}
 
-void ts3plugin_onClientKickFromChannelEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage) {
-}
+//void ts3plugin_onClientKickFromChannelEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage) {
+//}
 
-void ts3plugin_onClientKickFromServerEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage) {
-}
+//void ts3plugin_onClientKickFromServerEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage) {
+//}
 
 void ts3plugin_onClientIDsEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, anyID clientID, const char* clientName) {
 }
@@ -482,11 +466,11 @@ void ts3plugin_onClientIDsEvent(uint64 serverConnectionHandlerID, const char* un
 void ts3plugin_onClientIDsFinishedEvent(uint64 serverConnectionHandlerID) {
 }
 
-void ts3plugin_onServerEditedEvent(uint64 serverConnectionHandlerID, anyID editerID, const char* editerName, const char* editerUniqueIdentifier) {
-}
+//void ts3plugin_onServerEditedEvent(uint64 serverConnectionHandlerID, anyID editerID, const char* editerName, const char* editerUniqueIdentifier) {
+//}
 
-void ts3plugin_onServerUpdatedEvent(uint64 serverConnectionHandlerID) {
-}
+//void ts3plugin_onServerUpdatedEvent(uint64 serverConnectionHandlerID) {
+//}
 
 int ts3plugin_onServerErrorEvent(uint64 serverConnectionHandlerID, const char* errorMessage, unsigned int error, const char* returnCode, const char* extraMessage) {
 	if(returnCode) {
@@ -499,8 +483,8 @@ int ts3plugin_onServerErrorEvent(uint64 serverConnectionHandlerID, const char* e
 	return 0;  /* If no plugin return code was used, the return value of this function is ignored */
 }
 
-void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage) {
-}
+//void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage) {
+//}
 
 QString isAnimated(bool animated)
 {
@@ -543,7 +527,6 @@ QString emoticonize(QString original)
 	// newlines to br
 	original.replace(QRegExp("[\r\n]"), "</br>");
 	
-	//original.replace("\n\r", "</br>");
 	// escape single quotes
 	original.replace("'", "\\'");
 	// add embedded youtube video
@@ -610,11 +593,11 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 	QString key;
 	if (targetMode == 3)
 	{
-		key = "0";
+		key = QString("tab-%1-server").arg(serverConnectionHandlerID);
 	}
 	else if (targetMode == 2)
 	{
-		key = "1";
+		key = QString("tab-%1-channel").arg(serverConnectionHandlerID);
 	}
 	else
 	{
@@ -622,7 +605,8 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 		{
 			char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
 			ts3Functions.getClientDisplayName(serverConnectionHandlerID, toID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
-			key = res;
+			//key = res;
+			key = QString("tab-%1-%2").arg(serverConnectionHandlerID).arg(res);
 		}
 		else
 		{
@@ -636,220 +620,220 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 		if (l.count() > 1)
 		{
 			l[1].remove(QRegularExpression("\\[\\/?URL\\]"));
-			servers.value(serverConnectionHandlerID)->messageReceived2(QString("<img class=\"%1 embedded-image\"><span><%2> <span class=\"name\">\"%3\"</span>:<a href=\"%4\"><img src=\"%4\"/></a></span>").arg(direction(outgoing), QTime::currentTime().toString("hh:mm:ss"), QString(fromName), l.value(1)), key);
+			chat->messageReceived2(QString("<img class=\"%1 embedded-image\"><span><%2> <span class=\"name\">\"%3\"</span>:<a href=\"%4\"><img src=\"%4\"/></a></span>").arg(direction(outgoing), QTime::currentTime().toString("hh:mm:ss"), QString(fromName), l.value(1)), key);
 			return 0;
 		}
 	}
 	
-	servers.value(serverConnectionHandlerID)->messageReceived2(format(message, fromName, outgoing), key);
+	chat->messageReceived2(format(message, fromName, outgoing), key);
     return 0;  /* 0 = handle normally, 1 = client will ignore the text message */
 }
 
-void ts3plugin_onTalkStatusChangeEvent(uint64 serverConnectionHandlerID, int status, int isReceivedWhisper, anyID clientID) {
-}
+//void ts3plugin_onTalkStatusChangeEvent(uint64 serverConnectionHandlerID, int status, int isReceivedWhisper, anyID clientID) {
+//}
 
-void ts3plugin_onConnectionInfoEvent(uint64 serverConnectionHandlerID, anyID clientID) {
-}
+//void ts3plugin_onConnectionInfoEvent(uint64 serverConnectionHandlerID, anyID clientID) {
+//}
 
-void ts3plugin_onServerConnectionInfoEvent(uint64 serverConnectionHandlerID) {
-}
+//void ts3plugin_onServerConnectionInfoEvent(uint64 serverConnectionHandlerID) {
+//}
 
-void ts3plugin_onChannelSubscribeEvent(uint64 serverConnectionHandlerID, uint64 channelID) {
-}
+//void ts3plugin_onChannelSubscribeEvent(uint64 serverConnectionHandlerID, uint64 channelID) {
+//}
 
-void ts3plugin_onChannelSubscribeFinishedEvent(uint64 serverConnectionHandlerID) {
-}
+//void ts3plugin_onChannelSubscribeFinishedEvent(uint64 serverConnectionHandlerID) {
+//}
 
-void ts3plugin_onChannelUnsubscribeEvent(uint64 serverConnectionHandlerID, uint64 channelID) {
-}
+//void ts3plugin_onChannelUnsubscribeEvent(uint64 serverConnectionHandlerID, uint64 channelID) {
+//}
 
-void ts3plugin_onChannelUnsubscribeFinishedEvent(uint64 serverConnectionHandlerID) {
-}
+//void ts3plugin_onChannelUnsubscribeFinishedEvent(uint64 serverConnectionHandlerID) {
+//}
 
-void ts3plugin_onChannelDescriptionUpdateEvent(uint64 serverConnectionHandlerID, uint64 channelID) {
-}
+//void ts3plugin_onChannelDescriptionUpdateEvent(uint64 serverConnectionHandlerID, uint64 channelID) {
+//}
 
-void ts3plugin_onChannelPasswordChangedEvent(uint64 serverConnectionHandlerID, uint64 channelID) {
-}
+//void ts3plugin_onChannelPasswordChangedEvent(uint64 serverConnectionHandlerID, uint64 channelID) {
+//}
 
-void ts3plugin_onPlaybackShutdownCompleteEvent(uint64 serverConnectionHandlerID) {
-}
+//void ts3plugin_onPlaybackShutdownCompleteEvent(uint64 serverConnectionHandlerID) {
+//}
 
-void ts3plugin_onSoundDeviceListChangedEvent(const char* modeID, int playOrCap) {
-}
+//void ts3plugin_onSoundDeviceListChangedEvent(const char* modeID, int playOrCap) {
+//}
 
-void ts3plugin_onEditPlaybackVoiceDataEvent(uint64 serverConnectionHandlerID, anyID clientID, short* samples, int sampleCount, int channels) {
-}
+//void ts3plugin_onEditPlaybackVoiceDataEvent(uint64 serverConnectionHandlerID, anyID clientID, short* samples, int sampleCount, int channels) {
+//}
 
-void ts3plugin_onEditPostProcessVoiceDataEvent(uint64 serverConnectionHandlerID, anyID clientID, short* samples, int sampleCount, int channels, const unsigned int* channelSpeakerArray, unsigned int* channelFillMask) {
-}
+//void ts3plugin_onEditPostProcessVoiceDataEvent(uint64 serverConnectionHandlerID, anyID clientID, short* samples, int sampleCount, int channels, const unsigned int* channelSpeakerArray, unsigned int* channelFillMask) {
+//}
 
-void ts3plugin_onEditMixedPlaybackVoiceDataEvent(uint64 serverConnectionHandlerID, short* samples, int sampleCount, int channels, const unsigned int* channelSpeakerArray, unsigned int* channelFillMask) {
-}
+//void ts3plugin_onEditMixedPlaybackVoiceDataEvent(uint64 serverConnectionHandlerID, short* samples, int sampleCount, int channels, const unsigned int* channelSpeakerArray, unsigned int* channelFillMask) {
+//}
 
-void ts3plugin_onEditCapturedVoiceDataEvent(uint64 serverConnectionHandlerID, short* samples, int sampleCount, int channels, int* edited) {
-}
+//void ts3plugin_onEditCapturedVoiceDataEvent(uint64 serverConnectionHandlerID, short* samples, int sampleCount, int channels, int* edited) {
+//}
 
-void ts3plugin_onCustom3dRolloffCalculationClientEvent(uint64 serverConnectionHandlerID, anyID clientID, float distance, float* volume) {
-}
+//void ts3plugin_onCustom3dRolloffCalculationClientEvent(uint64 serverConnectionHandlerID, anyID clientID, float distance, float* volume) {
+//}
 
-void ts3plugin_onCustom3dRolloffCalculationWaveEvent(uint64 serverConnectionHandlerID, uint64 waveHandle, float distance, float* volume) {
-}
+//void ts3plugin_onCustom3dRolloffCalculationWaveEvent(uint64 serverConnectionHandlerID, uint64 waveHandle, float distance, float* volume) {
+//}
 
-void ts3plugin_onUserLoggingMessageEvent(const char* logMessage, int logLevel, const char* logChannel, uint64 logID, const char* logTime, const char* completeLogString) {
-}
+//void ts3plugin_onUserLoggingMessageEvent(const char* logMessage, int logLevel, const char* logChannel, uint64 logID, const char* logTime, const char* completeLogString) {
+//}
 
 /* Clientlib rare */
 
-void ts3plugin_onClientBanFromServerEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, uint64 time, const char* kickMessage) {
-}
+//void ts3plugin_onClientBanFromServerEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, uint64 time, const char* kickMessage) {
+//}
 
-int ts3plugin_onClientPokeEvent(uint64 serverConnectionHandlerID, anyID fromClientID, const char* pokerName, const char* pokerUniqueIdentity, const char* message, int ffIgnored) {
-    return 0;  /* 0 = handle normally, 1 = client will ignore the poke */
-}
+//int ts3plugin_onClientPokeEvent(uint64 serverConnectionHandlerID, anyID fromClientID, const char* pokerName, const char* pokerUniqueIdentity, const char* message, int ffIgnored) {
+//    return 0;  /* 0 = handle normally, 1 = client will ignore the poke */
+//}
 
-void ts3plugin_onClientSelfVariableUpdateEvent(uint64 serverConnectionHandlerID, int flag, const char* oldValue, const char* newValue) {
-}
+//void ts3plugin_onClientSelfVariableUpdateEvent(uint64 serverConnectionHandlerID, int flag, const char* oldValue, const char* newValue) {
+//}
 
-void ts3plugin_onFileListEvent(uint64 serverConnectionHandlerID, uint64 channelID, const char* path, const char* name, uint64 size, uint64 datetime, int type, uint64 incompletesize, const char* returnCode) {
-}
+//void ts3plugin_onFileListEvent(uint64 serverConnectionHandlerID, uint64 channelID, const char* path, const char* name, uint64 size, uint64 datetime, int type, uint64 incompletesize, const char* returnCode) {
+//}
 
-void ts3plugin_onFileListFinishedEvent(uint64 serverConnectionHandlerID, uint64 channelID, const char* path) {
-}
+//void ts3plugin_onFileListFinishedEvent(uint64 serverConnectionHandlerID, uint64 channelID, const char* path) {
+//}
 
-void ts3plugin_onFileInfoEvent(uint64 serverConnectionHandlerID, uint64 channelID, const char* name, uint64 size, uint64 datetime) {
-}
+//void ts3plugin_onFileInfoEvent(uint64 serverConnectionHandlerID, uint64 channelID, const char* name, uint64 size, uint64 datetime) {
+//}
 
-void ts3plugin_onServerGroupListEvent(uint64 serverConnectionHandlerID, uint64 serverGroupID, const char* name, int type, int iconID, int saveDB) {
-}
+//void ts3plugin_onServerGroupListEvent(uint64 serverConnectionHandlerID, uint64 serverGroupID, const char* name, int type, int iconID, int saveDB) {
+//}
 
-void ts3plugin_onServerGroupListFinishedEvent(uint64 serverConnectionHandlerID) {
-}
+//void ts3plugin_onServerGroupListFinishedEvent(uint64 serverConnectionHandlerID) {
+//}
 
-void ts3plugin_onServerGroupByClientIDEvent(uint64 serverConnectionHandlerID, const char* name, uint64 serverGroupList, uint64 clientDatabaseID) {
-}
+//void ts3plugin_onServerGroupByClientIDEvent(uint64 serverConnectionHandlerID, const char* name, uint64 serverGroupList, uint64 clientDatabaseID) {
+//}
 
-void ts3plugin_onServerGroupPermListEvent(uint64 serverConnectionHandlerID, uint64 serverGroupID, unsigned int permissionID, int permissionValue, int permissionNegated, int permissionSkip) {
-}
+//void ts3plugin_onServerGroupPermListEvent(uint64 serverConnectionHandlerID, uint64 serverGroupID, unsigned int permissionID, int permissionValue, int permissionNegated, int permissionSkip) {
+//}
 
-void ts3plugin_onServerGroupPermListFinishedEvent(uint64 serverConnectionHandlerID, uint64 serverGroupID) {
-}
+//void ts3plugin_onServerGroupPermListFinishedEvent(uint64 serverConnectionHandlerID, uint64 serverGroupID) {
+//}
 
-void ts3plugin_onServerGroupClientListEvent(uint64 serverConnectionHandlerID, uint64 serverGroupID, uint64 clientDatabaseID, const char* clientNameIdentifier, const char* clientUniqueID) {
-}
+//void ts3plugin_onServerGroupClientListEvent(uint64 serverConnectionHandlerID, uint64 serverGroupID, uint64 clientDatabaseID, const char* clientNameIdentifier, const char* clientUniqueID) {
+//}
 
-void ts3plugin_onChannelGroupListEvent(uint64 serverConnectionHandlerID, uint64 channelGroupID, const char* name, int type, int iconID, int saveDB) {
-}
+//void ts3plugin_onChannelGroupListEvent(uint64 serverConnectionHandlerID, uint64 channelGroupID, const char* name, int type, int iconID, int saveDB) {
+//}
 
-void ts3plugin_onChannelGroupListFinishedEvent(uint64 serverConnectionHandlerID) {
-}
+//void ts3plugin_onChannelGroupListFinishedEvent(uint64 serverConnectionHandlerID) {
+//}
 
-void ts3plugin_onChannelGroupPermListEvent(uint64 serverConnectionHandlerID, uint64 channelGroupID, unsigned int permissionID, int permissionValue, int permissionNegated, int permissionSkip) {
-}
+//void ts3plugin_onChannelGroupPermListEvent(uint64 serverConnectionHandlerID, uint64 channelGroupID, unsigned int permissionID, int permissionValue, int permissionNegated, int permissionSkip) {
+//}
 
-void ts3plugin_onChannelGroupPermListFinishedEvent(uint64 serverConnectionHandlerID, uint64 channelGroupID) {
-}
+//void ts3plugin_onChannelGroupPermListFinishedEvent(uint64 serverConnectionHandlerID, uint64 channelGroupID) {
+//}
 
-void ts3plugin_onChannelPermListEvent(uint64 serverConnectionHandlerID, uint64 channelID, unsigned int permissionID, int permissionValue, int permissionNegated, int permissionSkip) {
-}
+//void ts3plugin_onChannelPermListEvent(uint64 serverConnectionHandlerID, uint64 channelID, unsigned int permissionID, int permissionValue, int permissionNegated, int permissionSkip) {
+//}
 
-void ts3plugin_onChannelPermListFinishedEvent(uint64 serverConnectionHandlerID, uint64 channelID) {
-}
+//void ts3plugin_onChannelPermListFinishedEvent(uint64 serverConnectionHandlerID, uint64 channelID) {
+//}
 
-void ts3plugin_onClientPermListEvent(uint64 serverConnectionHandlerID, uint64 clientDatabaseID, unsigned int permissionID, int permissionValue, int permissionNegated, int permissionSkip) {
-}
+//void ts3plugin_onClientPermListEvent(uint64 serverConnectionHandlerID, uint64 clientDatabaseID, unsigned int permissionID, int permissionValue, int permissionNegated, int permissionSkip) {
+//}
 
-void ts3plugin_onClientPermListFinishedEvent(uint64 serverConnectionHandlerID, uint64 clientDatabaseID) {
-}
+//void ts3plugin_onClientPermListFinishedEvent(uint64 serverConnectionHandlerID, uint64 clientDatabaseID) {
+//}
 
-void ts3plugin_onChannelClientPermListEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 clientDatabaseID, unsigned int permissionID, int permissionValue, int permissionNegated, int permissionSkip) {
-}
+//void ts3plugin_onChannelClientPermListEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 clientDatabaseID, unsigned int permissionID, int permissionValue, int permissionNegated, int permissionSkip) {
+//}
 
-void ts3plugin_onChannelClientPermListFinishedEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 clientDatabaseID) {
-}
+//void ts3plugin_onChannelClientPermListFinishedEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 clientDatabaseID) {
+//}
 
-void ts3plugin_onClientChannelGroupChangedEvent(uint64 serverConnectionHandlerID, uint64 channelGroupID, uint64 channelID, anyID clientID, anyID invokerClientID, const char* invokerName, const char* invokerUniqueIdentity) {
-}
+//void ts3plugin_onClientChannelGroupChangedEvent(uint64 serverConnectionHandlerID, uint64 channelGroupID, uint64 channelID, anyID clientID, anyID invokerClientID, const char* invokerName, const char* invokerUniqueIdentity) {
+//}
 
-int ts3plugin_onServerPermissionErrorEvent(uint64 serverConnectionHandlerID, const char* errorMessage, unsigned int error, const char* returnCode, unsigned int failedPermissionID) {
-	return 0;  /* See onServerErrorEvent for return code description */
-}
+//int ts3plugin_onServerPermissionErrorEvent(uint64 serverConnectionHandlerID, const char* errorMessage, unsigned int error, const char* returnCode, unsigned int failedPermissionID) {
+//	return 0;  /* See onServerErrorEvent for return code description */
+//}
 
-void ts3plugin_onPermissionListGroupEndIDEvent(uint64 serverConnectionHandlerID, unsigned int groupEndID) {
-}
+//void ts3plugin_onPermissionListGroupEndIDEvent(uint64 serverConnectionHandlerID, unsigned int groupEndID) {
+//}
 
-void ts3plugin_onPermissionListEvent(uint64 serverConnectionHandlerID, unsigned int permissionID, const char* permissionName, const char* permissionDescription) {
-}
+//void ts3plugin_onPermissionListEvent(uint64 serverConnectionHandlerID, unsigned int permissionID, const char* permissionName, const char* permissionDescription) {
+//}
 
-void ts3plugin_onPermissionListFinishedEvent(uint64 serverConnectionHandlerID) {
-}
+//void ts3plugin_onPermissionListFinishedEvent(uint64 serverConnectionHandlerID) {
+//}
 
-void ts3plugin_onPermissionOverviewEvent(uint64 serverConnectionHandlerID, uint64 clientDatabaseID, uint64 channelID, int overviewType, uint64 overviewID1, uint64 overviewID2, unsigned int permissionID, int permissionValue, int permissionNegated, int permissionSkip) {
-}
+//void ts3plugin_onPermissionOverviewEvent(uint64 serverConnectionHandlerID, uint64 clientDatabaseID, uint64 channelID, int overviewType, uint64 overviewID1, uint64 overviewID2, unsigned int permissionID, int permissionValue, int permissionNegated, int permissionSkip) {
+//}
 
-void ts3plugin_onPermissionOverviewFinishedEvent(uint64 serverConnectionHandlerID) {
-}
+//void ts3plugin_onPermissionOverviewFinishedEvent(uint64 serverConnectionHandlerID) {
+//}
 
-void ts3plugin_onServerGroupClientAddedEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientName, const char* clientUniqueIdentity, uint64 serverGroupID, anyID invokerClientID, const char* invokerName, const char* invokerUniqueIdentity) {
-}
+//void ts3plugin_onServerGroupClientAddedEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientName, const char* clientUniqueIdentity, uint64 serverGroupID, anyID invokerClientID, const char* invokerName, const char* invokerUniqueIdentity) {
+//}
 
-void ts3plugin_onServerGroupClientDeletedEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientName, const char* clientUniqueIdentity, uint64 serverGroupID, anyID invokerClientID, const char* invokerName, const char* invokerUniqueIdentity) {
-}
+//void ts3plugin_onServerGroupClientDeletedEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientName, const char* clientUniqueIdentity, uint64 serverGroupID, anyID invokerClientID, const char* invokerName, const char* invokerUniqueIdentity) {
+//}
 
-void ts3plugin_onClientNeededPermissionsEvent(uint64 serverConnectionHandlerID, unsigned int permissionID, int permissionValue) {
-}
+//void ts3plugin_onClientNeededPermissionsEvent(uint64 serverConnectionHandlerID, unsigned int permissionID, int permissionValue) {
+//}
 
-void ts3plugin_onClientNeededPermissionsFinishedEvent(uint64 serverConnectionHandlerID) {
-}
+//void ts3plugin_onClientNeededPermissionsFinishedEvent(uint64 serverConnectionHandlerID) {
+//}
 
-void ts3plugin_onFileTransferStatusEvent(anyID transferID, unsigned int status, const char* statusMessage, uint64 remotefileSize, uint64 serverConnectionHandlerID) {
-}
+//void ts3plugin_onFileTransferStatusEvent(anyID transferID, unsigned int status, const char* statusMessage, uint64 remotefileSize, uint64 serverConnectionHandlerID) {
+//}
 
-void ts3plugin_onClientChatClosedEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientUniqueIdentity) {
-}
+//void ts3plugin_onClientChatClosedEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientUniqueIdentity) {
+//}
 
-void ts3plugin_onClientChatComposingEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientUniqueIdentity) {
-}
+//void ts3plugin_onClientChatComposingEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientUniqueIdentity) {
+//}
 
-void ts3plugin_onServerLogEvent(uint64 serverConnectionHandlerID, const char* logMsg) {
-}
+//void ts3plugin_onServerLogEvent(uint64 serverConnectionHandlerID, const char* logMsg) {
+//}
 
-void ts3plugin_onServerLogFinishedEvent(uint64 serverConnectionHandlerID, uint64 lastPos, uint64 fileSize) {
-}
+//void ts3plugin_onServerLogFinishedEvent(uint64 serverConnectionHandlerID, uint64 lastPos, uint64 fileSize) {
+//}
 
-void ts3plugin_onMessageListEvent(uint64 serverConnectionHandlerID, uint64 messageID, const char* fromClientUniqueIdentity, const char* subject, uint64 timestamp, int flagRead) {
-}
+//void ts3plugin_onMessageListEvent(uint64 serverConnectionHandlerID, uint64 messageID, const char* fromClientUniqueIdentity, const char* subject, uint64 timestamp, int flagRead) {
+//}
 
-void ts3plugin_onMessageGetEvent(uint64 serverConnectionHandlerID, uint64 messageID, const char* fromClientUniqueIdentity, const char* subject, const char* message, uint64 timestamp) {
-}
+//void ts3plugin_onMessageGetEvent(uint64 serverConnectionHandlerID, uint64 messageID, const char* fromClientUniqueIdentity, const char* subject, const char* message, uint64 timestamp) {
+//}
 
-void ts3plugin_onClientDBIDfromUIDEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, uint64 clientDatabaseID) {
-}
+//void ts3plugin_onClientDBIDfromUIDEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, uint64 clientDatabaseID) {
+//}
 
-void ts3plugin_onClientNamefromUIDEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, uint64 clientDatabaseID, const char* clientNickName) {
-}
+//void ts3plugin_onClientNamefromUIDEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, uint64 clientDatabaseID, const char* clientNickName) {
+//}
 
-void ts3plugin_onClientNamefromDBIDEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, uint64 clientDatabaseID, const char* clientNickName) {
-}
+//void ts3plugin_onClientNamefromDBIDEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, uint64 clientDatabaseID, const char* clientNickName) {
+//}
 
-void ts3plugin_onComplainListEvent(uint64 serverConnectionHandlerID, uint64 targetClientDatabaseID, const char* targetClientNickName, uint64 fromClientDatabaseID, const char* fromClientNickName, const char* complainReason, uint64 timestamp) {
-}
+//void ts3plugin_onComplainListEvent(uint64 serverConnectionHandlerID, uint64 targetClientDatabaseID, const char* targetClientNickName, uint64 fromClientDatabaseID, const char* fromClientNickName, const char* complainReason, uint64 timestamp) {
+//}
 
-void ts3plugin_onBanListEvent(uint64 serverConnectionHandlerID, uint64 banid, const char* ip, const char* name, const char* uid, uint64 creationTime, uint64 durationTime, const char* invokerName,
-							  uint64 invokercldbid, const char* invokeruid, const char* reason, int numberOfEnforcements, const char* lastNickName) {
-}
+//void ts3plugin_onBanListEvent(uint64 serverConnectionHandlerID, uint64 banid, const char* ip, const char* name, const char* uid, uint64 creationTime, uint64 durationTime, const char* invokerName,
+//							  uint64 invokercldbid, const char* invokeruid, const char* reason, int numberOfEnforcements, const char* lastNickName) {
+//}
 
-void ts3plugin_onClientServerQueryLoginPasswordEvent(uint64 serverConnectionHandlerID, const char* loginPassword) {
-}
+//void ts3plugin_onClientServerQueryLoginPasswordEvent(uint64 serverConnectionHandlerID, const char* loginPassword) {
+//}
 
-void ts3plugin_onPluginCommandEvent(uint64 serverConnectionHandlerID, const char* pluginName, const char* pluginCommand) {
-}
+//void ts3plugin_onPluginCommandEvent(uint64 serverConnectionHandlerID, const char* pluginName, const char* pluginCommand) {
+//}
 
-void ts3plugin_onIncomingClientQueryEvent(uint64 serverConnectionHandlerID, const char* commandText) {
-}
+//void ts3plugin_onIncomingClientQueryEvent(uint64 serverConnectionHandlerID, const char* commandText) {
+//}
 
-void ts3plugin_onServerTemporaryPasswordListEvent(uint64 serverConnectionHandlerID, const char* clientNickname, const char* uniqueClientIdentifier, const char* description, const char* password, uint64 timestampStart, uint64 timestampEnd, uint64 targetChannelID, const char* targetChannelPW) {
-}
+//void ts3plugin_onServerTemporaryPasswordListEvent(uint64 serverConnectionHandlerID, const char* clientNickname, const char* uniqueClientIdentifier, const char* description, const char* password, uint64 timestampStart, uint64 timestampEnd, uint64 targetChannelID, const char* targetChannelPW) {
+//}
 
 /* Client UI callbacks */
 
@@ -857,8 +841,8 @@ void ts3plugin_onServerTemporaryPasswordListEvent(uint64 serverConnectionHandler
  * Called from client when an avatar image has been downloaded to or deleted from cache.
  * This callback can be called spontaneously or in response to ts3Functions.getAvatar()
  */
-void ts3plugin_onAvatarUpdated(uint64 serverConnectionHandlerID, anyID clientID, const char* avatarPath) {
-}
+//void ts3plugin_onAvatarUpdated(uint64 serverConnectionHandlerID, anyID clientID, const char* avatarPath) {
+//}
 
 /*
  * Called when a plugin menu item (see ts3plugin_initMenus) is triggered. Optional function, when not using plugin menus, do not implement this.
@@ -869,33 +853,33 @@ void ts3plugin_onAvatarUpdated(uint64 serverConnectionHandlerID, anyID clientID,
  * - menuItemID: Id used when creating the menu item
  * - selectedItemID: Channel or Client ID in the case of PLUGIN_MENU_TYPE_CHANNEL and PLUGIN_MENU_TYPE_CLIENT. 0 for PLUGIN_MENU_TYPE_GLOBAL.
  */
-void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenuType type, int menuItemID, uint64 selectedItemID) {
-}
+//void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenuType type, int menuItemID, uint64 selectedItemID) {
+//}
 
 /* This function is called if a plugin hotkey was pressed. Omit if hotkeys are unused. */
-void ts3plugin_onHotkeyEvent(const char* keyword) {
-}
+//void ts3plugin_onHotkeyEvent(const char* keyword) {
+//}
 
 /* Called when recording a hotkey has finished after calling ts3Functions.requestHotkeyInputDialog */
-void ts3plugin_onHotkeyRecordedEvent(const char* keyword, const char* key) {
-}
+//void ts3plugin_onHotkeyRecordedEvent(const char* keyword, const char* key) {
+//}
 
 // This function receives your key Identifier you send to notifyKeyEvent and should return
 // the friendly device name of the device this hotkey originates from. Used for display in UI.
-const char* ts3plugin_keyDeviceName(const char* keyIdentifier) {
-	return NULL;
-}
+//const char* ts3plugin_keyDeviceName(const char* keyIdentifier) {
+//	return NULL;
+//}
 
 // This function translates the given key identifier to a friendly key name for display in the UI
-const char* ts3plugin_displayKeyText(const char* keyIdentifier) {
-	return NULL;
-}
+//const char* ts3plugin_displayKeyText(const char* keyIdentifier) {
+//	return NULL;
+//}
 
 // This is used internally as a prefix for hotkeys so we can store them without collisions.
 // Should be unique across plugins.
-const char* ts3plugin_keyPrefix() {
-	return NULL;
-}
+//const char* ts3plugin_keyPrefix() {
+//	return NULL;
+//}
 
 /* Called when client custom nickname changed */
 void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, const char* displayName, const char* uniqueClientIdentifier) {

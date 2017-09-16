@@ -7,15 +7,12 @@ QtGuiClass::QtGuiClass(QString path, QWidget *parent)
 {
 	setupUi(this);
 	pathToPage = QString("file:///%1LxBTSC/template/chat.html").arg(path);
-	addTab("0");
-	addTab("1");
-	view->setPage(tabs.value("0"));
+	createPage();
+	view->setPage(page);
 }
 
 QtGuiClass::~QtGuiClass()
 {
-	//qDeleteAll(tabs);
-	//tabs.clear();
 }
 
 void QtGuiClass::setupUi(QWidget *QtGuiClass)
@@ -74,51 +71,36 @@ void QtGuiClass::copyUrlActivated()
 	QGuiApplication::clipboard()->setText(currentHoveredUrl.toString(), QClipboard::Clipboard);
 }
 
+void QtGuiClass::addServer(unsigned long long serverId)
+{
+	page->runJavaScript(QString("AddServer('%1');").arg(serverId));
+}
+
 void QtGuiClass::switchTab(QString key)
 {
-	if (tabs.contains(key))
-	{
-		view->setPage(tabs.value(key));
-	}
-	else
-	{
-		addTab(key);
-		view->setPage(tabs.value(key));
-	}
+	//QMessageBox::information(0, "debug", QString("tab_change: %1").arg(key), QMessageBox::Ok);
+	page->runJavaScript(QString("ShowTarget('%1');").arg(key));
 }
 
 void QtGuiClass::nicknameChanged(QString key)
 {
-	if (tabs.contains(key))
+	/*if (tabs.contains(key))
 	{
 		TsWebEnginePage *tab = tabs.take(key);
 		tabs.insert(key, tab);
-	}
+	}*/
 }
 
 void QtGuiClass::messageReceived2(QString s, QString key)
 {
-	//QString js = "AddServerLine(\"<div>" + s + "</div>\");";
-
-	QString js = QString("AddServerLine('<div>%1</div>');").arg(s);
-
-	if (tabs.contains(key))
-	{
-		//tabs->value(id)->page()->runJavaScript(js);
-		tabs.value(key)->runJavaScript(js);
-	}
-	else
-	{
-		addTab(key);
-		tabs.value(key)->addBufferLine(js);
-	}
+	QString js = QString("AddLine('%1', '<div>%2</div>');").arg(key, s);
+	page->runJavaScript(js);
 }
 
-void QtGuiClass::addTab(QString key)
+void QtGuiClass::createPage()
 {
 	//QMessageBox::information(this, "tabname", key, QMessageBox::Ok);
-	TsWebEnginePage *page = new TsWebEnginePage();
+	page = new TsWebEnginePage();
 	QObject::connect(page, &TsWebEnginePage::linkHovered, this, &QtGuiClass::linkHovered);
 	page->setUrl(QUrl(pathToPage));
-	tabs.insert(key, page);
 }

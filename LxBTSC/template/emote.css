@@ -1,507 +1,406 @@
 img.Kappa {
-    content: url(Emotes/Kappa.png);
     width: 25px;
     height: 28px;
 }
 img.SourPls {
-    content: url(Emotes/2x.gif);
     width: 32px;
     height: 32px;
 }
 img.BibleThump {
-    content: url(Emotes/BibleThump.png);
     width: 36px;
     height: 30px;
 }
 img.WutFace {
-    content: url(Emotes/WutFace.png);
     width: 28px;
     height: 28px;
 }
 img.PogChamp {
-    content: url(Emotes/PogChamp.png);
     width: 23px;
     height: 28px;
 }
 img.ResidentSleeper {
-    content: url(Emotes/ResidentSleeper.png);
     width: 28px;
     height: 28px;
 }
 img.FeelsAmazingMan {
-    content: url(Emotes/FeelsAmazingMan.png);
     width: 28px;
     height: 28px;
 }
 img.FeelsBadMan {
-    content: url(Emotes/FeelsBadMan.png);
     width: 30px;
     height: 30px;
 }
 img.FeelsGoodMan {
-    content: url(Emotes/FeelsGoodMan.png);
     width: 30px;
     height: 30px;
 }
 img.LUL {
-    content: url(Emotes/LUL.png);
     width: 28px;
     height: 28px;
 }
 img.Kreygasm {
-    content: url(Emotes/Kreygasm.png);
     width: 19px;
     height: 27px;
 }
 img.RamKiss {
-    content: url(Emotes/RamKiss.png);
     width: 28px;
     height: 28px;
 }
 img.RemKiss {
-    content: url(Emotes/RemKiss.png);
     width: 28px;
     height: 28px;
 }
 img.BiriBlush {
-    content: url(Emotes/BiriBlush.gif);
     width: 28px;
     height: 28px;
 }
 img.RikkaWoop {
-    content: url(Emotes/RikkaWoop.gif);
     width: 28px;
     height: 28px;
 }
 img.NillaWag {
-    content: url(Emotes/NillaWag.gif);
     width: 28px;
     height: 28px;
 }
 img.Tutturu {
-    content: url(Emotes/Tutturu.png);
     width: 28px;
     height: 28px;
 }
 img.SoSnowy {
-    content: url(Emotes/SoSnowy.gif);
     width: 30px;
     height: 40px;
     position: absolute;    
 }
 img.AkaWalk {
-    content: url(Emotes/AkaWalk.gif);
     width: 28px;
     height: 27px; 
 }
 img.MikuStare {
-    content: url(Emotes/MikuStare.png);
     width: 28px;
     height: 28px; 
 }
 
 img.cirno9 {
-    content: url(Emotes/9cirno9.png);
     width: 16px;
     height: 16px; 
 }
 img.MareWish {
-    content: url(Emotes/MareWish.png);
     width: 16px;
     height: 16px; 
 }
 img.VivioWife {
-    content: url(Emotes/VivioWife.png);
     width: 16px;
     height: 16px; 
 }
 img.EinhartYuri {
-    content: url(Emotes/EinhartYuri.png);
     width: 16px;
     height: 16px; 
 }
 img.NightKud {
-    content: url(Emotes/NightKud.png);
     width: 16px;
     height: 16px; 
 }
 img.DogeZ {
-    content: url(Emotes/DogeZ.png);
     width: 16px;
     height: 16px; 
 }
 img.KinKaren {
-    content: url(Emotes/KinKaren.png);
     width: 16px;
     height: 16px; 
 }
 img.Kabooto {
-    content: url(Emotes/Kabooto.png);
     width: 16px;
     height: 16px; 
 }
 img.NekoRin {
-    content: url(Emotes/NekoRin.png);
     width: 16px;
     height: 16px; 
 }
 img.FairyRenge {
-    content: url(Emotes/FairyRenge.png);
     width: 16px;
     height: 16px; 
 }
 img.ChickenRappi {
-    content: url(Emotes/ChickenRappi.png);
     width: 16px;
     height: 16px; 
 }
 img.UsagigaNigeteru {
-    content: url(Emotes/UsagigaNigeteru.png);
     width: 16px;
     height: 16px; 
 }
 img.NoulShiro {
-    content: url(Emotes/NoulShiro.png);
     width: 16px;
     height: 16px; 
 }
 img.Shyppa {
-    content: url(Emotes/Shyppa.png);
     width: 16px;
     height: 16px; 
 }
 img.LoliLick {
-    content: url(Emotes/LoliLick.png);
     width: 16px;
     height: 16px; 
 }
 img.LoliPantsu {
-    content: url(Emotes/LoliPantsu.png);
     width: 16px;
     height: 16px; 
 }
 img.LoliButt {
-    content: url(Emotes/LoliButt.png);
     width: 16px;
     height: 16px; 
 }
 img.AmazingChest {
-    content: url(Emotes/AmazingChest.png);
     width: 16px;
     height: 16px; 
 }
 img.HentaiNeko {
-    content: url(Emotes/HentaiNeko.png);
     width: 16px;
     height: 16px; 
 }
 img.HamsterImouto {
-    content: url(Emotes/HamsterImouto.png);
     width: 16px;
     height: 16px; 
 }
 img.ImoutosHamster {
-    content: url(Emotes/ImoutosHamster.png);
     width: 16px;
     height: 16px; 
 }
 img.ShakeKuma {
-    content: url(Emotes/ShakeKuma.png);
     width: 16px;
     height: 16px; 
 }
 img.ShiroKuma {
-    content: url(Emotes/ShiroKuma.png);
     width: 16px;
     height: 16px; 
 }
 img.MireiCute {
-    content: url(Emotes/MireiCute.png);
     width: 16px;
     height: 16px; 
 }
 img.LostRen {
-    content: url(Emotes/LostRen.png);
     width: 16px;
     height: 16px; 
 }
 img.FeitoFeico {
-    content: url(Emotes/FeitoFeico.png);
     width: 16px;
     height: 16px; 
 }
 img.FeitoChesto {
-    content: url(Emotes/FeitoChesto.png);
     width: 16px;
     height: 16px; 
 }
 img.FeitoLegso {
-    content: url(Emotes/FeitoLegso.png);
     width: 16px;
     height: 16px; 
 }
 img.FeitoFeeto {
-    content: url(Emotes/FeitoFeeto.png);
     width: 16px;
     height: 16px; 
 }
 img.AiShiteru {
-    content: url(Emotes/AiShiteru.png);
     width: 16px;
     height: 16px; 
 }
 img.h2 {
-    content: url(Emotes/h2.png);
     width: 16px;
     height: 16px; 
 }
 img.ShinkuWish {
-    content: url(Emotes/ShinkuWish.png);
     width: 16px;
     height: 16px; 
 }
 img.ShinMea1 {
-    content: url(Emotes/ShinMea1.png);
     width: 16px;
     height: 16px; 
 }
 img.ShinMea2 {
-    content: url(Emotes/ShinMea2.png);
     width: 16px;
     height: 16px; 
 }
 img.ShinMea3 {
-    content: url(Emotes/ShinMea3.png);
     width: 16px;
     height: 16px; 
 }
 img.ShinLeft {
-    content: url(Emotes/ShinLeft.png);
     width: 16px;
     height: 16px; 
 }
 img.ShinRight {
-    content: url(Emotes/ShinRight.png);
     width: 16px;
     height: 16px; 
 }
 img.MeaLeft {
-    content: url(Emotes/MeaLeft.png);
     width: 16px;
     height: 16px; 
 }
 img.MeaRight {
-    content: url(Emotes/MeaRight.png);
     width: 16px;
     height: 16px; 
 }
 img.RikaPassion {
-    content: url(Emotes/RikaPassion.png);
     width: 16px;
     height: 16px; 
 }
 img.KirinoYome {
-    content: url(Emotes/KirinoYome.png);
     width: 16px;
     height: 16px; 
 }
 img.YoshinoHime {
-    content: url(Emotes/YoshinoHime.png);
     width: 16px;
     height: 16px; 
 }
 img.RikaCh {
-    content: url(Emotes/RikaCh.png);
     width: 16px;
     height: 16px; 
 }
 img.ampFull {
-    content: url(Emotes/ampFull.png);
     width: 16px;
     height: 16px; 
 }
 img.ClaireScarlet {
-    content: url(Emotes/ClaireScarlet.png);
     width: 16px;
     height: 16px; 
 }
 img.KuonLog {
-    content: url(Emotes/KuonLog.png);
     width: 16px;
     height: 16px; 
 }
 img.KanoHana {
-    content: url(Emotes/KanoHana.png);
     width: 16px;
     height: 16px; 
 }
 img.MiniK {
-    content: url(Emotes/MiniK.png);
     width: 16px;
     height: 16px; 
 }
 img.RikuStare {
-    content: url(Emotes/RikuStare.png);
     width: 16px;
     height: 16px; 
 }
 img.Wing1 {
-    content: url(Emotes/Wing1.png);
     width: 16px;
     height: 16px; 
 }
 img.Wing2 {
-    content: url(Emotes/Wing2.png);
     width: 16px;
     height: 16px; 
 }
 img.MeiK {
-    content: url(Emotes/MeiK.png);
     width: 16px;
     height: 16px; 
 }
 img.oreD {
-    content: url(Emotes/oreD.png);
     width: 16px;
     height: 16px; 
 }
 img.aaa- {
-    content: url(Emotes/aaa-.png);
     width: 16px;
     height: 16px; 
 }
 img.HentaiAria {
-    content: url(Emotes/HentaiAria.png);
     width: 16px;
     height: 16px; 
 }
 img.ShakeBoko {
-    content: url(Emotes/ShakeBoko.png);
     width: 16px;
     height: 16px; 
 }
 img.MareThump {
-    content: url(Emotes/MareThump.png);
     width: 16px;
     height: 16px; 
 }
 img.FeelsBadMare {
-    content: url(Emotes/FeelsBadMare.png);
     width: 16px;
     height: 16px; 
 }
 img.ArisaMoe {
-    content: url(Emotes/ArisaMoe.png);
     width: 16px;
     height: 16px; 
 }
 img.MofuNuko {
-    content: url(Emotes/MofuNuko.png);
     width: 16px;
     height: 16px; 
 }
 img.BlueShinku {
-    content: url(Emotes/BlueShinku.png);
     width: 16px;
     height: 16px; 
 }
 img.NoBra {
-    content: url(Emotes/NoBra.png);
     width: 16px;
     height: 16px; 
 }
 img.AmaFloat {
-    content: url(Emotes/AmaFloat.png);
     width: 16px;
     height: 16px; 
 }
 img.EUkun {
-    content: url(Emotes/EUkun.png);
     width: 16px;
     height: 16px; 
 }
 img.D {
-    content: url(Emotes/D.png);
     width: 16px;
     height: 16px; 
 }
 img.thinking {
-    content: url(Emotes/thinking.png);
     width: 16px;
     height: 16px; 
 }
 img.HypeSplosion {
-    content: url(Emotes/HypeSplosion.png);
     width: 16px;
     height: 16px; 
 }
 img.TSSalt {
-    content: url(Emotes/TSSalt.png);
     width: 16px;
     height: 16px; 
 }
 img.NeverLucky {
-    content: url(Emotes/NeverLucky.png);
     width: 16px;
     height: 16px; 
 }
 img.NeverS {
-    content: url(Emotes/NeverS.png);
     width: 16px;
     height: 16px; 
 }
 img.HentaiBed {
-    content: url(Emotes/HentaiBed.png);
     width: 16px;
     height: 16px; 
 }
 img.Loominati {
-    content: url(Emotes/Loominati.png);
     width: 16px;
     height: 16px; 
 }
 img.SingleGee {
-    content: url(Emotes/SingleGee.png);
     width: 16px;
     height: 16px; 
 }
 img.PigDisgusting {
-    content: url(Emotes/PigDisgusting.png);
     width: 16px;
     height: 16px; 
 }
 img.BanHammer {
-    content: url(Emotes/BanHammer.png);
     width: 16px;
     height: 16px; 
 }
 img.ItsaTrap {
-    content: url(Emotes/ItsaTrap.png);
     width: 16px;
     height: 16px;
 }
 img.panicBasket {
-    content: url(Emotes/panicBasket.png);
     width: 16px;
     height: 16px;
 }
 img.ABABABABA {
-    content: url(Emotes/ABABABABA.png);
     width: 32px;
     height: 32px;
 }
 img.nepSmug {
-    content: url(Emotes/nepSmug.png);
     width: 32px;
     height: 32px;
 }
 img.TabeRu {
-    content: url(Emotes/Taberu2x.gif);
     width: 56px;
     height: 56px;
 }
 img.topNep {
-    content: url(Emotes/topNep.png);
     width: 56px;
     height: 56px;
 }
