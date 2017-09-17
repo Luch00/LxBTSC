@@ -3,7 +3,7 @@
 #include <QMessageBox>
 
 QtGuiClass::QtGuiClass(QString path, QWidget *parent)
-	: QWidget(parent)
+	: QFrame(parent)
 {
 	setupUi(this);
 	pathToPage = QString("file:///%1LxBTSC/template/chat.html").arg(path);

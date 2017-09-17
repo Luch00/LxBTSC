@@ -12,7 +12,7 @@
 #include <QGuiApplication>
 #include <QMenu>
 
-class QtGuiClass : public QWidget
+class QtGuiClass : public QFrame
 {
 	Q_OBJECT
 
