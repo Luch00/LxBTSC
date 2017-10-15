@@ -1,7 +1,8 @@
 ﻿/*
- * TeamSpeak 3 demo plugin
+ * Teamspeak 3 chat plugin
+ * HTML chatbox using WebEngine
  *
- * Copyright (c) 2008-2017 TeamSpeak Systems GmbH
+ * Copyright (c) 2017 Luch
  */
 
 #ifdef _WIN32
@@ -24,16 +25,11 @@
 #include <QApplication>
 #include <QMainWindow>
 #include <QtGuiClass.h>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonValue>
 #include <QMap>
 #include <QMetaObject>
 #include <QMetaProperty>
 #include <QMessageBox>
 #include <QtWidgets/QVBoxLayout>
-//#include <QStackedWidget>
-#include <QFile>
 #include <QRegularExpression>
 #include <QTimer>
 #include "bbcode_parser.h"
@@ -51,10 +47,6 @@ static struct TS3Functions ts3Functions;
 #define PLUGIN_API_VERSION 22
 
 #define PATH_BUFSIZE 512
-//#define COMMAND_BUFSIZE 128
-//#define INFODATA_BUFSIZE 128
-//#define SERVERINFO_BUFSIZE 256
-//#define CHANNELINFO_BUFSIZE 512
 #define RETURNCODE_BUFSIZE 128
 
 static char* pluginID = NULL;
@@ -128,7 +120,6 @@ void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
 uint64 currentServerID;
 QtGuiClass *chat;
 QMap<uint64, QMap<anyID, QString> > clients;
-QJsonObject emotes;
 QTabWidget *chatTabWidget;
 QMetaObject::Connection c;
 QMetaObject::Connection d;
@@ -136,20 +127,6 @@ QString pathToPlugin;
 QTimer *timer;
 bbcode::parser parser;
 bool first = true;
-
-// read the emotes file
-void readEmoteJson(QString path)
-{
-	QString text;
-	QFile f;
-	QString fullPath = path.append("LxBTSC\\template\\emotes.json");
-	f.setFileName(fullPath);
-	f.open(QIODevice::ReadOnly | QIODevice::Text);
-	text = f.readAll();
-	f.close();
-	QJsonDocument dox = QJsonDocument::fromJson(text.toUtf8());
-	emotes = dox.object();
-}
 
 // some info
 static void receive(int i)
@@ -253,7 +230,6 @@ int ts3plugin_init() {
 	
 	ts3Functions.getPluginPath(pluginPath, PATH_BUFSIZE, pluginID);
 	pathToPlugin = QString(pluginPath);
-	readEmoteJson(pathToPlugin);
 
 	timer = new QTimer();
 	timer->setSingleShot(true);
@@ -487,15 +463,6 @@ int ts3plugin_onServerErrorEvent(uint64 serverConnectionHandlerID, const char* e
 //void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage) {
 //}
 
-QString isAnimated(bool animated)
-{
-	if (animated)
-	{
-		return "gif";
-	}
-	return "png";
-}
-
 QString urltags(QString original)
 {
 	// replace url bbcode tags
@@ -523,7 +490,7 @@ QString urltags(QString original)
 }
 
 // replace emote text with html <img>
-QString emoticonize(QString original)
+QString regexFormat(QString original)
 {
 	// newlines to br
 	original.replace(QRegExp("[\r\n]"), "</br>");
@@ -537,15 +504,6 @@ QString emoticonize(QString original)
 	{
 		QStringList list = yt.capturedTexts();
 		original.append(QString("</br><iframe frameborder=\"0\" src=\"https://www.youtube.com/embed/%1\" ></iframe>").arg(list.value(1)));
-	}
-	// replace emoticons
-	QStringList keys = emotes.keys();
-	foreach(QString value, keys)
-	{
-		QRegularExpression rx(QString("(?!<a[^>]*?>)(%1)(?![^<]*?</a>)").arg(value));
-		
-		//original.replace(rx, QString("<img class=\"%1\" />").arg(emotes[value].toString()));
-		original.replace(rx, QString("<img class=\"%1\" src=\"Emotes/%1.%2\" title=\"%1\" />").arg(emotes[value].toObject()["name"].toString(), isAnimated(emotes[value].toObject()["animated"].toBool())));
 	}
 	return original;
 }
@@ -565,11 +523,10 @@ QString format(QString message, const char* name, bool outgoing)
 {
 	QTime t = QTime::currentTime();
 	stringstream str;
-	//str << message;
 	str << urltags(message).toStdString();
 	parser.source_stream(str);
 	parser.parse();
-	return QString("<img class=\"%1\"><span><%2> <span class=\"name\">\"%3\"</span>: %4</span>").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), emoticonize(QString::fromStdString(parser.content())));
+	return QString("<img class=\"%1\"><span><%2> <span class=\"name\">\"%3\"</span>: %4</span>").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), regexFormat(QString::fromStdString(parser.content())));
 }
 
 // ts3 client received a text message
@@ -590,7 +547,7 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 	if (myID == fromID) {
 		outgoing = true;
 	}
-	//// ??do clientid stay same across session even if disconnect/reconnect multiple times??
+	//// do clientid stay same across session even if disconnect/reconnect multiple times?
 	QString key;
 	if (targetMode == 3)
 	{
