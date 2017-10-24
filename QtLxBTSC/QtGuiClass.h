@@ -19,7 +19,7 @@ class QtGuiClass : public QFrame
 public:
 	QtGuiClass(QString path, QWidget *parent = Q_NULLPTR);
 	~QtGuiClass();
-	void messageReceived2(QString s, QString key);
+	void messageReceived(QString s, QString key);
 	void createPage();
 	void switchTab(QString key);
 	void nicknameChanged(QString key);

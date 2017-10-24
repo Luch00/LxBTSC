@@ -91,7 +91,7 @@ void QtGuiClass::nicknameChanged(QString key)
 	}*/
 }
 
-void QtGuiClass::messageReceived2(QString s, QString key)
+void QtGuiClass::messageReceived(QString s, QString key)
 {
 	QString js = QString("AddLine('%1', '<div>%2</div>');").arg(key, s);
 	page->runJavaScript(js);

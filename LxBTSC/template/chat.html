@@ -17,7 +17,7 @@
                 "FeelsAmazingMan": { "name":"FeelsAmazingMan.png" },
                 "FeelsBadMan": { "name":"FeelsBadMan.png" },
                 "FeelsGoodMan": { "name":"FeelsGoodMan.png" },
-                "LUL": { "name":"LUL.ong" },
+                "LUL": { "name":"LUL.png" },
                 "Kreygasm": { "name":"Kreygasm.png" },
                 "RamKiss": { "name":"RamKiss.png" },
                 "RemKiss": { "name":"RemKiss.png" },
@@ -25,7 +25,6 @@
                 "RikkaWoop": { "name":"RikkaWoop.gif" },
                 "NillaWag": { "name":"NillaWag.gif" },
                 "Tutturu": { "name":"Tutturu.png" },
-                "SoSnowy": { "name":"SoSnowy.gif" },
                 "AkaWalk": { "name":"AkaWalk.gif" },
                 "MikuStare": { "name":"MikuStare.png" },
                 "9cirno9": { "name":"9cirno9.png" },
@@ -42,11 +41,6 @@
                 "UsagigaNigeteru": { "name":"UsagigaNigeteru.png" },
                 "NoulShiro": { "name":"NoulShiro.png" },
                 "Shyppa": { "name":"Shyppa.png" },
-                "LoliLick": { "name":"LoliLick.png" },
-                "LoliPantsu": { "name":"LoliPantsu.png" },
-                "LoliButt": { "name":"LoliButt.png" },
-                "AmazingChest": { "name":"AmazingChest.png" },
-                "HentaiNeko": { "name":"HentaiNeko.png" },
                 "HamsterImouto": { "name":"HamsterImouto.png" },
                 "ImoutosHamster": { "name":"ImoutosHamster.png" },
                 "ShakeKuma": { "name":"ShakeKuma.png" },
@@ -58,7 +52,7 @@
                 "FeitoLegso": { "name":"FeitoLegso.png" },
                 "FeitoFeeto": { "name":"FeitoFeeto.png" },
                 "AiShiteru": { "name":"AiShiteru.png" },
-                "&lt;3": { "name":"h2.png" },
+                "&lt;3": { "name":"AiShiteru.png" },
                 "ShinkuWish": { "name":"ShinkuWish.png" },
                 "ShinMea1": { "name":"ShinMea1.png" },
                 "ShinMea2": { "name":"ShinMea2.png" },
@@ -82,14 +76,12 @@
                 "MeiK": { "name":"MeiK.png" },
                 "oreD": { "name":"oreD.png" },
                 "aaa-": { "name":"aaa-.png" },
-                "HentaiAria": { "name":"HentaiAria.png" },
                 "ShakeBoko": { "name":"ShakeBoko.png" },
                 "MareThump": { "name":"MareThump.png" },
                 "FeelsBadMare": { "name":"FeelsBadMare.png" },
                 "ArisaMoe": { "name":"ArisaMoe.png" },
                 "MofuNuko": { "name":"MofuNuko.png" },
                 "BlueShinku": { "name":"BlueShinku.png" },
-                "NoBra": { "name":"NoBra.png" },
                 "AmaFloat": { "name":"AmaFloat.png" },
                 "EUkun": { "name":"EUkun.png" },
                 "D:": { "name":"D.png" },
@@ -98,10 +90,8 @@
                 "TSSalt": { "name":"TSSalt.png" },
                 "NeverLucky": { "name":"NeverLucky.png" },
                 "NeverS": { "name":"NeverS.png" },
-                "HentaiBed": { "name":"HentaiBed.png" },
                 "Loominati": { "name":"Loominati.png" },
                 "SingleGee": { "name":"SingleGee.png" },
-                "PigDisgusting": { "name":"PigDisgusting.png" },
                 "BanHammer": { "name":"BanHammer.png" },
                 "ItsaTrap": { "name":"ItsaTrap.png" },
                 "panicBasket": { "name":"panicBasket.png" },
@@ -116,15 +106,13 @@
             var server;
             var main;
             var emotes;
-            var i = 0;
+            //var i = 0;
         var IsBottom = true;
         window.onload = function()
         {
             //main = document.getElementById('main');
             main = $('#main');
-            //emotes = $.getJSON('emotes.json');
             emotes = JSON.parse($('#emotes').html());
-            //server = document.getElementById('server-tab');
         };
         window.onscroll = function(ev)
         {
@@ -139,7 +127,7 @@
                 console.log("not bottom");
             }
         };
-        function AddServerLine(line)
+        /*function AddServerLine(line)
         {
             if (server.childElementCount > 500)
             {
@@ -150,7 +138,7 @@
             {
                 window.scroll(0, document.body.scrollHeight);
             }
-        }
+        }*/
 
         function AddServer(serverId)
         {
@@ -172,7 +160,8 @@
                 $(`.${target}`).firstElementChild.remove();
             }
             //$(`.${target}`).append(line);
-            $(`.${target}`).append(Emoticonize(line));
+            //$(`.${target}`).append(Emoticonize(line));
+            $(`.${target}`).append(EmbedYoutube(Emoticonize(line)));
             if (IsBottom)
             {
                 window.scroll(0, document.body.scrollHeight);
@@ -193,9 +182,20 @@
         function Emoticonize(line)
         {
             Object.keys(emotes).forEach(function(key) {
-                console.log(key);
-                line = line.replace(new RegExp("(?!<a[^>]*?>)("+key+")(?![^<]*?</a>)"), '<img class="emote" src="Emotes/'+emotes[key].name+'" alt="'+key+'">');
+                line = line.replace(new RegExp("(?!<a[^>]*?>)("+key+")(?![^<]*?</a>)", 'g'), '<img class="emote" src="Emotes/'+emotes[key].name+'" alt="'+key+'">');
             });
+            return line;
+        }
+
+        function EmbedYoutube(line)
+        {
+            var yt = /http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w-]*)(&(amp;)?[\w\?=]*)?/;
+            var m = line.match(yt);
+                console.log(m);
+            if (m)
+            {
+                line += '</br><iframe frameborder="0" src="https://www.youtube.com/embed/'+ m[1] +'" ></iframe>';
+            }
             return line;
         }
         </script>

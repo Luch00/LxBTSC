@@ -31,7 +31,7 @@
 #include <QMessageBox>
 #include <QtWidgets/QVBoxLayout>
 #include <QRegularExpression>
-#include <QTimer>
+//#include <QTimer>
 #include "bbcode_parser.h"
 
 
@@ -124,14 +124,14 @@ QTabWidget *chatTabWidget;
 QMetaObject::Connection c;
 QMetaObject::Connection d;
 QString pathToPlugin;
-QTimer *timer;
+//QTimer *timer;
 bbcode::parser parser;
 bool first = true;
 
-// some info
-static void receive(int i)
+// Receive chat tab changed signal
+static void receiveTabChange(int i)
 {
-	//QMessageBox::information(0, "debug", "tabchange_trigger", QMessageBox::Ok);
+	//QMessageBox::information(0, "debug", QString("tabchange_trigger: %1 %2").arg(currentServerID).arg(i), QMessageBox::Ok);
 	if (i >= 0)
 	{
 		QString tabName;
@@ -145,19 +145,20 @@ static void receive(int i)
 		}
 		else
 		{
-			tabName = QString("tab-%1-%2").arg(currentServerID).arg(chatTabWidget->tabText(i));
+			tabName = QString("tab-%1-private-%2").arg(currentServerID).arg(chatTabWidget->tabText(i));
 		}
 		chat->switchTab(tabName);
 	}
 	//QMessageBox::information(0, "debug", "tabchange_done", QMessageBox::Ok);
 }
-
-static void recheck()
+ 
+// After server tab change check what chat tab is selected
+static void recheckSelectedTab()
 {
 	if (currentServerID != NULL)
 	{
-		//QMessageBox::information(0, "debug", QString("recheck_trigger: %1").arg(currentServerID), QMessageBox::Ok);
 		int i = chatTabWidget->currentIndex();
+		//QMessageBox::information(0, "debug", QString("recheck_trigger: %1 %2").arg(currentServerID).arg(i), QMessageBox::Ok);
 		if (i >= 0)
 		{
 			QString tabName;
@@ -171,7 +172,7 @@ static void recheck()
 			}
 			else
 			{
-				tabName = QString("tab-%1-%2").arg(currentServerID).arg(chatTabWidget->tabText(i));
+				tabName = QString("tab-%1-private-%2").arg(currentServerID).arg(chatTabWidget->tabText(i));
 			}
 			chat->switchTab(tabName);
 		}
@@ -179,7 +180,8 @@ static void recheck()
 	}
 }
 
-static void tabCloseReceive(int i)
+// Receive chat tab closed signal
+static void receiveTabClose(int i)
 {
 	if (i > 1)
 	{
@@ -189,7 +191,7 @@ static void tabCloseReceive(int i)
 	}
 }
 
-// find the widget containing chat tabs and store it for later use
+// Find the widget containing chat tabs and store it for later use
 void findChatTabWidget()
 {
 	QWidgetList list = qApp->allWidgets();
@@ -207,9 +209,9 @@ void findChatTabWidget()
 			chatTabWidget->setMinimumHeight(24);
 			chatTabWidget->setMaximumHeight(24);
 
-			c = QObject::connect(chatTabWidget, &QTabWidget::currentChanged, receive);
+			c = QObject::connect(chatTabWidget, &QTabWidget::currentChanged, receiveTabChange);
 			//c = QObject::connect(chatTabWidget, &QTabWidget::tabBarClicked, receive);
-			d = QObject::connect(chatTabWidget, &QTabWidget::tabCloseRequested, tabCloseReceive);
+			d = QObject::connect(chatTabWidget, &QTabWidget::tabCloseRequested, receiveTabClose);
 			chatTabWidget->setMovable(false);
 			
 			break;
@@ -217,6 +219,7 @@ void findChatTabWidget()
 	}
 }
 
+// Disconnect used signals
 void disconnectChatWidget()
 {
 	// disconnect or crash
@@ -224,21 +227,19 @@ void disconnectChatWidget()
 	QObject::disconnect(d);
 }
 
-// init plugin
+// Init plugin
 int ts3plugin_init() {
 	char pluginPath[PATH_BUFSIZE];
 	
 	ts3Functions.getPluginPath(pluginPath, PATH_BUFSIZE, pluginID);
 	pathToPlugin = QString(pluginPath);
 
-	timer = new QTimer();
-	timer->setSingleShot(true);
-	QObject::connect(timer, &QTimer::timeout, recheck);
+	//timer = new QTimer();
+	//timer->setSingleShot(true);
+	//QObject::connect(timer, &QTimer::timeout, recheck);
 
-	//QMessageBox::information(0, "debug", "init", QMessageBox::Ok);
 	chat = new QtGuiClass(pathToPlugin);
 	chat->setStyleSheet("border: 1px solid gray");
-	//QMessageBox::information(0, "debug", "init_done", QMessageBox::Ok);
 
     return 0;  /* 0 = success, 1 = failure, -2 = failure but client will not show a "failed to load" warning */
 	/* -2 is a very special case and should only be used if a plugin displays a dialog (e.g. overlay) asking the user to disable
@@ -250,8 +251,9 @@ int ts3plugin_init() {
 void ts3plugin_shutdown() {
     /* Your plugin cleanup code here */
 	disconnectChatWidget();
-	delete timer;
 	delete chat;
+
+	//delete timer;
 	//delete lWidget;
 	//delete chatTabWidget;
 	
@@ -314,8 +316,9 @@ void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID) 
 	currentServerID = serverConnectionHandlerID;
 	if (first == false)
 	{
-		timer->stop();
-		timer->start(500);
+		recheckSelectedTab();
+		//timer->stop();
+		//timer->start(500);
 	}
 }
 
@@ -340,6 +343,7 @@ int ts3plugin_requestAutoload() {
  */
 
 /* Clientlib */
+// Get nicknames of all connected clients
 QMap<unsigned short, QString> getAllClientNicks(uint64 serverConnectionHandlerID)
 {
 	QMap<unsigned short, QString> map;
@@ -355,27 +359,21 @@ QMap<unsigned short, QString> getAllClientNicks(uint64 serverConnectionHandlerID
 }
 
 void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber) {
-    /* Some example code following to show how to use the information query functions. */
-	
 	if (newStatus == STATUS_CONNECTION_ESTABLISHED)
 	{
 		if (first)
 		{
-			//QMessageBox::information(0, "debug", "first_connect", QMessageBox::Ok);
-			// Add new chat widget to the UI       ??does serverConnectionHandlerID stay same during teamspeak session even if disconnect/connect several times??
+			// Add new chat widget to the UI
 			findChatTabWidget();
 			first = false;
-			//QMessageBox::information(0, "debug", "first_connect_done", QMessageBox::Ok);
 		}
-		//QMessageBox::information(0, "debug", "add_server", QMessageBox::Ok);
 		chat->addServer(serverConnectionHandlerID);
-		//QMessageBox::information(0, "debug", "add_server_done", QMessageBox::Ok);
 		clients.insert(serverConnectionHandlerID, getAllClientNicks(serverConnectionHandlerID));
-		chat->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">Server Connected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), QString("tab-%1-server").arg(serverConnectionHandlerID));
+		chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">Server Connected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), QString("tab-%1-server").arg(serverConnectionHandlerID));
 	}
 	if (newStatus == STATUS_DISCONNECTED)
 	{
-		chat->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">Server Disconnected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), QString("tab-%1-server").arg(serverConnectionHandlerID));
+		chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">Server Disconnected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), QString("tab-%1-server").arg(serverConnectionHandlerID));
 		clients.remove(serverConnectionHandlerID);
 	}
 }
@@ -401,16 +399,16 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 //void ts3plugin_onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clientID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
 //}
 
+// Show a status message when a client connects or disconnects
 void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* moveMessage) {
 	if (oldChannelID == 0)
 	{
-		//client connected
+		// client connected
 		char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
 		ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
 		clients[serverConnectionHandlerID].insert(clientID, QString(res));
 
-		//servers.value(serverConnectionHandlerID)->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">%2 Joined</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), QString(res)), "0");
-		chat->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">%2 Joined</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), QString(res)), QString("tab-%1-server").arg(serverConnectionHandlerID));
+		chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">%2 Joined</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), QString(res)), QString("tab-%1-server").arg(serverConnectionHandlerID));
 	}
 	if (newChannelID == 0)
 	{
@@ -418,7 +416,7 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 		//char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
 		//ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
 		QString name = clients[serverConnectionHandlerID].take(clientID);
-		chat->messageReceived2(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">%2 Left</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), name), QString("tab-%1-server").arg(serverConnectionHandlerID));
+		chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">%2 Left</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), name), QString("tab-%1-server").arg(serverConnectionHandlerID));
 	}
 }
 
@@ -466,14 +464,12 @@ int ts3plugin_onServerErrorEvent(uint64 serverConnectionHandlerID, const char* e
 QString urltags(QString original)
 {
 	// replace url bbcode tags
-	//QMessageBox::information(0, "url", original, QMessageBox::Ok);
 	original = original.toHtmlEscaped();
 	QRegularExpression url(QString("\\[URL(=(.*?))?\\](.*?)\\[\\/URL\\]"));
 	QRegularExpressionMatchIterator iterator = url.globalMatch(original);
 	while (iterator.hasNext())
 	{
 		QRegularExpressionMatch match = iterator.next();
-		//QMessageBox::information(0, "url", match.captured(0), QMessageBox::Ok);
 		QString htmlurl;
 		if (!match.captured(2).isNull())
 		{
@@ -489,7 +485,7 @@ QString urltags(QString original)
 	return original;
 }
 
-// replace emote text with html <img>
+// Some formatting
 QString regexFormat(QString original)
 {
 	// newlines to br
@@ -497,28 +493,11 @@ QString regexFormat(QString original)
 	
 	// escape single quotes
 	original.replace("'", "\\'");
-	// add embedded youtube video
-	QRegExp yt("http(?:s?):\\/\\/(?:www\\.)?youtu(?:be\\.com\\/watch\\?v=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?[\\w\\?=]*)?");
-	int i = yt.indexIn(original);
-	if (i > 0)
-	{
-		QStringList list = yt.capturedTexts();
-		original.append(QString("</br><iframe frameborder=\"0\" src=\"https://www.youtube.com/embed/%1\" ></iframe>").arg(list.value(1)));
-	}
+
 	return original;
 }
 
-// was message received or sent
-QString direction(bool outgoing)
-{
-	if (outgoing)
-	{
-		return "outgoing";
-	}
-	return "incoming";
-}
-
-// parse bbcode, emoticonize
+// Parse bbcode, formatting
 QString format(QString message, const char* name, bool outgoing)
 {
 	QTime t = QTime::currentTime();
@@ -529,7 +508,17 @@ QString format(QString message, const char* name, bool outgoing)
 	return QString("<img class=\"%1\"><span><%2> <span class=\"name\">\"%3\"</span>: %4</span>").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), regexFormat(QString::fromStdString(parser.content())));
 }
 
-// ts3 client received a text message
+// Was message received or sent
+QString direction(bool outgoing)
+{
+	if (outgoing)
+	{
+		return "outgoing";
+	}
+	return "incoming";
+}
+
+// Client received a text message
 int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID, const char* fromName, const char* fromUniqueIdentifier, const char* message, int ffIgnored) {
 
 	/* Friend/Foe manager has ignored the message, so ignore here as well. */
@@ -547,7 +536,7 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 	if (myID == fromID) {
 		outgoing = true;
 	}
-	//// do clientid stay same across session even if disconnect/reconnect multiple times?
+
 	QString key;
 	if (targetMode == 3)
 	{
@@ -561,16 +550,25 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 	{
 		if (fromID == myID)
 		{
+			// Use nickname as tab identifier
+			// TODO: change tab identifier if user changes nickname
 			char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
 			ts3Functions.getClientDisplayName(serverConnectionHandlerID, toID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
-			//key = res;
-			key = QString("tab-%1-%2").arg(serverConnectionHandlerID).arg(res);
+
+			// client unique id as tab identifier better than name?
+			//char *res;
+			//ts3Functions.getClientVariableAsString(serverConnectionHandlerID, toID, CLIENT_UNIQUE_IDENTIFIER, &res);
+			key = QString("tab-%1-private-%2").arg(serverConnectionHandlerID).arg(res);
 		}
 		else
 		{
-			key = fromName;
+			key = QString("tab-%1-private-%2").arg(serverConnectionHandlerID).arg(fromName);
+			//key = fromName;
+			//key = fromUniqueIdentifier;
 		}
 	}
+
+	// Just testing something
 	QString m(message);
 	if (m.startsWith("!embed "))
 	{
@@ -578,12 +576,12 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 		if (l.count() > 1)
 		{
 			l[1].remove(QRegularExpression("\\[\\/?URL\\]"));
-			chat->messageReceived2(QString("<img class=\"%1 embedded-image\"><span><%2> <span class=\"name\">\"%3\"</span>:<a href=\"%4\"><img src=\"%4\"/></a></span>").arg(direction(outgoing), QTime::currentTime().toString("hh:mm:ss"), QString(fromName), l.value(1)), key);
+			chat->messageReceived(QString("<img class=\"%1 embedded-image\"><span><%2> <span class=\"name\">\"%3\"</span>:<a href=\"%4\"><img src=\"%4\"/></a></span>").arg(direction(outgoing), QTime::currentTime().toString("hh:mm:ss"), QString(fromName), l.value(1)), key);
 			return 0;
 		}
 	}
 	
-	chat->messageReceived2(format(message, fromName, outgoing), key);
+	chat->messageReceived(format(message, fromName, outgoing), key);
     return 0;  /* 0 = handle normally, 1 = client will ignore the text message */
 }
 
