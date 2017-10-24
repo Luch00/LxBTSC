@@ -72,14 +72,14 @@
     <ClCompile Include="..\DebugPublic\bbcodelib\bbcode_lexer.cpp" />
     <ClCompile Include="..\DebugPublic\bbcodelib\bbcode_parser.cpp" />
     <ClCompile Include="..\DebugPublic\bbcodelib\bbcode_utils.cpp" />
-    <ClCompile Include="GeneratedFiles\Release\moc_QtGuiClass.cpp">
+    <ClCompile Include="GeneratedFiles\Release\moc_ChatWidget.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_TsWebEnginePage.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="plugin.cpp" />
-    <ClCompile Include="QtGuiClass.cpp" />
+    <ClCompile Include="ChatWidget.cpp" />
     <ClCompile Include="QtLxBTSC.cpp" />
     <ClCompile Include="TsWebEnginePage.cpp" />
   </ItemGroup>
@@ -99,9 +99,9 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_QML_LIB -DQT_QUICK_LIB -DQT_QUICKWIDGETS_LIB -DQT_WIDGETS_LIB -DQTLXBTSC_LIB -D_WINDLL "-IF:\Harjoitukset\LxBTSC\ts_plugin\include" "-IF:\Harjoitukset\LxBTSC\DebugPublic\bbcodelib" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtQml" "-I$(QTDIR)\include\QtQuick" "-I$(QTDIR)\include\QtQuickWidgets" "-I$(QTDIR)\include\QtWidgets"</Command>
     </CustomBuild>
-    <CustomBuild Include="QtGuiClass.h">
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing QtGuiClass.h...</Message>
+    <CustomBuild Include="ChatWidget.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath);$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing ChatWidget.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_QML_LIB -DQT_QUICK_LIB -DQT_QUICKWIDGETS_LIB -DQT_WIDGETS_LIB -DQTLXBTSC_LIB -D_WINDLL "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtQml" "-I$(QTDIR)\include\QtQuick" "-I$(QTDIR)\include\QtQuickWidgets" "-I$(QTDIR)\include\QtWidgets"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

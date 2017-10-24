@@ -1,8 +1,15 @@
-#include "QtGuiClass.h"
+/*
+* Teamspeak 3 chat plugin
+* HTML chatbox using WebEngine
+*
+* Copyright (c) 2017 Luch
+*/
+
+#include "ChatWidget.h"
 #include "QString"
 #include <QMessageBox>
 
-QtGuiClass::QtGuiClass(QString path, QWidget *parent)
+ChatWidget::ChatWidget(QString path, QWidget *parent)
 	: QFrame(parent)
 {
 	setupUi(this);
@@ -11,34 +18,34 @@ QtGuiClass::QtGuiClass(QString path, QWidget *parent)
 	view->setPage(page);
 }
 
-QtGuiClass::~QtGuiClass()
+ChatWidget::~ChatWidget()
 {
 }
 
-void QtGuiClass::setupUi(QWidget *QtGuiClass)
+void ChatWidget::setupUi(QWidget *ChatWidget)
 {
-	if (QtGuiClass->objectName().isEmpty())
-		QtGuiClass->setObjectName(QStringLiteral("QtGuiClass"));
-	QtGuiClass->resize(636, 534);
-	verticalLayout = new QVBoxLayout(QtGuiClass);
+	if (ChatWidget->objectName().isEmpty())
+		ChatWidget->setObjectName(QStringLiteral("ChatWidget"));
+	//ChatWidget->resize(636, 534);
+	verticalLayout = new QVBoxLayout(ChatWidget);
 	verticalLayout->setSpacing(1);
 	verticalLayout->setContentsMargins(1, 1, 1, 1);
 	verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
-	view = new QWebEngineView(QtGuiClass);
+	view = new QWebEngineView(ChatWidget);
 	view->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
 	copy = new QShortcut(QKeySequence::Copy, view);
 	copyAction = new QAction("Copy", this);
 	copyUrlAction = new QAction("Copy Link", this);
 	
-	QObject::connect(copyAction, &QAction::triggered, this, &QtGuiClass::copyActivated);
-	QObject::connect(copyUrlAction, &QAction::triggered, this, &QtGuiClass::copyUrlActivated);
-	QObject::connect(view, &QWebEngineView::customContextMenuRequested, this, &QtGuiClass::showContextMenu);
-	QObject::connect(copy, &QShortcut::activated, this, &QtGuiClass::copyActivated);
+	QObject::connect(copyAction, &QAction::triggered, this, &ChatWidget::copyActivated);
+	QObject::connect(copyUrlAction, &QAction::triggered, this, &ChatWidget::copyUrlActivated);
+	QObject::connect(view, &QWebEngineView::customContextMenuRequested, this, &ChatWidget::showContextMenu);
+	QObject::connect(copy, &QShortcut::activated, this, &ChatWidget::copyActivated);
 	
 	verticalLayout->addWidget(view);
 }
 
-void QtGuiClass::showContextMenu(const QPoint &p)
+void ChatWidget::showContextMenu(const QPoint &p)
 {
 	QMenu *menu = new QMenu(this);
 	if (view->hasSelection())
@@ -55,34 +62,34 @@ void QtGuiClass::showContextMenu(const QPoint &p)
 	}
 }
 
-void QtGuiClass::linkHovered(QUrl u)
+void ChatWidget::linkHovered(QUrl u)
 {
 	currentHoveredUrl = u;
 }
 
-void QtGuiClass::copyActivated()
+void ChatWidget::copyActivated()
 {
 	QString s = view->selectedText();
 	QGuiApplication::clipboard()->setText(s, QClipboard::Clipboard);
 }
 
-void QtGuiClass::copyUrlActivated()
+void ChatWidget::copyUrlActivated()
 {
 	QGuiApplication::clipboard()->setText(currentHoveredUrl.toString(), QClipboard::Clipboard);
 }
 
-void QtGuiClass::addServer(unsigned long long serverId)
+void ChatWidget::addServer(unsigned long long serverId)
 {
 	page->runJavaScript(QString("AddServer('%1');").arg(serverId));
 }
 
-void QtGuiClass::switchTab(QString key)
+void ChatWidget::switchTab(QString key)
 {
 	//QMessageBox::information(0, "debug", QString("tab_change: %1").arg(key), QMessageBox::Ok);
 	page->runJavaScript(QString("ShowTarget('%1');").arg(key));
 }
 
-void QtGuiClass::nicknameChanged(QString key)
+void ChatWidget::nicknameChanged(QString key)
 {
 	/*if (tabs.contains(key))
 	{
@@ -91,16 +98,15 @@ void QtGuiClass::nicknameChanged(QString key)
 	}*/
 }
 
-void QtGuiClass::messageReceived(QString s, QString key)
+void ChatWidget::messageReceived(QString s, QString key)
 {
 	QString js = QString("AddLine('%1', '<div>%2</div>');").arg(key, s);
 	page->runJavaScript(js);
 }
 
-void QtGuiClass::createPage()
+void ChatWidget::createPage()
 {
-	//QMessageBox::information(this, "tabname", key, QMessageBox::Ok);
 	page = new TsWebEnginePage();
-	QObject::connect(page, &TsWebEnginePage::linkHovered, this, &QtGuiClass::linkHovered);
+	QObject::connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::linkHovered);
 	page->setUrl(QUrl(pathToPage));
 }

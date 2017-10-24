@@ -37,9 +37,6 @@
     <ClCompile Include="plugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="QtGuiClass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\DebugPublic\bbcodelib\bbcode_utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,17 +49,17 @@
     <ClCompile Include="TsWebEnginePage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_QtGuiClass.cpp">
+    <ClCompile Include="GeneratedFiles\Release\moc_TsWebEnginePage.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_TsWebEnginePage.cpp">
+    <ClCompile Include="ChatWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ChatWidget.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="QtLxBTSC.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="plugin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -78,6 +75,9 @@
     <ClInclude Include="..\DebugPublic\bbcodelib\bbcode_parser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="QtLxBTSC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtlxbtsc_global.h">
@@ -85,10 +85,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="QtGuiClass.h">
+    <CustomBuild Include="TsWebEnginePage.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="TsWebEnginePage.h">
+    <CustomBuild Include="ChatWidget.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

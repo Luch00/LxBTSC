@@ -21,10 +21,10 @@
 #include "teamspeak/clientlib_publicdefinitions.h"
 #include "ts3_functions.h"
 #include "plugin.h"
-#include <QtGuiClass.h>
+#include <ChatWidget.h>
 #include <QApplication>
 #include <QMainWindow>
-#include <QtGuiClass.h>
+#include <ChatWidget.h>
 #include <QMap>
 #include <QMetaObject>
 #include <QMetaProperty>
@@ -118,7 +118,7 @@ void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
  * If the function returns 1 on failure, the plugin will be unloaded again.
  */
 uint64 currentServerID;
-QtGuiClass *chat;
+ChatWidget *chat;
 QMap<uint64, QMap<anyID, QString> > clients;
 QTabWidget *chatTabWidget;
 QMetaObject::Connection c;
@@ -238,7 +238,7 @@ int ts3plugin_init() {
 	//timer->setSingleShot(true);
 	//QObject::connect(timer, &QTimer::timeout, recheck);
 
-	chat = new QtGuiClass(pathToPlugin);
+	chat = new ChatWidget(pathToPlugin);
 	chat->setStyleSheet("border: 1px solid gray");
 
     return 0;  /* 0 = success, 1 = failure, -2 = failure but client will not show a "failed to load" warning */
@@ -497,6 +497,16 @@ QString regexFormat(QString original)
 	return original;
 }
 
+// Was message received or sent
+QString direction(bool outgoing)
+{
+	if (outgoing)
+	{
+		return "outgoing";
+	}
+	return "incoming";
+}
+
 // Parse bbcode, formatting
 QString format(QString message, const char* name, bool outgoing)
 {
@@ -506,16 +516,6 @@ QString format(QString message, const char* name, bool outgoing)
 	parser.source_stream(str);
 	parser.parse();
 	return QString("<img class=\"%1\"><span><%2> <span class=\"name\">\"%3\"</span>: %4</span>").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), regexFormat(QString::fromStdString(parser.content())));
-}
-
-// Was message received or sent
-QString direction(bool outgoing)
-{
-	if (outgoing)
-	{
-		return "outgoing";
-	}
-	return "incoming";
 }
 
 // Client received a text message

@@ -1,3 +1,10 @@
+/*
+* Teamspeak 3 chat plugin
+* HTML chatbox using WebEngine
+*
+* Copyright (c) 2017 Luch
+*/
+
 #pragma once
 
 #include <QWidget>
@@ -12,13 +19,13 @@
 #include <QGuiApplication>
 #include <QMenu>
 
-class QtGuiClass : public QFrame
+class ChatWidget : public QFrame
 {
 	Q_OBJECT
 
 public:
-	QtGuiClass(QString path, QWidget *parent = Q_NULLPTR);
-	~QtGuiClass();
+	ChatWidget(QString path, QWidget *parent = Q_NULLPTR);
+	~ChatWidget();
 	void messageReceived(QString s, QString key);
 	void createPage();
 	void switchTab(QString key);
@@ -36,7 +43,7 @@ public:
 
 private:
 	TsWebEnginePage *page;
-	void setupUi(QWidget *QtGuiClass);
+	void setupUi(QWidget *ChatWidget);
 	QString pathToPage;
 	QUrl currentHoveredUrl;
 	QShortcut *copy;
