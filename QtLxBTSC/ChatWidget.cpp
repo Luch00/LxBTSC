@@ -26,12 +26,12 @@ void ChatWidget::setupUi(QWidget *ChatWidget)
 {
 	if (ChatWidget->objectName().isEmpty())
 		ChatWidget->setObjectName(QStringLiteral("ChatWidget"));
-	//ChatWidget->resize(636, 534);
 	verticalLayout = new QVBoxLayout(ChatWidget);
 	verticalLayout->setSpacing(1);
 	verticalLayout->setContentsMargins(1, 1, 1, 1);
 	verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
 	view = new QWebEngineView(ChatWidget);
+
 	view->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
 	copy = new QShortcut(QKeySequence::Copy, view);
 	copyAction = new QAction("Copy", this);
