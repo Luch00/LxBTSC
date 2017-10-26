@@ -31,7 +31,6 @@
 #include <QMessageBox>
 #include <QtWidgets/QVBoxLayout>
 #include <QRegularExpression>
-//#include <QTimer>
 #include "bbcode_parser.h"
 
 
@@ -124,9 +123,27 @@ QTabWidget *chatTabWidget;
 QMetaObject::Connection c;
 QMetaObject::Connection d;
 QString pathToPlugin;
-//QTimer *timer;
 bbcode::parser parser;
 bool first = true;
+
+// should probably cache these
+int getClientDatabaseIdFromNickname(QString nickname)
+{
+	anyID *list;
+	ts3Functions.getClientList(currentServerID, &list);
+	for (size_t i = 0; list[i]; i++)
+	{
+		char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
+		ts3Functions.getClientDisplayName(currentServerID, list[i], res, TS3_MAX_SIZE_CLIENT_NICKNAME);
+		if (nickname == QString(res))
+		{
+			int dbid;
+			ts3Functions.getClientVariableAsInt(currentServerID, list[i], CLIENT_DATABASE_ID, &dbid);
+			return dbid;
+		}
+	}
+	return 0;
+}
 
 // Receive chat tab changed signal
 static void receiveTabChange(int i)
@@ -145,7 +162,9 @@ static void receiveTabChange(int i)
 		}
 		else
 		{
-			tabName = QString("tab-%1-private-%2").arg(currentServerID).arg(chatTabWidget->tabText(i));
+			int id = getClientDatabaseIdFromNickname(chatTabWidget->tabText(i));
+			tabName = QString("tab-%1-private-%2").arg(currentServerID).arg(id);
+			//tabName = QString("tab-%1-private-%2").arg(currentServerID).arg(chatTabWidget->tabText(i));
 		}
 		chat->switchTab(tabName);
 	}
@@ -172,7 +191,9 @@ static void recheckSelectedTab()
 			}
 			else
 			{
-				tabName = QString("tab-%1-private-%2").arg(currentServerID).arg(chatTabWidget->tabText(i));
+				int id = getClientDatabaseIdFromNickname(chatTabWidget->tabText(i));
+				tabName = QString("tab-%1-private-%2").arg(currentServerID).arg(id);
+				//tabName = QString("tab-%1-private-%2").arg(currentServerID).arg(chatTabWidget->tabText(i));
 			}
 			chat->switchTab(tabName);
 		}
@@ -234,10 +255,6 @@ int ts3plugin_init() {
 	ts3Functions.getPluginPath(pluginPath, PATH_BUFSIZE, pluginID);
 	pathToPlugin = QString(pluginPath);
 
-	//timer = new QTimer();
-	//timer->setSingleShot(true);
-	//QObject::connect(timer, &QTimer::timeout, recheck);
-
 	chat = new ChatWidget(pathToPlugin);
 	chat->setStyleSheet("border: 1px solid gray");
 
@@ -252,10 +269,6 @@ void ts3plugin_shutdown() {
     /* Your plugin cleanup code here */
 	disconnectChatWidget();
 	delete chat;
-
-	//delete timer;
-	//delete lWidget;
-	//delete chatTabWidget;
 	
 	/*
 	 * Note:
@@ -317,8 +330,6 @@ void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID) 
 	if (first == false)
 	{
 		recheckSelectedTab();
-		//timer->stop();
-		//timer->start(500);
 	}
 }
 
@@ -515,6 +526,7 @@ QString format(QString message, const char* name, bool outgoing)
 	str << urltags(message).toStdString();
 	parser.source_stream(str);
 	parser.parse();
+	// should probably just send the parameters to javascript and construct the element there?
 	return QString("<img class=\"%1\"><span><%2> <span class=\"name\">\"%3\"</span>: %4</span>").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), regexFormat(QString::fromStdString(parser.content())));
 }
 
@@ -551,18 +563,26 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 		if (fromID == myID)
 		{
 			// Use nickname as tab identifier
-			// TODO: change tab identifier if user changes nickname
-			char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
-			ts3Functions.getClientDisplayName(serverConnectionHandlerID, toID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
+			//char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
+			//ts3Functions.getClientDisplayName(serverConnectionHandlerID, toID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
 
 			// client unique id as tab identifier better than name?
+			// problem: contains characters not usable in html attributes
 			//char *res;
 			//ts3Functions.getClientVariableAsString(serverConnectionHandlerID, toID, CLIENT_UNIQUE_IDENTIFIER, &res);
-			key = QString("tab-%1-private-%2").arg(serverConnectionHandlerID).arg(res);
+			//key = QString("tab-%1-private-%2").arg(serverConnectionHandlerID).arg(res);
+
+			// Use database id
+			int dbid;
+			ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, toID, CLIENT_DATABASE_ID, &dbid);
+			key = QString("tab-%1-private-%2").arg(serverConnectionHandlerID).arg(dbid);
 		}
 		else
 		{
-			key = QString("tab-%1-private-%2").arg(serverConnectionHandlerID).arg(fromName);
+			//key = QString("tab-%1-private-%2").arg(serverConnectionHandlerID).arg(fromName);
+			int dbid;
+			ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, fromID, CLIENT_DATABASE_ID, &dbid);
+			key = QString("tab-%1-private-%2").arg(serverConnectionHandlerID).arg(dbid);
 			//key = fromName;
 			//key = fromUniqueIdentifier;
 		}
@@ -839,6 +859,9 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 
 /* Called when client custom nickname changed */
 void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, const char* displayName, const char* uniqueClientIdentifier) {
-	//servers->value(serverConnectionHandlerID)->nicknameChanged(QString(displa))
+	//char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
+	//ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
+	//QMessageBox::information(0, "debug", QString("namechange: %1 %2").arg(res).arg(displayName), QMessageBox::Ok);
+	//QString oldName = clients[serverConnectionHandlerID].value(clientID, "");
 	clients[serverConnectionHandlerID].insert(clientID, QString(displayName));
 }

@@ -106,14 +106,13 @@
             var server;
             var main;
             var emotes;
-            //var i = 0;
         var IsBottom = true;
         window.onload = function()
         {
-            //main = document.getElementById('main');
             main = $('#main');
             emotes = JSON.parse($('#emotes').html());
         };
+        
         window.onscroll = function(ev)
         {
             if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight)
@@ -127,18 +126,6 @@
                 console.log("not bottom");
             }
         };
-        /*function AddServerLine(line)
-        {
-            if (server.childElementCount > 500)
-            {
-                server.firstElementChild.remove();
-            }
-            server.insertAdjacentHTML('beforeend', line);
-            if (IsBottom)
-            {
-                window.scroll(0, document.body.scrollHeight);
-            }
-        }*/
 
         function AddServer(serverId)
         {

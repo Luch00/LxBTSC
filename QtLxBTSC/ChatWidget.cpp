@@ -89,15 +89,6 @@ void ChatWidget::switchTab(QString key)
 	page->runJavaScript(QString("ShowTarget('%1');").arg(key));
 }
 
-void ChatWidget::nicknameChanged(QString key)
-{
-	/*if (tabs.contains(key))
-	{
-		TsWebEnginePage *tab = tabs.take(key);
-		tabs.insert(key, tab);
-	}*/
-}
-
 void ChatWidget::messageReceived(QString s, QString key)
 {
 	QString js = QString("AddLine('%1', '<div>%2</div>');").arg(key, s);

@@ -10,7 +10,6 @@
 #include <QObject>
 #include <QtWebEngineWidgets\QWebEnginePage>
 #include <QDesktopServices>
-//#include <QShortcut>
 
 class TsWebEnginePage : public QWebEnginePage
 {
@@ -30,7 +29,4 @@ public:
 		}
 		return true;
 	}
-
-//private:
-	//QShortcut *copy;
 };

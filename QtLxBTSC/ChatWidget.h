@@ -29,7 +29,6 @@ public:
 	void messageReceived(QString s, QString key);
 	void createPage();
 	void switchTab(QString key);
-	void nicknameChanged(QString key);
 	void addServer(unsigned long long);
 
 	QVBoxLayout *verticalLayout;
