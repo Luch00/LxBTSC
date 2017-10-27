@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include <QWidget>
+#include <QFrame>
 #include <QtWebEngineWidgets/QWebEngineView>
-#include <QtWebEngineWidgets/qwebenginesettings.h>
-#include <QtWebEngineWidgets/qwebengineprofile.h>
+//#include <QtWebEngineWidgets/qwebenginesettings.h>
+//#include <QtWebEngineWidgets/qwebengineprofile.h>
 #include <QtWidgets/QVBoxLayout>
-#include <QStackedWidget>
+//#include <QWidget>
 #include <TsWebEnginePage.h>
 #include <QShortcut>
 #include <QClipboard>

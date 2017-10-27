@@ -7,7 +7,7 @@
 
 #include "ChatWidget.h"
 #include "QString"
-#include <QMessageBox>
+//#include <QMessageBox>
 
 ChatWidget::ChatWidget(QString path, QWidget *parent)
 	: QFrame(parent)

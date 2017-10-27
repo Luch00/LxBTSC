@@ -1,8 +1,9 @@
 /*
- * TeamSpeak 3 demo plugin
- *
- * Copyright (c) 2008-2017 TeamSpeak Systems GmbH
- */
+* Teamspeak 3 chat plugin
+* HTML chatbox using WebEngine
+*
+* Copyright (c) 2017 Luch
+*/
 
 #ifndef PLUGIN_H
 #define PLUGIN_H

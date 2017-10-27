@@ -28,7 +28,7 @@
 #include <QMap>
 #include <QMetaObject>
 #include <QMetaProperty>
-#include <QMessageBox>
+//#include <QMessageBox>
 #include <QtWidgets/QVBoxLayout>
 #include <QRegularExpression>
 #include "bbcode_parser.h"
