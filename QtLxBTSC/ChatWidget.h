@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include <QFrame>
+#include <QWidget>
 #include <QtWebEngineWidgets/QWebEngineView>
-//#include <QtWebEngineWidgets/qwebenginesettings.h>
-//#include <QtWebEngineWidgets/qwebengineprofile.h>
+#include <QtWebEngineWidgets/qwebenginesettings.h>
+#include <QtWebEngineWidgets/qwebengineprofile.h>
 #include <QtWidgets/QVBoxLayout>
-//#include <QWidget>
+#include <QStackedWidget>
 #include <TsWebEnginePage.h>
 #include <QShortcut>
 #include <QClipboard>
@@ -26,7 +26,9 @@ class ChatWidget : public QFrame
 public:
 	ChatWidget(QString path, QWidget *parent = Q_NULLPTR);
 	~ChatWidget();
-	void messageReceived(QString s, QString key);
+	//void messageReceived(QString s, QString key);
+	void messageReceived(QString target, QString direction, QString time, QString name, QString message);
+	void statusReceived(QString target, QString time, QString type, QString message);
 	void createPage();
 	void switchTab(QString key);
 	void addServer(unsigned long long);

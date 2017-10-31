@@ -28,7 +28,7 @@
 #include <QMap>
 #include <QMetaObject>
 #include <QMetaProperty>
-//#include <QMessageBox>
+#include <QMessageBox>
 #include <QtWidgets/QVBoxLayout>
 #include <QRegularExpression>
 #include "bbcode_parser.h"
@@ -222,7 +222,7 @@ void findChatTabWidget()
 		{
 			chatTabWidget = static_cast<QTabWidget*>(list[i]);
 			QWidget *parent = chatTabWidget->parentWidget();
-			
+			//chat->setParent(parent);
 			//QMessageBox::information(0, "debug", "widget_add", QMessageBox::Ok);
 			static_cast<QBoxLayout*>(parent->layout())->insertWidget(0, chat);
 			//QMessageBox::information(0, "debug", "widget_add_done", QMessageBox::Ok);
@@ -269,6 +269,7 @@ void ts3plugin_shutdown() {
     /* Your plugin cleanup code here */
 	disconnectChatWidget();
 	delete chat;
+		
 	
 	/*
 	 * Note:
@@ -380,11 +381,13 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 		}
 		chat->addServer(serverConnectionHandlerID);
 		clients.insert(serverConnectionHandlerID, getAllClientNicks(serverConnectionHandlerID));
-		chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">Server Connected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), QString("tab-%1-server").arg(serverConnectionHandlerID));
+		//chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">Server Connected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), QString("tab-%1-server").arg(serverConnectionHandlerID));
+		chat->statusReceived(QString("tab-%1-server").arg(serverConnectionHandlerID), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_Connected", "Server Connected");
 	}
 	if (newStatus == STATUS_DISCONNECTED)
 	{
-		chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">Server Disconnected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), QString("tab-%1-server").arg(serverConnectionHandlerID));
+		//chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">Server Disconnected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), QString("tab-%1-server").arg(serverConnectionHandlerID));
+		chat->statusReceived(QString("tab-%1-server").arg(serverConnectionHandlerID), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_Disconnected", "Server Disconnected");
 		clients.remove(serverConnectionHandlerID);
 	}
 }
@@ -419,7 +422,8 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 		ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
 		clients[serverConnectionHandlerID].insert(clientID, QString(res));
 
-		chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">%2 Joined</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), QString(res)), QString("tab-%1-server").arg(serverConnectionHandlerID));
+		//chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">%2 Joined</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), QString(res)), QString("tab-%1-server").arg(serverConnectionHandlerID));
+		chat->statusReceived(QString("tab-%1-server").arg(serverConnectionHandlerID), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientConnected", QString("%1 Joined").arg(res));
 	}
 	if (newChannelID == 0)
 	{
@@ -427,7 +431,8 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 		//char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
 		//ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
 		QString name = clients[serverConnectionHandlerID].take(clientID);
-		chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">%2 Left</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), name), QString("tab-%1-server").arg(serverConnectionHandlerID));
+		//chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">%2 Left</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), name), QString("tab-%1-server").arg(serverConnectionHandlerID));
+		chat->statusReceived(QString("tab-%1-server").arg(serverConnectionHandlerID), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDisconnected", QString("%1 Left").arg(name));
 	}
 }
 
@@ -446,11 +451,11 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 //void ts3plugin_onClientKickFromServerEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage) {
 //}
 
-void ts3plugin_onClientIDsEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, anyID clientID, const char* clientName) {
-}
+//void ts3plugin_onClientIDsEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, anyID clientID, const char* clientName) {
+//}
 
-void ts3plugin_onClientIDsFinishedEvent(uint64 serverConnectionHandlerID) {
-}
+//void ts3plugin_onClientIDsFinishedEvent(uint64 serverConnectionHandlerID) {
+//}
 
 //void ts3plugin_onServerEditedEvent(uint64 serverConnectionHandlerID, anyID editerID, const char* editerName, const char* editerUniqueIdentifier) {
 //}
@@ -513,21 +518,30 @@ QString direction(bool outgoing)
 {
 	if (outgoing)
 	{
-		return "outgoing";
+		return "Outgoing";
 	}
-	return "incoming";
+	return "Incoming";
 }
 
 // Parse bbcode, formatting
-QString format(QString message, const char* name, bool outgoing)
+//QString format(QString message, const char* name, bool outgoing)
+//{
+//	QTime t = QTime::currentTime();
+//	stringstream str;
+//	str << urltags(message).toStdString();
+//	parser.source_stream(str);
+//	parser.parse();
+//	// should probably just send the parameters to javascript and construct the element there?
+//	return QString("<img class=\"%1\"><span><%2> <span class=\"name\">\"%3\"</span>: %4</span>").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), regexFormat(QString::fromStdString(parser.content())));
+//}
+
+QString format(QString message)
 {
-	QTime t = QTime::currentTime();
 	stringstream str;
 	str << urltags(message).toStdString();
 	parser.source_stream(str);
 	parser.parse();
-	// should probably just send the parameters to javascript and construct the element there?
-	return QString("<img class=\"%1\"><span><%2> <span class=\"name\">\"%3\"</span>: %4</span>").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), regexFormat(QString::fromStdString(parser.content())));
+	return regexFormat(QString::fromStdString(parser.content()));
 }
 
 // Client received a text message
@@ -589,7 +603,7 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 	}
 
 	// Just testing something
-	QString m(message);
+	/*QString m(message);
 	if (m.startsWith("!embed "))
 	{
 		QStringList l = m.split(' ');
@@ -599,9 +613,10 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 			chat->messageReceived(QString("<img class=\"%1 embedded-image\"><span><%2> <span class=\"name\">\"%3\"</span>:<a href=\"%4\"><img src=\"%4\"/></a></span>").arg(direction(outgoing), QTime::currentTime().toString("hh:mm:ss"), QString(fromName), l.value(1)), key);
 			return 0;
 		}
-	}
+	}*/
 	
-	chat->messageReceived(format(message, fromName, outgoing), key);
+	//chat->messageReceived(format(message, fromName, outgoing), key);
+	chat->messageReceived(key, direction(outgoing), QTime::currentTime().toString("hh:mm:ss"), fromName, format(message));
     return 0;  /* 0 = handle normally, 1 = client will ignore the text message */
 }
 
