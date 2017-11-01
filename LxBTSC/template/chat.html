@@ -101,6 +101,7 @@
                 "topNep": { "name":"Emotes/topNep.png" }
             }
         </script>
+        <script type="text/javascript" src="jquery.resize.js"></script>
         <script type='text/javascript' src='Emotes.js'></script>
         <script type='text/javascript' src='twitchEmotes.js'></script>
         <script type='text/javascript' src='bttvEmotes.js'></script>
@@ -109,8 +110,14 @@
         <script type='text/javascript'>
             var main;
             var IsBottom = true;
+            var boo = function() {
+                if (IsBottom) {
+                    window.scroll(0, document.body.scrollHeight);
+                }
+            };
         window.onload = function() {
             main = $('#main');
+            $('#main').resize(boo);
             Emotes.emoteList = JSON.parse($('#emotes').html());
             twitchEmotes.get();
             bttvEmotes.get();
@@ -214,4 +221,5 @@
     </head>
     <body id='main'>
     </body>
+    
 </html>
