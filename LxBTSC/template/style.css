@@ -11,6 +11,7 @@ body {
 p {
     padding: 0px;
     margin: 0px;
+    /*min-height: 32px;*/
 }
 .TextMessage_UserLink {
     color: red;
@@ -32,6 +33,11 @@ img {
     max-width: 200px;
     max-height: 200px;
 }
+/*img.emote {
+    min-height: 30px;
+    object-fit: scale-down;
+    object-position: bottom;
+}*/
 iframe {
     /*max-width: 270px;*/
     height: 280px;
@@ -55,3 +61,40 @@ img.Outgoing {
     max-height: 300px;
     max-width: 500px;
 }
+
+.emote-menu {
+    display: none;
+    position: fixed;
+    padding: 10px;
+    left: 50%;
+    top: 50%;
+    width: 70%;
+    height: 70%;
+    background: #FFF;
+    z-index: 20;
+    transform: translate(-50%, -50%);
+    overflow-y: scroll;
+    overflow-x: hidden;
+  }
+  .emote-menu.menu-visible {
+      display: block;
+  }
+  .emote-menu::-webkit-scrollbar {
+      width: 6px;
+  }
+  .emote-menu::-webkit-scrollbar-thumb {
+      background-color: #000;
+  }
+  .emote-menu::-webkit-scrollbar-track {
+      background-color: darkgray;
+  }
+
+  #popup {
+    -webkit-box-shadow:  0px 0px 0px 9999px rgba(0, 0, 0, 0.5);
+    box-shadow:  0px 0px 0px 9999px rgba(0, 0, 0, 0.5);
+  }
+
+  #emote-list > .emote {
+      padding: 1px;
+      cursor: pointer;
+  }

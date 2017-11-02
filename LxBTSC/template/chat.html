@@ -101,6 +101,7 @@
                 "topNep": { "name":"Emotes/topNep.png" }
             }
         </script>
+        <script type="text/javascript" src="qwebchannel.js"></script>
         <script type="text/javascript" src="jquery.resize.js"></script>
         <script type='text/javascript' src='Emotes.js'></script>
         <script type='text/javascript' src='twitchEmotes.js'></script>
@@ -110,18 +111,25 @@
         <script type='text/javascript'>
             var main;
             var IsBottom = true;
-            var boo = function() {
+            var QtObject;
+            var stayDown = function() {
                 if (IsBottom) {
                     window.scroll(0, document.body.scrollHeight);
                 }
             };
+            
         window.onload = function() {
+            new QWebChannel(qt.webChannelTransport, function(channel) {
+                QtObject = channel.objects.wObject;
+            });
             main = $('#main');
-            $('#main').resize(boo);
+            $('#main').resize(stayDown);
             Emotes.emoteList = JSON.parse($('#emotes').html());
             twitchEmotes.get();
             bttvEmotes.get();
             ffzEmotes.get();
+            Emotes.makeKeyList();
+            populateEmoteList();
         };
 
         window.onscroll = function(ev) {
@@ -217,9 +225,27 @@
             }
             return line;
         }
+
+        function ShowOrHideMenu() {
+            $("#popup").toggleClass('menu-visible');
+        }
+
+        function emoteClicked(key) {
+            QtObject.emoteClicked(key);
+        }
+
+        function populateEmoteList() {
+            var list = $('#emote-list');
+            Object.keys(Emotes.emoteList).forEach(function(key) {
+                var e = `<img class='emote' src='${Emotes.emoteList[key].name}' alt='${key}' onclick='emoteClicked("${key}")')>`;
+                list.append(e);
+            });
+        }
         </script>
     </head>
     <body id='main'>
+        <div class="emote-menu" id="popup">
+            <div id="emote-list"></div>
+        </div>
     </body>
-    
 </html>

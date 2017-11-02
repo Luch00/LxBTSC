@@ -21,7 +21,6 @@
 #include "teamspeak/clientlib_publicdefinitions.h"
 #include "ts3_functions.h"
 #include "plugin.h"
-#include <ChatWidget.h>
 #include <QApplication>
 #include <QMainWindow>
 #include <ChatWidget.h>
@@ -29,6 +28,9 @@
 #include <QMetaObject>
 #include <QMetaProperty>
 #include <QMessageBox>
+//#include <QTextEdit>
+#include <QPlainTextEdit>
+#include <QToolButton>
 #include <QtWidgets/QVBoxLayout>
 #include <QRegularExpression>
 #include "bbcode_parser.h"
@@ -120,8 +122,12 @@ uint64 currentServerID;
 ChatWidget *chat;
 QMap<uint64, QMap<anyID, QString> > clients;
 QTabWidget *chatTabWidget;
+QPlainTextEdit *chatLineEdit;
+QToolButton *emoticonButton;
 QMetaObject::Connection c;
 QMetaObject::Connection d;
+QMetaObject::Connection e;
+QMetaObject::Connection f;
 QString pathToPlugin;
 bbcode::parser parser;
 bool first = true;
@@ -212,6 +218,21 @@ static void receiveTabClose(int i)
 	}
 }
 
+static void receiveEmoticonButtonClick(bool c)
+{
+	chat->openCloseEmoteMenu();
+}
+
+static void receiveEmoticonAppend(QString e)
+{
+	if (!chatLineEdit->document()->isModified())
+	{
+		chatLineEdit->document()->clear();
+	}
+	chatLineEdit->insertPlainText(e);
+	chatLineEdit->setFocus();
+}
+
 // Find the widget containing chat tabs and store it for later use
 void findChatTabWidget()
 {
@@ -240,12 +261,48 @@ void findChatTabWidget()
 	}
 }
 
+void findChatLineEdit()
+{
+	QWidgetList list = qApp->allWidgets();
+	for (int i = 0; i < list.count(); i++)
+	{
+		if (list[i]->objectName() == "ChatLineEdit")
+		{
+			chatLineEdit = static_cast<QPlainTextEdit*>(list[i]);
+			QObject::connect(chat->wObject, &TsWebObject::emoteSignal, receiveEmoticonAppend);
+			break;
+		}
+	}
+}
+
+
+void findEmoticonButton()
+{
+	QWidgetList list = qApp->allWidgets();
+	for (int i = 0; i < list.count(); i++)
+	{
+		if (list[i]->objectName() == "EmoticonButton")
+		{
+			emoticonButton = static_cast<QToolButton*>(list[i]);
+			// the one with no tooltip is the correct one :/
+			if (emoticonButton->toolTip().isEmpty())
+			{
+				emoticonButton->disconnect();
+				e = QObject::connect(emoticonButton, &QToolButton::clicked, receiveEmoticonButtonClick);
+				break;
+			}
+		}
+	}
+}
+
 // Disconnect used signals
 void disconnectChatWidget()
 {
 	// disconnect or crash
 	QObject::disconnect(c);
 	QObject::disconnect(d);
+	QObject::disconnect(e);
+	QObject::disconnect(f);
 }
 
 // Init plugin
@@ -269,6 +326,8 @@ void ts3plugin_shutdown() {
     /* Your plugin cleanup code here */
 	disconnectChatWidget();
 	delete chat;
+	//delete chatLineEdit;
+	//delete emoticonButton;
 		
 	
 	/*
@@ -376,17 +435,17 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 		if (first)
 		{
 			// Add new chat widget to the UI
+			findChatLineEdit();
+			findEmoticonButton();
 			findChatTabWidget();
 			first = false;
 		}
 		chat->addServer(serverConnectionHandlerID);
 		clients.insert(serverConnectionHandlerID, getAllClientNicks(serverConnectionHandlerID));
-		//chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">Server Connected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), QString("tab-%1-server").arg(serverConnectionHandlerID));
 		chat->statusReceived(QString("tab-%1-server").arg(serverConnectionHandlerID), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_Connected", "Server Connected");
 	}
 	if (newStatus == STATUS_DISCONNECTED)
 	{
-		//chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">Server Disconnected</span></span>").arg(QTime::currentTime().toString("hh:mm:ss")), QString("tab-%1-server").arg(serverConnectionHandlerID));
 		chat->statusReceived(QString("tab-%1-server").arg(serverConnectionHandlerID), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_Disconnected", "Server Disconnected");
 		clients.remove(serverConnectionHandlerID);
 	}
@@ -422,7 +481,6 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 		ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
 		clients[serverConnectionHandlerID].insert(clientID, QString(res));
 
-		//chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"good\">%2 Joined</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), QString(res)), QString("tab-%1-server").arg(serverConnectionHandlerID));
 		chat->statusReceived(QString("tab-%1-server").arg(serverConnectionHandlerID), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientConnected", QString("%1 Joined").arg(res));
 	}
 	if (newChannelID == 0)
@@ -431,7 +489,6 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 		//char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
 		//ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
 		QString name = clients[serverConnectionHandlerID].take(clientID);
-		//chat->messageReceived(QString("<img class=\"incoming\"><span><%1> <span class=\"bad\">%2 Left</span></span>").arg(QTime::currentTime().toString("hh:mm:ss"), name), QString("tab-%1-server").arg(serverConnectionHandlerID));
 		chat->statusReceived(QString("tab-%1-server").arg(serverConnectionHandlerID), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDisconnected", QString("%1 Left").arg(name));
 	}
 }

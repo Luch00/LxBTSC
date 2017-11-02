@@ -18,6 +18,8 @@
 #include <QClipboard>
 #include <QGuiApplication>
 #include <QMenu>
+#include <QtWebChannel\qwebchannel.h>
+#include <TsWebObject.h>
 
 class ChatWidget : public QFrame
 {
@@ -32,9 +34,11 @@ public:
 	void createPage();
 	void switchTab(QString key);
 	void addServer(unsigned long long);
+	void openCloseEmoteMenu();
 
 	QVBoxLayout *verticalLayout;
 	QWebEngineView *view;
+	TsWebObject *wObject;
 
 	private slots:
 	void copyActivated();
@@ -50,4 +54,5 @@ private:
 	QShortcut *copy;
 	QAction *copyAction;
 	QAction *copyUrlAction;
+	QWebChannel *channel;
 };

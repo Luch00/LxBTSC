@@ -89,11 +89,10 @@ void ChatWidget::switchTab(QString key)
 	page->runJavaScript(QString("ShowTarget('%1');").arg(key));
 }
 
-//void ChatWidget::messageReceived(QString s, QString key)
-//{
-//	QString js = QString("AddLine('%1', '<div>%2</div>');").arg(key, s);
-//	page->runJavaScript(js);
-//}
+void ChatWidget::openCloseEmoteMenu()
+{
+	page->runJavaScript("ShowOrHideMenu();");
+}
 
 void ChatWidget::messageReceived(QString target, QString direction, QString time, QString name, QString message)
 {
@@ -114,4 +113,9 @@ void ChatWidget::createPage()
 	page->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
 	QObject::connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::linkHovered);
 	page->setUrl(QUrl(pathToPage));
+	channel = new QWebChannel(page);
+	
+	page->setWebChannel(channel);
+	wObject = new TsWebObject(channel);
+	channel->registerObject("wObject", wObject);
 }
