@@ -8,17 +8,17 @@ var bttvEmotes = {
         if (!cached) {
             $.get(this.bttvGlobalEmoteJson, function(data) {
                 localStorage.setItem('bttvJson', JSON.stringify(data));
-                data['emotes'].forEach(function(element) {
-                    var e = { name: `${bttvEmotes.bttvEmoteUrl}${element.id}/${bttvEmotes.bttvEmoteSize}` }
-                    Emotes.addEmote(element.code, e);
-                });
+                bttvEmotes.parseJson(data);
             });
         }
         else {
-            cached['emotes'].forEach(function(element) {
-                var e = { name: `${bttvEmotes.bttvEmoteUrl}${element.id}/${bttvEmotes.bttvEmoteSize}` }
-                Emotes.addEmote(element.code, e);
-            });
+            bttvEmotes.parseJson(cached);
         }
+    },
+    parseJson: function(json) {
+        json['emotes'].forEach(function(element) {
+            var e = { name: `${bttvEmotes.bttvEmoteUrl}${element.id}/${bttvEmotes.bttvEmoteSize}` }
+            Emotes.addEmote(element.code, e);
+        });
     }
 }

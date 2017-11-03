@@ -6,17 +6,17 @@ var ffzEmotes = {
         if (!cached) {
             $.get(this.ffzGlobalEmoteJson, function(data) {
                 localStorage.setItem('ffzJson', JSON.stringify(data));
-                data.sets[3]['emoticons'].forEach(function(element) {
-                    var e = { name: `https:${element.urls[1]}` }
-                    Emotes.addEmote(element.name, e);
-                });
+                ffzEmotes.parseJson(data);
             });
         }
         else {
-            cached.sets[3]['emoticons'].forEach(function(element) {
-                var e = { name: `https:${element.urls[1]}` }
-                Emotes.addEmote(element.name, e);
-            });
+            ffzEmotes.parseJson(cached);
         }
+    },
+    parseJson: function(json) {
+        json.sets[3]['emoticons'].forEach(function(element) {
+            var e = { name: `https:${element.urls[1]}` }
+            Emotes.addEmote(element.name, e);
+        });
     }
 }

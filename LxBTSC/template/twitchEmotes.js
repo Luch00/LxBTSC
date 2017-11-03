@@ -7,19 +7,18 @@ var twitchEmotes = {
 
         if (!cached) {
             $.get(this.twitchGlobalEmoteJson, function(data) {
-                console.log(data);
                 localStorage.setItem('twitchJson', JSON.stringify(data));
-                Object.keys(data).forEach(function(key) {
-                    var e = { name: `${twitchEmotes.twitchEmoteUrl}${data[key].id}/${twitchEmotes.twitchEmoteSize}` }
-                    Emotes.addEmote(data[key].code, e);
-                });
+                twitchEmotes.parseJson(data);
             });
         }
         else {
-            Object.keys(cached).forEach(function(key) {
-                var e = { name: `${twitchEmotes.twitchEmoteUrl}${cached[key].id}/${twitchEmotes.twitchEmoteSize}` }
-                Emotes.addEmote(cached[key].code, e);
-            });
+            twitchEmotes.parseJson(cached);
         }
+    },
+    parseJson: function(json) {
+        Object.keys(json).forEach(function(key) {
+            var e = { name: `${twitchEmotes.twitchEmoteUrl}${json[key].id}/${twitchEmotes.twitchEmoteSize}` }
+            Emotes.addEmote(json[key].code, e);
+        });
     }
 }

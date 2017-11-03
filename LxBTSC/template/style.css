@@ -97,4 +97,5 @@ img.Outgoing {
   #emote-list > .emote {
       padding: 1px;
       cursor: pointer;
+      max-height: 32px;
   }

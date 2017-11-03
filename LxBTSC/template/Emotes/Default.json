@@ -1,0 +1,16 @@
+{
+    "setname": "Default",
+    "emoticons": 
+    [
+        { "code": ":)", "name": "smile.svg" },
+        { "code":":D", "name": "laugh.svg" },
+        { "code": "8)", "name": "cool.svg" },
+        { "code": ";)", "name": "twinkle.svg" },
+        { "code": ":(", "name": "sad.svg" },
+        { "code": ":C", "name": "angry.svg" },
+        { "code": ":O", "name": "scream.svg" },
+        { "code": ":/", "name": "skeptical.svg" },
+        { "code": ":x", "name": "stunned.svg" },
+        { "code": ":P", "name": "tongue.svg" }
+    ]
+}

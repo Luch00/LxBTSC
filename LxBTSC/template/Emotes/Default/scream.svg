@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 15.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="32px"
+	 height="32px" viewBox="0 0 128 128" enable-background="new 0 0 128 128" xml:space="preserve">
+<g id="Ebene_2" display="none">
+	<g display="inline">
+		<circle fill="#404547" cx="81.765" cy="50.694" r="7.5"/>
+		<circle fill="#404547" cx="46.235" cy="50.694" r="7.5"/>
+	</g>
+	<g display="inline">
+		<path fill="#404547" d="M64,19c24.813,0,45,20.187,45,45s-20.187,45-45,45c-24.813,0-45-20.188-45-45S39.187,19,64,19 M64,9
+			C33.615,9,9,33.615,9,64c0,30.385,24.615,55,55,55c30.384,0,55-24.615,55-55C119,33.615,94.384,9,64,9L64,9z"/>
+	</g>
+	<path display="inline" fill="none" stroke="#404547" stroke-width="10" stroke-linecap="round" stroke-miterlimit="10" d="
+		M38.275,78.219c13.806,14.91,36.227,14.861,50-0.014"/>
+</g>
+<g id="Ebene_2_Kopie">
+	<g>
+		<ellipse fill="#404547" cx="81.765" cy="45.98" rx="7.5" ry="12.214"/>
+		<ellipse fill="#404547" cx="46.235" cy="45.98" rx="7.5" ry="12.214"/>
+	</g>
+	<g>
+		<path fill="#404547" d="M64,19c24.813,0,45,20.187,45,45s-20.187,45-45,45c-24.813,0-45-20.188-45-45S39.187,19,64,19 M64,9
+			C33.615,9,9,33.615,9,64c0,30.385,24.615,55,55,55c30.384,0,55-24.615,55-55C119,33.615,94.384,9,64,9L64,9z"/>
+	</g>
+	<ellipse fill="#404547" cx="64" cy="84.289" rx="14.714" ry="18"/>
+</g>
+</svg>

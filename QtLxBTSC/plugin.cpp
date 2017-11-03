@@ -33,6 +33,7 @@
 #include <QToolButton>
 #include <QtWidgets/QVBoxLayout>
 #include <QRegularExpression>
+#include <QDir>
 #include "bbcode_parser.h"
 
 
@@ -305,13 +306,37 @@ void disconnectChatWidget()
 	QObject::disconnect(f);
 }
 
+void checkEmoteSets(QString path)
+{
+	QDir directory(path + "LxBTSC/template/Emotes");
+	QStringList f = directory.entryList(QStringList("*.json"), QDir::Files, QDir::NoSort);
+	QString json;
+	if (f.isEmpty())
+	{
+		json = "[]";
+	}
+	else
+	{
+		json = "[\"";
+		json.append(f.join("\",\""));
+		json.append("\"]");
+	}
+
+	QFile file(path + "LxBTSC/template/emotesets.json");
+	if (file.open(QIODevice::WriteOnly))
+	{
+		QTextStream stream(&file);
+		stream << json << endl;
+	}
+}
+
 // Init plugin
 int ts3plugin_init() {
 	char pluginPath[PATH_BUFSIZE];
 	
 	ts3Functions.getPluginPath(pluginPath, PATH_BUFSIZE, pluginID);
 	pathToPlugin = QString(pluginPath);
-
+	checkEmoteSets(pathToPlugin);
 	chat = new ChatWidget(pathToPlugin);
 	chat->setStyleSheet("border: 1px solid gray");
 
