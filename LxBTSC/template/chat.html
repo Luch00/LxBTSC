@@ -121,14 +121,44 @@
             return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
         }
 
-        function EmbedYoutube(line) {
-            var yt = /http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w-]*)(&(amp;)?[\w\?=]*)?/;
-            var m = line.match(yt);
-                //console.log(m);
-            if (m) {
-                line += '</br><iframe frameborder="0" src="https://www.youtube.com/embed/'+ m[1] +'" ></iframe>';
-            }
-            return line;
+        function Embed(line) {
+			try {
+				if (line.indexOf('<audio') === -1) {
+					var audios = line.match(/(?:\[url\])?(.+(?:ogg|oga|mp3|wav|wma|m4a|aac))(?:\[\/url\])?/gi);
+					if (audios != null) {
+						audios.forEach(function(audio) {
+							line += '</br><audio controls preload="metadata" src="' + audio + '"></audio>';
+						});
+					}
+				}
+				if (line.indexOf('<video') === -1) {
+					var videos = line.match(/(?:\[url\])?(.+(?:ogm|ogv|m4v|mp4|webm))(?:\[\/url\])?/gi);
+					if (videos != null) {
+						videos.forEach(function(vid) {
+							line += '</br><video controls preload="metadata" src="' + vid + '"></video>';
+						});
+					}
+				}
+				if (line.indexOf('<img') === -1) {
+					var imgs = line.match(/(?:\[url\])?(.+(?:jpg|png|gif|webp))(?:\[\/url\])?/gi);
+					if (imgs != null) {
+						imgs.forEach(function(img) {
+							line += '</br><img src="' + img + '" /img>';
+						});
+					}
+				}
+				if (line.indexOf('src="https://www.youtube.com/embed/') === -1) {
+					var youtubes = line.match(/http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w-]*)(&(amp;)?[\w\?=]*)?/gi);
+					if (youtubes != null) {
+						youtubes.forEach(function(yt) {
+							line += '</br><iframe frameborder="0" src="https://www.youtube.com/embed/'+ yt +'" ></iframe>';
+						});
+					}
+				}
+				return line;
+			} catch(err) {
+				return "ERROR while embedding: " + err.message + "<br>" + line
+			}
         }
 
         function ShowOrHideMenu() {
