@@ -61,7 +61,7 @@
             {
                 main.append(`<div class='${target}' style='display: none;'></div>`);
             }*/
-            if ($(`.${target}`).childElementCount > 500) {
+            if ($(`.${target}`).childElementCount > 500) { // TODO: Let the user change the maxlines via config/UI
                 $(`.${target}`).firstElementChild.remove();
             }
             var formatted = `<p class='TextMessage_Normal'>
