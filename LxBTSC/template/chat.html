@@ -32,11 +32,10 @@
             main = $('#main');
             $('#main').resize(stayDown);
             $.when(localEmotes.get()).always(function(){
-                twitchEmotes.get();
-                bttvEmotes.get();
-                ffzEmotes.get();
-                Emotes.makeKeyList();
-                populateEmoteList();
+                $.when(twitchEmotes.get(), bttvEmotes.get(), ffzEmotes.get()).always(function() {
+                    Emotes.makeKeyList();
+                    populateEmoteList();
+                });
             });
         };
 
