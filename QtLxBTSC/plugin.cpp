@@ -132,22 +132,29 @@ QMetaObject::Connection f;
 QString pathToPlugin;
 bbcode::parser parser;
 bool first = true;
+bool normalchat_visible = false;
 
 // should probably cache these
 int getClientDatabaseIdFromNickname(QString nickname)
 {
 	anyID *list;
-	ts3Functions.getClientList(currentServerID, &list);
-	for (size_t i = 0; list[i]; i++)
+	if (ts3Functions.getClientList(currentServerID, &list) == ERROR_ok)
 	{
-		char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
-		ts3Functions.getClientDisplayName(currentServerID, list[i], res, TS3_MAX_SIZE_CLIENT_NICKNAME);
-		if (nickname == QString(res))
+		for (size_t i = 0; list[i]; i++)
 		{
-			int dbid;
-			ts3Functions.getClientVariableAsInt(currentServerID, list[i], CLIENT_DATABASE_ID, &dbid);
-			return dbid;
+			char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
+			if (ts3Functions.getClientDisplayName(currentServerID, list[i], res, TS3_MAX_SIZE_CLIENT_NICKNAME) == ERROR_ok)
+			{
+				if (nickname == QString(res))
+				{
+					ts3plugin_freeMemory(list);
+					int dbid;
+					ts3Functions.getClientVariableAsInt(currentServerID, list[i], CLIENT_DATABASE_ID, &dbid);
+					return dbid;
+				}
+			}
 		}
+		ts3plugin_freeMemory(list);
 	}
 	return 0;
 }
@@ -330,6 +337,20 @@ void checkEmoteSets(QString path)
 	}
 }
 
+void ToggleNormalChat()
+{
+	if (chat->isVisible())
+	{
+		chat->hide();
+		chatTabWidget->setMaximumHeight(16777215);
+	}
+	else
+	{
+		chatTabWidget->setMaximumHeight(24);
+		chat->show();
+	}
+}
+
 // Init plugin
 int ts3plugin_init() {
 	char pluginPath[PATH_BUFSIZE];
@@ -401,11 +422,16 @@ void ts3plugin_registerPluginID(const char* id) {
 
 /* Plugin command keyword. Return NULL or "" if not used. */
 const char* ts3plugin_commandKeyword() {
-	return "";
+	return "lxbtsc";
+	//return "";
 }
 
 /* Plugin processes console command. Return 0 if plugin handled the command, 1 if not handled. */
 int ts3plugin_processCommand(uint64 serverConnectionHandlerID, const char* command) {
+	if (strcmp(command, "toggle") == 0)
+	{
+		ToggleNormalChat();
+	}
 	return 0;  /* Plugin handled command */
 }
 
@@ -444,12 +470,18 @@ QMap<unsigned short, QString> getAllClientNicks(uint64 serverConnectionHandlerID
 {
 	QMap<unsigned short, QString> map;
 	anyID *list;
-	ts3Functions.getClientList(serverConnectionHandlerID, &list);
-	for(size_t i = 0; list[i]; i++)
+	if (ts3Functions.getClientList(serverConnectionHandlerID, &list) == ERROR_ok)
 	{
-		char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
-		ts3Functions.getClientDisplayName(serverConnectionHandlerID, list[i], res, TS3_MAX_SIZE_CLIENT_NICKNAME);
-		map.insert(list[i], QString(res));
+		for (size_t i = 0; list[i] != NULL; i++)
+		{
+			char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
+			if (ts3Functions.getClientDisplayName(serverConnectionHandlerID, list[i], res, TS3_MAX_SIZE_CLIENT_NICKNAME) == ERROR_ok)
+			{
+				map.insert(list[i], QString(res));
+				//ts3plugin_freeMemory(res);
+			}
+		}
+		ts3plugin_freeMemory(list);
 	}
 	return map;
 }
@@ -503,8 +535,12 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 	{
 		// client connected
 		char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
-		ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
-		clients[serverConnectionHandlerID].insert(clientID, QString(res));
+		
+		if (ts3Functions.getClientDisplayName(serverConnectionHandlerID, clientID, res, TS3_MAX_SIZE_CLIENT_NICKNAME) == ERROR_ok)
+		{
+			clients[serverConnectionHandlerID].insert(clientID, QString(res));
+			ts3plugin_freeMemory(res);
+		}
 
 		chat->statusReceived(QString("tab-%1-server").arg(serverConnectionHandlerID), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientConnected", QString("%1 Joined").arg(res));
 	}
@@ -521,8 +557,11 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 //void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility) {
 //}
 
-//void ts3plugin_onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* timeoutMessage) {
-//}
+// client drops connection
+void ts3plugin_onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* timeoutMessage) {
+	QString name = clients[serverConnectionHandlerID].take(clientID);
+	chat->statusReceived(QString("tab-%1-server").arg(serverConnectionHandlerID), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDropped", QString("%1 timed out").arg(name));
+}
 
 //void ts3plugin_onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID moverID, const char* moverName, const char* moverUniqueIdentifier, const char* moveMessage) {
 //}
@@ -605,18 +644,6 @@ QString direction(bool outgoing)
 	return "Incoming";
 }
 
-// Parse bbcode, formatting
-//QString format(QString message, const char* name, bool outgoing)
-//{
-//	QTime t = QTime::currentTime();
-//	stringstream str;
-//	str << urltags(message).toStdString();
-//	parser.source_stream(str);
-//	parser.parse();
-//	// should probably just send the parameters to javascript and construct the element there?
-//	return QString("<img class=\"%1\"><span><%2> <span class=\"name\">\"%3\"</span>: %4</span>").arg(direction(outgoing), t.toString("hh:mm:ss"), QString(name), regexFormat(QString::fromStdString(parser.content())));
-//}
-
 QString format(QString message)
 {
 	stringstream str;
@@ -658,16 +685,6 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 	{
 		if (fromID == myID)
 		{
-			// Use nickname as tab identifier
-			//char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
-			//ts3Functions.getClientDisplayName(serverConnectionHandlerID, toID, res, TS3_MAX_SIZE_CLIENT_NICKNAME);
-
-			// client unique id as tab identifier better than name?
-			// problem: contains characters not usable in html attributes
-			//char *res;
-			//ts3Functions.getClientVariableAsString(serverConnectionHandlerID, toID, CLIENT_UNIQUE_IDENTIFIER, &res);
-			//key = QString("tab-%1-private-%2").arg(serverConnectionHandlerID).arg(res);
-
 			// Use database id
 			int dbid;
 			ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, toID, CLIENT_DATABASE_ID, &dbid);

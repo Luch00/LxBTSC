@@ -142,7 +142,14 @@
         function populateEmoteList() {
             var list = $('#emote-list');
             Object.keys(Emotes.emoteList).forEach(function(key) {
-                var e = `<img class='emote' src='${Emotes.emoteList[key].name}' alt='${key}' onclick='emoteClicked("${key}")')>`;
+                var e = $('<img >', {
+                    class: 'emote',
+                    src: Emotes.emoteList[key].name,
+                    alt: key,
+                    'data-key': key
+                }).click(function(e) {
+                    emoteClicked($(this).data('key'));
+                });
                 list.append(e);
             });
         }
