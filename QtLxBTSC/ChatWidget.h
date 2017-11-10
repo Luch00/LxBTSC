@@ -28,12 +28,11 @@ class ChatWidget : public QFrame
 public:
 	ChatWidget(QString path, QWidget *parent = Q_NULLPTR);
 	~ChatWidget();
-	//void messageReceived(QString s, QString key);
 	void messageReceived(QString target, QString direction, QString time, QString name, QString message);
 	void statusReceived(QString target, QString time, QString type, QString message);
 	void createPage();
 	void switchTab(QString key);
-	void addServer(unsigned long long);
+	void addServer(QString key);
 	void openCloseEmoteMenu();
 
 	QVBoxLayout *verticalLayout;

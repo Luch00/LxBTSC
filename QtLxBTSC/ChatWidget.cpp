@@ -7,7 +7,7 @@
 
 #include "ChatWidget.h"
 #include "QString"
-//#include <QMessageBox>
+#include <QMessageBox>
 
 ChatWidget::ChatWidget(QString path, QWidget *parent)
 	: QFrame(parent)
@@ -78,9 +78,9 @@ void ChatWidget::copyUrlActivated()
 	QGuiApplication::clipboard()->setText(currentHoveredUrl.toString(), QClipboard::Clipboard);
 }
 
-void ChatWidget::addServer(unsigned long long serverId)
+void ChatWidget::addServer(QString key)
 {
-	page->runJavaScript(QString("AddServer('%1');").arg(serverId));
+	page->runJavaScript(QString("AddServer('%1');").arg(key));
 }
 
 void ChatWidget::switchTab(QString key)
@@ -97,12 +97,14 @@ void ChatWidget::openCloseEmoteMenu()
 void ChatWidget::messageReceived(QString target, QString direction, QString time, QString name, QString message)
 {
 	QString js = QString("AddLine('%1', '%2', '%3', '%4', '%5');").arg(target, direction, time, name, message);
+	//QMessageBox::information(0, "debug", js, QMessageBox::Ok);
 	page->runJavaScript(js);
 }
 
 void ChatWidget::statusReceived(QString target, QString time, QString type, QString message)
 {
-	QString js = QString("AddStatusLine('%1', '%2', '%3', '%4');").arg(target, time, type, message);
+	QString js = QString("AddStatusLine(\'%1\', \'%2\', \'%3\', \'%4\');").arg(target, time, type, message);
+	//QMessageBox::information(0, "debug", js, QMessageBox::Ok);
 	page->runJavaScript(js);
 }
 
