@@ -33,7 +33,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QRegularExpression>
 #include <QDir>
-#include "bbcode_parser.h"
+//#include "bbcode_parser.h"
 
 
 static struct TS3Functions ts3Functions;
@@ -141,7 +141,7 @@ QMetaObject::Connection d;
 QMetaObject::Connection e;
 QMetaObject::Connection f;
 QString pathToPlugin;
-bbcode::parser parser;
+//bbcode::parser parser;
 bool first = true;
 
 QString getClientUIDbyNickname(QString nickname)
@@ -281,7 +281,6 @@ void findChatLineEdit()
 		}
 	}
 }
-
 
 void findEmoticonButton()
 {
@@ -495,27 +494,15 @@ QMap<unsigned short, Client> getAllClientNicks(uint64 serverConnectionHandlerID)
 	return map;
 }
 
-QString urltags(QString original)
+// Some formatting
+QString format(QString original)
 {
-	// replace url bbcode tags
-	original = original.toHtmlEscaped();
-	QRegularExpression url(QString("\\[URL(=(.*?))?\\](.*?)\\[\\/URL\\]"));
-	QRegularExpressionMatchIterator iterator = url.globalMatch(original);
-	while (iterator.hasNext())
-	{
-		QRegularExpressionMatch match = iterator.next();
-		QString htmlurl;
-		if (!match.captured(2).isNull())
-		{
-			htmlurl = QString("<a href=\"%1\">%2</a>").arg(match.captured(2), match.captured(3));
-		}
-		else
-		{
-			htmlurl = QString("<a href=\"%1\">%2</a>").arg(match.captured(3), match.captured(3));
-		}
+	// newlines to br
+	original.replace(QRegExp("[\r\n]"), "\\r\\n");
 
-		original.replace(match.captured(0), htmlurl);
-	}
+	// escape single quotes
+	original.replace("'", "\\'");
+
 	return original;
 }
 
@@ -541,11 +528,7 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 			{
 				if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_WELCOMEMESSAGE, &msg) == ERROR_ok)
 				{
-					stringstream str;
-					str << urltags(msg).toStdString();
-					parser.source_stream(str);
-					parser.parse();
-					chat->statusReceived(QString("tab-%1-server").arg(s), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_Welcome", QString::fromStdString(parser.content()));
+					chat->statusReceived(QString("tab-%1-server").arg(s), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_Welcome", format(msg));
 					ts3plugin_freeMemory(msg);
 				}
 			}
@@ -649,20 +632,6 @@ int ts3plugin_onServerErrorEvent(uint64 serverConnectionHandlerID, const char* e
 //void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage) {
 //}
 
-
-
-// Some formatting
-QString regexFormat(QString original)
-{
-	// newlines to br
-	original.replace(QRegExp("[\r\n]"), "</br>");
-	
-	// escape single quotes
-	original.replace("'", "\\'");
-
-	return original;
-}
-
 // Was message received or sent
 QString direction(bool outgoing)
 {
@@ -671,15 +640,6 @@ QString direction(bool outgoing)
 		return "Outgoing";
 	}
 	return "Incoming";
-}
-
-QString format(QString message)
-{
-	stringstream str;
-	str << urltags(message).toStdString();
-	parser.source_stream(str);
-	parser.parse();
-	return regexFormat(QString::fromStdString(parser.content()));
 }
 
 // Client received a text message
