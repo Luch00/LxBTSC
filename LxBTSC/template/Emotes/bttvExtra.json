@@ -1,0 +1,12 @@
+{
+    "setname": "bttvExtra",
+    "pathBase": "https://cdn.betterttv.net/emote/",
+    "pathAppend": "/1x",
+    "emoticons": 
+    [
+        { "code": "monkaS", "name": "56e9f494fff3cc5c35e5287e" },
+        { "code": "CuteDog", "name": "56d6fbb4d5d429963e27410c" },
+        { "code": "WanWan", "name": "566462e07fc3c70d30096e2d" },
+        { "code": "Clap", "name": "55b6f480e66682f576dd94f5" }
+    ]
+}

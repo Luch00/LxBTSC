@@ -1,5 +1,7 @@
 {
     "setname": "Default",
+    "pathBase": "Emotes/Default/",
+    "pathAppend": "",
     "emoticons": 
     [
         { "code": ":)", "name": "smile.svg" },

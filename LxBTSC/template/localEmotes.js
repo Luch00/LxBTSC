@@ -22,7 +22,7 @@ var localEmotes = {
     },
     parseJson: function(json) {
         json.emoticons.forEach(function(emote) {
-            var e = { name: `Emotes/${json.setname}/${emote.name}` }
+            var e = { name: `${json.pathBase}${emote.name}${json.pathAppend}` }
             Emotes.addEmote(emote.code, e);
         });
     }

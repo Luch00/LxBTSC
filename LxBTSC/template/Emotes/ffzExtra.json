@@ -1,0 +1,13 @@
+{
+    "setname": "ffzExtra",
+    "pathBase": "https://cdn.frankerfacez.com/emoticon/",
+    "pathAppend": "/1",
+    "emoticons": 
+    [
+        { "code": "KannaNom", "name": "159805" },
+        { "code":"Comfa", "name": "195847" },
+        { "code": "EHEHE", "name": "101094" },
+        { "code": "ErynStaryn", "name": "109523"},
+        { "code": "MistyHisty", "name": "61072"}
+    ]
+}
