@@ -1,0 +1,775 @@
+{
+    "setname": "Twitch Global",
+    "pathbase": "https://static-cdn.jtvnw.net/emoticons/v1/",
+    "pathappend": "/1.0",
+    "emoticons": [
+      {
+        "code": "JKanStyle",
+        "name": 15
+      },
+      {
+        "code": "OptimizePrime",
+        "name": 16
+      },
+      {
+        "code": "StoneLightning",
+        "name": 17
+      },
+      {
+        "code": "TheRinger",
+        "name": 18
+      },
+      {
+        "code": "RedCoat",
+        "name": 22
+      },
+      {
+        "code": "Kappa",
+        "name": 25
+      },
+      {
+        "code": "JonCarnage",
+        "name": 26
+      },
+      {
+        "code": "MrDestructoid",
+        "name": 28
+      },
+      {
+        "code": "BCWarrior",
+        "name": 30
+      },
+      {
+        "code": "GingerPower",
+        "name": 32
+      },
+      {
+        "code": "DansGame",
+        "name": 33
+      },
+      {
+        "code": "SwiftRage",
+        "name": 34
+      },
+      {
+        "code": "PJSalt",
+        "name": 36
+      },
+      {
+        "code": "KevinTurtle",
+        "name": 40
+      },
+      {
+        "code": "Kreygasm",
+        "name": 41
+      },
+      {
+        "code": "SSSsss",
+        "name": 46
+      },
+      {
+        "code": "PunchTrees",
+        "name": 47
+      },
+      {
+        "code": "FunRun",
+        "name": 48
+      },
+      {
+        "code": "ArsonNoSexy",
+        "name": 50
+      },
+      {
+        "code": "SMOrc",
+        "name": 52
+      },
+      {
+        "code": "FrankerZ",
+        "name": 65
+      },
+      {
+        "code": "OneHand",
+        "name": 66
+      },
+      {
+        "code": "HassanChop",
+        "name": 68
+      },
+      {
+        "code": "BloodTrail",
+        "name": 69
+      },
+      {
+        "code": "DBstyle",
+        "name": 73
+      },
+      {
+        "code": "AsianGlow",
+        "name": 74
+      },
+      {
+        "code": "BibleThump",
+        "name": 86
+      },
+      {
+        "code": "ShazBotstix",
+        "name": 87
+      },
+      {
+        "code": "PogChamp",
+        "name": 88
+      },
+      {
+        "code": "PMSTwin",
+        "name": 92
+      },
+      {
+        "code": "FUNgineer",
+        "name": 244
+      },
+      {
+        "code": "ResidentSleeper",
+        "name": 245
+      },
+      {
+        "code": "4Head",
+        "name": 354
+      },
+      {
+        "code": "HotPokket",
+        "name": 357
+      },
+      {
+        "code": "FailFish",
+        "name": 360
+      },
+      {
+        "code": "DAESuppy",
+        "name": 973
+      },
+      {
+        "code": "WholeWheat",
+        "name": 1896
+      },
+      {
+        "code": "ThunBeast",
+        "name": 1898
+      },
+      {
+        "code": "TF2John",
+        "name": 1899
+      },
+      {
+        "code": "RalpherZ",
+        "name": 1900
+      },
+      {
+        "code": "Kippa",
+        "name": 1901
+      },
+      {
+        "code": "Keepo",
+        "name": 1902
+      },
+      {
+        "code": "BigBrother",
+        "name": 1904
+      },
+      {
+        "code": "SoBayed",
+        "name": 1906
+      },
+      {
+        "code": "PeoplesChamp",
+        "name": 3412
+      },
+      {
+        "code": "GrammarKing",
+        "name": 3632
+      },
+      {
+        "code": "PanicVis",
+        "name": 3668
+      },
+      {
+        "code": "ANELE",
+        "name": 3792
+      },
+      {
+        "code": "BrokeBack",
+        "name": 4057
+      },
+      {
+        "code": "PipeHype",
+        "name": 4240
+      },
+      {
+        "code": "YouWHY",
+        "name": 4337
+      },
+      {
+        "code": "RitzMitz",
+        "name": 4338
+      },
+      {
+        "code": "EleGiggle",
+        "name": 4339
+      },
+      {
+        "code": "TheThing",
+        "name": 7427
+      },
+      {
+        "code": "HassaanChop",
+        "name": 20225
+      },
+      {
+        "code": "BabyRage",
+        "name": 22639
+      },
+      {
+        "code": "panicBasket",
+        "name": 22998
+      },
+      {
+        "code": "PermaSmug",
+        "name": 27509
+      },
+      {
+        "code": "BuddhaBar",
+        "name": 27602
+      },
+      {
+        "code": "WutFace",
+        "name": 28087
+      },
+      {
+        "code": "PRChase",
+        "name": 28328
+      },
+      {
+        "code": "Mau5",
+        "name": 30134
+      },
+      {
+        "code": "HeyGuys",
+        "name": 30259
+      },
+      {
+        "code": "NotATK",
+        "name": 34875
+      },
+      {
+        "code": "mcaT",
+        "name": 35063
+      },
+      {
+        "code": "TTours",
+        "name": 38436
+      },
+      {
+        "code": "PraiseIt",
+        "name": 38586
+      },
+      {
+        "code": "HumbleLife",
+        "name": 46881
+      },
+      {
+        "code": "CorgiDerp",
+        "name": 49106
+      },
+      {
+        "code": "ArgieB8",
+        "name": 51838
+      },
+      {
+        "code": "ShadyLulu",
+        "name": 52492
+      },
+      {
+        "code": "KappaPride",
+        "name": 55338
+      },
+      {
+        "code": "CoolCat",
+        "name": 58127
+      },
+      {
+        "code": "DendiFace",
+        "name": 58135
+      },
+      {
+        "code": "NotLikeThis",
+        "name": 58765
+      },
+      {
+        "code": "riPepperonis",
+        "name": 62833
+      },
+      {
+        "code": "duDudu",
+        "name": 62834
+      },
+      {
+        "code": "bleedPurple",
+        "name": 62835
+      },
+      {
+        "code": "twitchRaid",
+        "name": 62836
+      },
+      {
+        "code": "SeemsGood",
+        "name": 64138
+      },
+      {
+        "code": "MingLee",
+        "name": 68856
+      },
+      {
+        "code": "KappaRoss",
+        "name": 70433
+      },
+      {
+        "code": "KappaClaus",
+        "name": 74510
+      },
+      {
+        "code": "OhMyDog",
+        "name": 81103
+      },
+      {
+        "code": "OSfrog",
+        "name": 81248
+      },
+      {
+        "code": "OSsloth",
+        "name": 81249
+      },
+      {
+        "code": "OSkomodo",
+        "name": 81273
+      },
+      {
+        "code": "VoHiYo",
+        "name": 81274
+      },
+      {
+        "code": "MikeHogu",
+        "name": 81636
+      },
+      {
+        "code": "KappaWealth",
+        "name": 81997
+      },
+      {
+        "code": "cmonBruh",
+        "name": 84608
+      },
+      {
+        "code": "SmoocherZ",
+        "name": 89945
+      },
+      {
+        "code": "NomNom",
+        "name": 90075
+      },
+      {
+        "code": "StinkyCheese",
+        "name": 90076
+      },
+      {
+        "code": "ChefFrank",
+        "name": 90129
+      },
+      {
+        "code": "BudStar",
+        "name": 97856
+      },
+      {
+        "code": "FutureMan",
+        "name": 98562
+      },
+      {
+        "code": "OpieOP",
+        "name": 100590
+      },
+      {
+        "code": "DoritosChip",
+        "name": 102242
+      },
+      {
+        "code": "PJSugar",
+        "name": 102556
+      },
+      {
+        "code": "VoteYea",
+        "name": 106293
+      },
+      {
+        "code": "VoteNay",
+        "name": 106294
+      },
+      {
+        "code": "RuleFive",
+        "name": 107030
+      },
+      {
+        "code": "DxCat",
+        "name": 110734
+      },
+      {
+        "code": "AMPTropPunch",
+        "name": 110785
+      },
+      {
+        "code": "TinyFace",
+        "name": 111119
+      },
+      {
+        "code": "PicoMause",
+        "name": 111300
+      },
+      {
+        "code": "TheTarFu",
+        "name": 111351
+      },
+      {
+        "code": "DatSheffy",
+        "name": 111700
+      },
+      {
+        "code": "UnSane",
+        "name": 111792
+      },
+      {
+        "code": "copyThis",
+        "name": 112288
+      },
+      {
+        "code": "pastaThat",
+        "name": 112289
+      },
+      {
+        "code": "imGlitch",
+        "name": 112290
+      },
+      {
+        "code": "GivePLZ",
+        "name": 112291
+      },
+      {
+        "code": "TakeNRG",
+        "name": 112292
+      },
+      {
+        "code": "BlargNaut",
+        "name": 114738
+      },
+      {
+        "code": "DogFace",
+        "name": 114835
+      },
+      {
+        "code": "Jebaited",
+        "name": 114836
+      },
+      {
+        "code": "TooSpicy",
+        "name": 114846
+      },
+      {
+        "code": "WTRuck",
+        "name": 114847
+      },
+      {
+        "code": "UncleNox",
+        "name": 114856
+      },
+      {
+        "code": "RaccAttack",
+        "name": 114870
+      },
+      {
+        "code": "StrawBeary",
+        "name": 114876
+      },
+      {
+        "code": "PrimeMe",
+        "name": 115075
+      },
+      {
+        "code": "BrainSlug",
+        "name": 115233
+      },
+      {
+        "code": "BatChest",
+        "name": 115234
+      },
+      {
+        "code": "CurseLit",
+        "name": 116625
+      },
+      {
+        "code": "Poooound",
+        "name": 117484
+      },
+      {
+        "code": "FreakinStinkin",
+        "name": 117701
+      },
+      {
+        "code": "SuperVinlin",
+        "name": 118772
+      },
+      {
+        "code": "TriHard",
+        "name": 120232
+      },
+      {
+        "code": "CoolStoryBob",
+        "name": 123171
+      },
+      {
+        "code": "ItsBoshyTime",
+        "name": 133468
+      },
+      {
+        "code": "KAPOW",
+        "name": 133537
+      },
+      {
+        "code": "YouDontSay",
+        "name": 134254
+      },
+      {
+        "code": "UWot",
+        "name": 134255
+      },
+      {
+        "code": "RlyTho",
+        "name": 134256
+      },
+      {
+        "code": "SoonerLater",
+        "name": 134472
+      },
+      {
+        "code": "PartyTime",
+        "name": 135393
+      },
+      {
+        "code": "NinjaGrumpy",
+        "name": 138325
+      },
+      {
+        "code": "MVGame",
+        "name": 142140
+      },
+      {
+        "code": "TBAngel",
+        "name": 143490
+      },
+      {
+        "code": "TheIlluminati",
+        "name": 145315
+      },
+      {
+        "code": "BlessRNG",
+        "name": 153556
+      },
+      {
+        "code": "MorphinTime",
+        "name": 156787
+      },
+      {
+        "code": "ThankEgg",
+        "name": 160392
+      },
+      {
+        "code": "ArigatoNas",
+        "name": 160393
+      },
+      {
+        "code": "BegWan",
+        "name": 160394
+      },
+      {
+        "code": "BigPhish",
+        "name": 160395
+      },
+      {
+        "code": "InuyoFace",
+        "name": 160396
+      },
+      {
+        "code": "Kappu",
+        "name": 160397
+      },
+      {
+        "code": "KonCha",
+        "name": 160400
+      },
+      {
+        "code": "PunOko",
+        "name": 160401
+      },
+      {
+        "code": "SabaPing",
+        "name": 160402
+      },
+      {
+        "code": "TearGlove",
+        "name": 160403
+      },
+      {
+        "code": "TehePelo",
+        "name": 160404
+      },
+      {
+        "code": "TwitchLit",
+        "name": 166263
+      },
+      {
+        "code": "CarlSmile",
+        "name": 166266
+      },
+      {
+        "code": "CrreamAwk",
+        "name": 191313
+      },
+      {
+        "code": "TwitchRPG",
+        "name": 191747
+      },
+      {
+        "code": "Squid1",
+        "name": 191762
+      },
+      {
+        "code": "Squid2",
+        "name": 191763
+      },
+      {
+        "code": "Squid3",
+        "name": 191764
+      },
+      {
+        "code": "Squid4",
+        "name": 191767
+      },
+      {
+        "code": "TwitchUnity",
+        "name": 196892
+      },
+      {
+        "code": "TBCrunchy",
+        "name": 200208
+      },
+      {
+        "code": "TBTacoBag",
+        "name": 200211
+      },
+      {
+        "code": "TBTacoProps",
+        "name": 200212
+      },
+      {
+        "code": "VaultBoy",
+        "name": 206490
+      },
+      {
+        "code": "QuadDamage",
+        "name": 206494
+      },
+      {
+        "code": "BJBlazkowicz",
+        "name": 206495
+      },
+      {
+        "code": "TPcrunchyroll",
+        "name": 323914
+      },
+      {
+        "code": "EntropyWins",
+        "name": 376765
+      },
+      {
+        "code": "LUL",
+        "name": 425618
+      },
+      {
+        "code": "PowerUpR",
+        "name": 425671
+      },
+      {
+        "code": "PowerUpL",
+        "name": 425688
+      },
+      {
+        "code": "HSLight",
+        "name": 444567
+      },
+      {
+        "code": "HSVoid",
+        "name": 444568
+      },
+      {
+        "code": "HSCheers",
+        "name": 444572
+      },
+      {
+        "code": "HSWP",
+        "name": 446979
+      },
+      {
+        "code": "DarkMode",
+        "name": 461298
+      },
+      {
+        "code": "TwitchVotes",
+        "name": 479745
+      },
+      {
+        "code": "TPFufun",
+        "name": 508650
+      },
+      {
+        "code": "TotinosRing",
+        "name": 508740
+      },
+      {
+        "code": "TotinosRecruit",
+        "name": 508741
+      },
+      {
+        "code": "PeteZaroll",
+        "name": 508742
+      },
+      {
+        "code": "RedTeam",
+        "name": 530888
+      },
+      {
+        "code": "GreenTeam",
+        "name": 530890
+      },
+      {
+        "code": "XboxElite",
+        "name": 536876
+      },
+      {
+        "code": "XboxBlack",
+        "name": 536878
+      },
+      {
+        "code": "HappyJack",
+        "name": 551865
+      },
+      {
+        "code": "AngryJack",
+        "name": 551866
+      }
+    ]
+  }

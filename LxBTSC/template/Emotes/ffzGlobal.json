@@ -1,0 +1,22 @@
+{
+    "setname": "FFZ Global",
+    "pathbase": "https://cdn.frankerfacez.com/emoticon/",
+    "pathappend": "/1",
+    "emoticons": 
+    [
+        { "code": "ZrehplaR", "name": 9 },
+        { "code":"YooHoo", "name": 6 },
+        { "code": "YellowFever", "name": 5 },
+        { "code": "ManChicken", "name": 4 },
+        { "code": "BeanieHipster", "name": 3 },
+        { "code": "CatBag", "name": 25927 },
+        { "code": "ZreknarF", "name": 27081 },
+        { "code": "LilZ", "name": 28136 },
+        { "code": "ZliL", "name": 28138 },
+        { "code": "LaterSooner", "name": 149346 },
+        { "code": "BORT", "name": 142673 },
+        { "code": "OBOY", "name": 147400 },
+        { "code": "OiMinna", "name": 143930 },
+        { "code": "AndKnuckles", "name": 24999 }
+    ]
+}

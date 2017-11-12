@@ -29,6 +29,12 @@ p {
     color: #000000;
 	font-weight: normal;
 }
+.TextMessage_Welcome {
+  color: #0AA537;
+}
+.TextMessage_ClientDropped {
+  color: #C9070A;
+}
 img {
     max-width: 200px;
     max-height: 200px;
@@ -68,8 +74,8 @@ img.Outgoing {
     padding: 10px;
     left: 50%;
     top: 50%;
-    width: 70%;
-    height: 70%;
+    width: 80%;
+    height: 80%;
     background: #FFF;
     z-index: 20;
     transform: translate(-50%, -50%);
@@ -94,8 +100,13 @@ img.Outgoing {
     box-shadow:  0px 0px 0px 9999px rgba(0, 0, 0, 0.5);
   }
 
-  #emote-list > .emote {
+  .emote-container > .emote {
       padding: 1px;
       cursor: pointer;
       max-height: 32px;
+  }
+
+  .set-header {
+      text-align: center;
+      padding: 2px;
   }

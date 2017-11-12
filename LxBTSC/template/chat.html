@@ -12,10 +12,6 @@
         <script type='text/javascript' src='jquery.resize.js'></script>
         <script type='text/javascript' src='xbbcode.js'></script>
         <script type='text/javascript' src='Emotes.js'></script>
-        <script type='text/javascript' src='localEmotes.js'></script>
-        <script type='text/javascript' src='twitchEmotes.js'></script>
-        <script type='text/javascript' src='bttvEmotes.js'></script>
-        <script type='text/javascript' src='ffzEmotes.js'></script>
 
         <script type='text/javascript'>
             var main;
@@ -32,13 +28,11 @@
                 QtObject = channel.objects.wObject;
             });
             main = $('#main');
-            $('#main').resize(stayDown);
-            $.when(localEmotes.get()).always(function(){
-                $.when(twitchEmotes.get(), bttvEmotes.get(), ffzEmotes.get()).always(function() {
-                    Emotes.makeKeyList();
-                    populateEmoteList();
-                });
+            Emotes.emote_list_element = $('#emote-list');
+            $.when(Emotes.load()).always(function(){
+                Emotes.makeKeyList();
             });
+            $('#main').resize(stayDown);
         };
 
         window.onscroll = function(ev) {
@@ -143,7 +137,7 @@
             QtObject.emoteClicked(key);
         }
 
-        function populateEmoteList() {
+        /*function populateEmoteList() {
             var list = $('#emote-list');
             Object.keys(Emotes.emoteList).forEach(function(key) {
                 var e = $('<img >', {
@@ -156,7 +150,7 @@
                 });
                 list.append(e);
             });
-        }
+        }*/
         </script>
     </head>
     <body id='main'>

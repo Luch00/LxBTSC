@@ -103,7 +103,7 @@ void ChatWidget::messageReceived(QString target, QString direction, QString time
 
 void ChatWidget::statusReceived(QString target, QString time, QString type, QString message)
 {
-	QString js = QString("AddStatusLine(\'%1\', \'%2\', \'%3\', \'%4\');").arg(target, time, type, message);
+	QString js = QString("AddStatusLine('%1', '%2', '%3', '%4');").arg(target, time, type, message);
 	//QMessageBox::information(0, "debug", js, QMessageBox::Ok);
 	page->runJavaScript(js);
 }

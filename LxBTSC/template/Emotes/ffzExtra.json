@@ -1,7 +1,7 @@
 {
-    "setname": "ffzExtra",
-    "pathBase": "https://cdn.frankerfacez.com/emoticon/",
-    "pathAppend": "/1",
+    "setname": "FFZ Extra",
+    "pathbase": "https://cdn.frankerfacez.com/emoticon/",
+    "pathappend": "/1",
     "emoticons": 
     [
         { "code": "KannaNom", "name": "159805" },

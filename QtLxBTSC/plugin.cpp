@@ -33,7 +33,6 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QRegularExpression>
 #include <QDir>
-//#include "bbcode_parser.h"
 
 
 static struct TS3Functions ts3Functions;
@@ -141,7 +140,6 @@ QMetaObject::Connection d;
 QMetaObject::Connection e;
 QMetaObject::Connection f;
 QString pathToPlugin;
-//bbcode::parser parser;
 bool first = true;
 
 QString getClientUIDbyNickname(QString nickname)
@@ -462,6 +460,7 @@ int ts3plugin_requestAutoload() {
 
 /* Clientlib */
 
+// Get the nickname and unique id of a client
 Client getClient(uint64 serverConnectionHandlerID, anyID id)
 {
 	char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
@@ -478,7 +477,7 @@ Client getClient(uint64 serverConnectionHandlerID, anyID id)
 	return Client(res, s);
 }
 
-// Get nicknames of all connected clients
+// cache all connected clients
 QMap<unsigned short, Client> getAllClientNicks(uint64 serverConnectionHandlerID)
 {
 	QMap<unsigned short, Client> map;
@@ -497,7 +496,7 @@ QMap<unsigned short, Client> getAllClientNicks(uint64 serverConnectionHandlerID)
 // Some formatting
 QString format(QString original)
 {
-	// newlines to br
+	// escape newlines to not break javascript
 	original.replace(QRegExp("[\r\n]"), "\\r\\n");
 
 	// escape single quotes
@@ -575,13 +574,13 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 		Client client = getClient(serverConnectionHandlerID, clientID);
 		clients[serverConnectionHandlerID].insert(clientID, client);
 
-		//chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientConnected", QString("<span class=\'TextMessage_UserLink\'>%1</span> connected").arg(client.nickname));
+		//chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientConnected", QString("<span class=\\'TextMessage_UserLink\\'>%1</span> connected").arg(client.nickname));
 		chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientConnected", QString("%1 connected").arg(client.nickname));
 	}
 	if (newChannelID == 0)
 	{
 		Client client = clients[serverConnectionHandlerID].value(clientID);
-		//chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDisconnected", QString("<span class=\'TextMessage_UserLink\'>%1</span> disconnected (%2)").arg(client.nickname).arg(moveMessage));
+		//chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDisconnected", QString("<span class=\\'TextMessage_UserLink\\'>%1</span> disconnected (%2)").arg(client.nickname).arg(moveMessage));
 		chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDisconnected", QString("%1 disconnected (%2)").arg(client.nickname).arg(moveMessage));
 	}
 }
@@ -593,7 +592,7 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 void ts3plugin_onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* timeoutMessage) {
 	//QString name = clients[serverConnectionHandlerID].take(clientID);
 	Client client = clients[serverConnectionHandlerID].value(clientID);
-	//chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDropped", QString("<span class=\'TextMessage_UserLink\'>%1</span> timed out").arg(client.nickname));
+	//chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDropped", QString("<span class=\\'TextMessage_UserLink\\'>%1</span> timed out").arg(client.nickname));
 	chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDropped", QString("%1 timed out").arg(client.nickname));
 }
 

@@ -40,15 +40,6 @@
     <ClCompile Include="ChatWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\bbcodelib\bbcode_lexer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\bbcodelib\bbcode_parser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\bbcodelib\bbcode_utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TsWebObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -64,18 +55,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="plugin.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\bbcodelib\bbcode_config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\bbcodelib\bbcode_lexer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\bbcodelib\bbcode_parser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\bbcodelib\bbcode_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

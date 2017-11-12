@@ -1,7 +1,7 @@
 {
-    "setname": "bttvExtra",
-    "pathBase": "https://cdn.betterttv.net/emote/",
-    "pathAppend": "/1x",
+    "setname": "BTTV Extra",
+    "pathbase": "https://cdn.betterttv.net/emote/",
+    "pathappend": "/1x",
     "emoticons": 
     [
         { "code": "monkaS", "name": "56e9f494fff3cc5c35e5287e" },
