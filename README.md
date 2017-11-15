@@ -3,7 +3,7 @@ Better TeamSpeak Chat (kinda)
 
 Replace Teamspeak text chat tabs with stylable HTML
 
-![Chat](https://i.imgur.com/k6kvOC9.gif)
+![Chat](https://i.imgur.com/FCuXJcS.gif)
 
 Bigger & animated emotes, embed youtube, style with CSS, add javascript etc..
 
