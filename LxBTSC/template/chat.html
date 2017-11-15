@@ -66,16 +66,19 @@
             if ($(`.${target}`).childElementCount > 500) {
                 $(`.${target}`).firstElementChild.remove();
             }
+
+            var p = $('<p/>', {
+                class: 'TextMessage_Normal'
+            }).html(
+                `<span class='Body'>
+                 <img class='${direction}'>
+                 <span class='TextMessage_Time'><${time}> </span>
+                 <span class='TextMessage_UserLink'>"${name}"</span>: 
+                 <span class='TextMessage_Text'>${Emotes.emoticonize(ParseBBCode(line))}</span>
+                 </span>`
+            ).appendTo($(`.${target}`));
             
-            var formatted = `<p class='TextMessage_Normal'>
-                                <span class='Body'>
-                                    <img class='${direction}'>
-                                    <span class='TextMessage_Time'><${time}> </span>
-                                    <span class='TextMessage_UserLink'>"${name}"</span>: 
-                                    <span class='TextMessage_Text'>${EmbedYoutube(Emotes.emoticonize(ParseBBCode(line)))}</span>
-                                </span>
-                            </p>`;
-            $(`.${target}`).append(formatted);
+            Embed(p, line);
 
             if (IsBottom) {
                 window.scroll(0, document.body.scrollHeight);
@@ -93,6 +96,7 @@
                                 <span class='TextMessage_Time'><${time}> </span>
                                 <span class='TextMessage_Text'>${ParseBBCode(line)}</span>
                             </p>`;
+            
             $(`.${target}`).append(formatted);
 
             if (IsBottom) {
@@ -119,38 +123,32 @@
             return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
         }
 
-        function EmbedYoutube(line) {
-            var yt = /http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w-]*)(&(amp;)?[\w\?=]*)?/;
-            var m = line.match(yt);
-                //console.log(m);
-            if (m) {
-                line += '</br><iframe frameborder="0" src="https://www.youtube.com/embed/'+ m[1] +'" ></iframe>';
+        function Embed(element, line) {
+            var embeds_div = $('<div/>', { class:'embeds'});
+
+            var match;
+            //var yt = /http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w-]*)(&(amp;)?[\w\?=]*)?/gi;
+            var yt = /http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([-_A-Za-z0-9]{10}[AEIMQUYcgkosw048]*)(&(amp;)?[\w\?=]*)?/gi;
+            while (match = yt.exec(line)) {
+                var embed_video = $('<div/>', { class:'embed-video' })
+                .html('<iframe frameborder="0" src="https://www.youtube.com/embed/'+ match[1] +'" width="400" height="225"></iframe>')
+                .appendTo(embeds_div);
             }
-            return line;
+
+            embeds_div.not(':empty').insertAfter(element);
         }
 
         function ShowOrHideMenu() {
             $("#popup").toggleClass('menu-visible');
         }
 
-        function emoteClicked(key) {
+        function emoteClicked(key, shift) {
             QtObject.emoteClicked(key);
+            if(!shift) {
+                ShowOrHideMenu();
+            }
         }
-
-        /*function populateEmoteList() {
-            var list = $('#emote-list');
-            Object.keys(Emotes.emoteList).forEach(function(key) {
-                var e = $('<img >', {
-                    class: 'emote',
-                    src: Emotes.emoteList[key].name,
-                    alt: key,
-                    'data-key': key
-                }).click(function(e) {
-                    emoteClicked($(this).data('key'));
-                });
-                list.append(e);
-            });
-        }*/
+        
         </script>
     </head>
     <body id='main'>

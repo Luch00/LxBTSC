@@ -18,7 +18,7 @@
 #include <QClipboard>
 #include <QGuiApplication>
 #include <QMenu>
-#include <QtWebChannel\qwebchannel.h>
+#include <QtWebChannel/qwebchannel.h>
 #include <TsWebObject.h>
 
 class ChatWidget : public QFrame

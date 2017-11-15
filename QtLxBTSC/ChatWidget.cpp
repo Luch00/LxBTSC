@@ -7,7 +7,6 @@
 
 #include "ChatWidget.h"
 #include "QString"
-#include <QMessageBox>
 
 ChatWidget::ChatWidget(QString path, QWidget *parent)
 	: QFrame(parent)
@@ -36,29 +35,34 @@ void ChatWidget::setupUi(QWidget *ChatWidget)
 	copy = new QShortcut(QKeySequence::Copy, view);
 	copyAction = new QAction("Copy", this);
 	copyUrlAction = new QAction("Copy Link", this);
-	
+
 	QObject::connect(copyAction, &QAction::triggered, this, &ChatWidget::copyActivated);
 	QObject::connect(copyUrlAction, &QAction::triggered, this, &ChatWidget::copyUrlActivated);
 	QObject::connect(view, &QWebEngineView::customContextMenuRequested, this, &ChatWidget::showContextMenu);
 	QObject::connect(copy, &QShortcut::activated, this, &ChatWidget::copyActivated);
-	
+
 	verticalLayout->addWidget(view);
 }
 
 void ChatWidget::showContextMenu(const QPoint &p)
 {
-	QMenu *menu = new QMenu(this);
+	//QMenu *menu = new QMenu(this);
+	QMenu menu(this);
 	if (view->hasSelection())
 	{
-		menu->addAction(copyAction);
+		//menu->addAction(copyAction);
+		menu.addAction(copyAction);
 	}
 	if (currentHoveredUrl.isEmpty() == false)
 	{
-		menu->addAction(copyUrlAction);
+		//menu->addAction(copyUrlAction);
+		menu.addAction(copyUrlAction);
 	}
-	if (menu->actions().isEmpty() == false)
+	//if (menu->actions().isEmpty() == false)
+	if (menu.actions().isEmpty() == false)
 	{
-		menu->popup(view->mapToGlobal(p));
+		//menu->popup(view->mapToGlobal(p));
+		menu.popup(view->mapToGlobal(p));
 	}
 }
 
@@ -113,10 +117,11 @@ void ChatWidget::createPage()
 	page = new TsWebEnginePage();
 	page->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
 	page->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
+	page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 	QObject::connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::linkHovered);
 	page->setUrl(QUrl(pathToPage));
 	channel = new QWebChannel(page);
-	
+
 	page->setWebChannel(channel);
 	wObject = new TsWebObject(channel);
 	channel->registerObject("wObject", wObject);

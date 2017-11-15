@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include "teamspeak/public_errors.h"
 #include "teamspeak/public_errors_rare.h"
 #include "teamspeak/public_definitions.h"
@@ -26,8 +25,6 @@
 #include <ChatWidget.h>
 #include <QMap>
 #include <QMetaObject>
-#include <QMetaProperty>
-#include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QToolButton>
 #include <QtWidgets/QVBoxLayout>
@@ -88,7 +85,7 @@ const char* ts3plugin_name() {
 
 /* Plugin version */
 const char* ts3plugin_version() {
-    return "1.1";
+    return "1.2";
 }
 
 /* Plugin API version. Must be the same as the clients API major version, else the plugin fails to load. */
@@ -122,7 +119,7 @@ struct Client
 {
 	Client() : nickname(""), uid("") {}
 	Client(QString n, QString u) : nickname(n), uid(u) {}
-	void Client::setNickname(QString n) { nickname = n; }
+	void Client::set_nickname(QString n) { nickname = n; }
 	QString nickname;
 	QString uid;
 };
@@ -144,7 +141,7 @@ bool first = true;
 
 QString getClientUIDbyNickname(QString nickname)
 {
-	for each (Client c in clients[currentServerID])
+	for each (const Client & c in clients[currentServerID])
 	{
 		if (c.nickname == nickname)
 		{

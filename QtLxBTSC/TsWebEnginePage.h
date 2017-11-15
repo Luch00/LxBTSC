@@ -8,7 +8,7 @@
 #pragma once
 
 #include <QObject>
-#include <QtWebEngineWidgets\QWebEnginePage>
+#include <QtWebEngineWidgets/QWebEnginePage>
 #include <QDesktopServices>
 
 class TsWebEnginePage : public QWebEnginePage

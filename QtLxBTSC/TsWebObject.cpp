@@ -1,5 +1,4 @@
 #include "TsWebObject.h"
-#include <qmessagebox.h>
 
 TsWebObject::TsWebObject(QObject *parent)
 	: QObject(parent)
