@@ -130,10 +130,51 @@
             //var yt = /http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w-]*)(&(amp;)?[\w\?=]*)?/gi;
             var yt = /http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([-_A-Za-z0-9]{10}[AEIMQUYcgkosw048]*)(&(amp;)?[\w\?=]*)?/gi;
             while (match = yt.exec(line)) {
-                var embed_video = $('<div/>', { class:'embed-video' })
+                var embed_video = $('<div/>', { class:'embed-container' })
                 .html('<iframe frameborder="0" src="https://www.youtube.com/embed/'+ match[1] +'" width="400" height="225"></iframe>')
+                .wrap('<div/>').parent()
                 .appendTo(embeds_div);
             }
+
+            var img = /(https?:\/\/\S*?\.(?:png|jpe?g|gif|webp)(?:\?(?:(?:(?:[\w_-]+=[\w_-]+)(?:&[\w_-]+=[\w_-]+)*)|(?:[\w_-]+)))?)/gi;
+            while (match = img.exec(line)) {
+                var embed_image = $('<div/>', { class:'embed-container' })
+                .html('<img src="' + match[1] + '">')
+                .wrap('<div/>').parent()
+                .appendTo(embeds_div);
+            }
+
+            var audio = /(https?:\/\/\S*?\.(?:opus|ogg|oga|wav|wma|flac)(?:\?(?:(?:(?:[\w_-]+=[\w_-]+)(?:&[\w_-]+=[\w_-]+)*)|(?:[\w_-]+)))?)/gi;
+            while (match = audio.exec(line)) {
+                var embed_audio = $('<div/>', { class:'embed-container' })
+                .html('<audio controls preload="metadata" src="' + match[1] + '">')
+                .wrap('<div/>').parent()
+                .appendTo(embeds_div);
+            }
+
+            var video = /(https?:\/\/\S*?\.(?:webm|ogv)(?:\?(?:(?:(?:[\w_-]+=[\w_-]+)(?:&[\w_-]+=[\w_-]+)*)|(?:[\w_-]+)))?)/gi;
+            while (match = video.exec(line)) {
+                var embed_video = $('<div/>', { class:'embed-container' })
+                .html('<video width="100%" height="100%" controls preload="metadata" src="' + match[1] + '" loop autoplay>')
+                .wrap('<div/>').parent()
+                .appendTo(embeds_div);
+            }
+
+            var paste = /https:\/\/pastebin.com\/([0-9a-zA-Z]+)/gi;
+            while (match = paste.exec(line)) {
+                var embed_paste = $('<div/>', { class:'embed-container' })
+                .html('<iframe src="https://pastebin.com/embed_iframe/' + match[1] + '" style="border:none;width:100%"></iframe>')
+                .wrap('<div/>').parent()
+                .appendTo(embeds_div);
+            }
+            
+            /*var gist = /https:\/\/gist\.github\.com\/[0-9a-zA-Z]+\/[0-9a-zA-Z]+/gi;
+            while (match = gist.exec(line)) {
+                var embed_paste = $('<div/>', { class:'embed-container' })
+                .html('  NEEDS SOME KIND OF IFRAME HERE ')
+                .wrap('<div/>').parent()
+                .appendTo(embeds_div);
+            }*/
 
             embeds_div.not(':empty').insertAfter(element);
         }
