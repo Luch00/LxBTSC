@@ -1,7 +1,7 @@
 body {
     min-width: 300px;
     word-wrap: break-word;
-    font-family: Helvetica Neue,Helvetica,sans-serif;
+    font-family: 'Helvetica Neue',Helvetica,sans-serif, 'Segoe UI', 'Segoe UI Symbol';
     background-color: #FEFEFE;
     /*background-image: url('chatlog.jpg');*/
     background-repeat: no-repeat;
@@ -42,6 +42,7 @@ img {
 .embeds {
     margin-top: 5px;
     margin-left: 10px;
+    margin-bottom: 5px;
 }
 video {
     max-width: 100%;
@@ -56,6 +57,25 @@ video {
     content:'';
     clear: both;
     display: block;
+}
+.close-embeds {
+    position: absolute;
+    margin-left: -5px;
+    margin-top: -10px;
+    cursor: pointer;
+    color: black;
+    text-align: center;
+    text-decoration: none;
+    background: lightgray;
+    border-radius: 20px;
+    width: 15px;
+}
+.close-embeds:hover {
+    color: lightgray;
+    background: darkgray;
+}
+.close-embeds:visited {
+    color: black;
 }
 img.Incoming {
     content: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAYAAABr5z2BAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABl0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuNUmK/OAAAAH1SURBVDhPY2CAADYg5gvqkP+fPMPgf8oMo/85c23/F8x3/h/RrfEXqgZGMaLxGZiBArxALJEyy/B/1hrt/5mrtP7XbfX637cv4X/xIvdfhAwA2S4KxIops/X+J6+V+Z+4Qvp/+Ub7/x27I/4XL3T/TcgAbqACWSDWSZuv/z9zm/z/lPVS/2u2O//v2Rv9v2SRB34DHEv5KoObVXuDG9SmFq6y+p+7W+F/4kbh//W7XP737Y/9X7867G/mdLuGlMkW9e61IgVAi1DDwK9ZZkbDNu+vLced/tUdNf+ftVvif9xGnv81O+3/d+0N/z/jYP7/uYcq/k/anv8pokuzG8MAVXdm2YTJunMaDzp+zzwg/D9pO+//mPXc/3M3av1v3OH9v2tP1P+ZB0q+Fs5377EuZRHAMICJlYHbKIzPMXma0Y6Kfcb/kjYL/o9cxfU/ZZX8//ptnv8n7cv4V7rQe7l/i6w6NDAxopGdlZNBUsOLwzN3icWrnI0a/0OXcP6PWyL5v3l70L/alcEPXar41a1KWJhwGQCS4ANiSdsM4bis+eZ3kpcq/89ZafC/coX3lcA2eVdC0QhyEigt8IvpMEkHtyiXFCyxfVa2wvVx/CT9DKtSoPtQAYYXQNIgQVYg5jBL5RAPbleYEt6l1uFYxSuInmzRAxEAjbvAFcN6tUwAAAAASUVORK5CYII=');

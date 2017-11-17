@@ -82,7 +82,7 @@ void ChatWidget::addServer(const QString &key)
 	page->runJavaScript(QString("AddServer('%1');").arg(key));
 }
 
-void ChatWidget::switchTab(QString key)
+void ChatWidget::switchTab(const QString &key)
 {
 	page->runJavaScript(QString("ShowTarget('%1');").arg(key));
 }
@@ -92,18 +92,16 @@ void ChatWidget::openCloseEmoteMenu()
 	page->runJavaScript("ShowOrHideMenu();");
 }
 
-void ChatWidget::messageReceived(QString target, QString direction, QString time, QString name, QString message)
+void ChatWidget::messageReceived(const QString &target, const QString &direction, const QString &time, const QString &name, const QString &message)
 {
-	QString js = QString("AddLine('%1', '%2', '%3', '%4', '%5');").arg(target, direction, time, name, message);
 	//QMessageBox::information(0, "debug", js, QMessageBox::Ok);
-	page->runJavaScript(js);
+	page->runJavaScript(QString("AddLine('%1', '%2', '%3', '%4', '%5');").arg(target, direction, time, name, message));
 }
 
-void ChatWidget::statusReceived(QString target, QString time, QString type, QString message)
+void ChatWidget::statusReceived(const QString &target, const QString &time, const QString &type, const QString &message)
 {
-	QString js = QString("AddStatusLine('%1', '%2', '%3', '%4');").arg(target, time, type, message);
 	//QMessageBox::information(0, "debug", js, QMessageBox::Ok);
-	page->runJavaScript(js);
+	page->runJavaScript(QString("AddStatusLine('%1', '%2', '%3', '%4');").arg(target, time, type, message));
 }
 
 void ChatWidget::createPage()

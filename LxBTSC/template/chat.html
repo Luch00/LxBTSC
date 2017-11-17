@@ -125,6 +125,10 @@
 
         function Embed(element, line) {
             var embeds_div = $('<div/>', { class:'embeds'});
+            var close_a = $('<a/>', { class:'close-embeds', href:'#', title:'close', text:'x' })
+            .click(function(e) {
+                $(this).parent().remove();
+            });
 
             var match;
             //var yt = /http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w-]*)(&(amp;)?[\w\?=]*)?/gi;
@@ -139,7 +143,7 @@
             var img = /(https?:\/\/\S*?\.(?:png|jpe?g|gif|webp)(?:\?(?:(?:(?:[\w_-]+=[\w_-]+)(?:&[\w_-]+=[\w_-]+)*)|(?:[\w_-]+)))?)/gi;
             while (match = img.exec(line)) {
                 var embed_image = $('<div/>', { class:'embed-container' })
-                .html('<img src="' + match[1] + '">')
+                .html('<a href="' + match[1] + '"><img src="' + match[1] + '"></a>')
                 .wrap('<div/>').parent()
                 .appendTo(embeds_div);
             }
@@ -167,7 +171,7 @@
                 .wrap('<div/>').parent()
                 .appendTo(embeds_div);
             }
-            
+
             /*var gist = /https:\/\/gist\.github\.com\/[0-9a-zA-Z]+\/[0-9a-zA-Z]+/gi;
             while (match = gist.exec(line)) {
                 var embed_paste = $('<div/>', { class:'embed-container' })
@@ -176,7 +180,7 @@
                 .appendTo(embeds_div);
             }*/
 
-            embeds_div.not(':empty').insertAfter(element);
+            embeds_div.not(':empty').append(close_a).insertAfter(element);
         }
 
         function ShowOrHideMenu() {
@@ -189,7 +193,6 @@
                 ShowOrHideMenu();
             }
         }
-        
         </script>
     </head>
     <body id='main'>

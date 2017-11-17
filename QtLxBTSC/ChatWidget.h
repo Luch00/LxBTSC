@@ -28,10 +28,10 @@ class ChatWidget : public QFrame
 public:
 	ChatWidget(QString path, QWidget *parent = Q_NULLPTR);
 	~ChatWidget();
-	void messageReceived(QString target, QString direction, QString time, QString name, QString message);
-	void statusReceived(QString target, QString time, QString type, QString message);
+	void messageReceived(const QString &target, const QString &direction, const QString &time, const QString &name, const QString &message);
+	void statusReceived(const QString &target, const QString &time, const QString &type, const QString &message);
 	void createPage();
-	void switchTab(QString key);
+	void switchTab(const QString &key);
 	void addServer(const QString &key);
 	void openCloseEmoteMenu();
 
