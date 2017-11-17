@@ -32,7 +32,7 @@ public:
 	void statusReceived(QString target, QString time, QString type, QString message);
 	void createPage();
 	void switchTab(QString key);
-	void addServer(QString key);
+	void addServer(const QString &key);
 	void openCloseEmoteMenu();
 
 	QVBoxLayout *verticalLayout;
@@ -43,13 +43,14 @@ public:
 	void copyActivated();
 	void copyUrlActivated();
 	void showContextMenu(const QPoint &);
-	void linkHovered(QUrl);
+	void linkHovered(const QUrl &);
 
 private:
 	TsWebEnginePage *page;
 	void setupUi(QWidget *ChatWidget);
 	QString pathToPage;
 	QUrl currentHoveredUrl;
+	QMenu * menu;
 	QShortcut *copy;
 	QAction *copyAction;
 	QAction *copyUrlAction;

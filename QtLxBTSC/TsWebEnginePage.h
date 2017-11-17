@@ -22,7 +22,7 @@ public:
 	// clicked links open in external browser
 	bool acceptNavigationRequest(const QUrl & url, QWebEnginePage::NavigationType type, bool isMainFrame)
 	{
-		if (type == QWebEnginePage::NavigationType::NavigationTypeLinkClicked && isMainFrame == true)
+		if (type == NavigationTypeLinkClicked && isMainFrame == true)
 		{
 			QDesktopServices::openUrl(url);
 			return false;

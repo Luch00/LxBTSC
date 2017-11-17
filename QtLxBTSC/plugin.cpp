@@ -168,14 +168,11 @@ static void receiveTabChange(int i)
 		}
 		else
 		{
-			QString id = getClientUIDbyNickname(chatTabWidget->tabText(i));
+			const QString id = getClientUIDbyNickname(chatTabWidget->tabText(i));
 			tabName = QString("tab-%1-private-%2").arg(servers[currentServerID]).arg(id);
-
-			//tabName = QString("tab-%1-private-%2").arg(currentServerID).arg(chatTabWidget->tabText(i));
 		}
 		chat->switchTab(tabName);
 	}
-	//QMessageBox::information(0, "debug", "tabchange_done", QMessageBox::Ok);
 }
  
 // After server tab change check what chat tab is selected
@@ -183,8 +180,8 @@ static void recheckSelectedTab()
 {
 	if (currentServerID != NULL)
 	{
-		int i = chatTabWidget->currentIndex();
-		//QMessageBox::information(0, "debug", QString("recheck_trigger: %1 %2").arg(currentServerID).arg(i), QMessageBox::Ok);
+		const int i = chatTabWidget->currentIndex();
+
 		if (i >= 0)
 		{
 			QString tabName;
@@ -198,14 +195,11 @@ static void recheckSelectedTab()
 			}
 			else
 			{
-				QString id = getClientUIDbyNickname(chatTabWidget->tabText(i));
+				const QString id = getClientUIDbyNickname(chatTabWidget->tabText(i));
 				tabName = QString("tab-%1-private-%2").arg(servers[currentServerID]).arg(id);
-
-				//tabName = QString("tab-%1-private-%2").arg(currentServerID).arg(chatTabWidget->tabText(i));
 			}
 			chat->switchTab(tabName);
 		}
-		//QMessageBox::information(0, "debug", "recheck_done", QMessageBox::Ok);
 	}
 }
 
@@ -214,7 +208,7 @@ static void receiveTabClose(int i)
 {
 	if (i > 1)
 	{
-		QString tabName = QString("tab-%1-server").arg(servers[currentServerID]);
+		const QString tabName = QString("tab-%1-server").arg(servers[currentServerID]);
 		chat->switchTab(tabName);
 		chatTabWidget->setCurrentIndex(0);
 	}
@@ -245,16 +239,12 @@ void findChatTabWidget()
 		{
 			chatTabWidget = static_cast<QTabWidget*>(list[i]);
 			QWidget *parent = chatTabWidget->parentWidget();
-			//chat->setParent(parent);
-			//QMessageBox::information(0, "debug", "widget_add", QMessageBox::Ok);
 			static_cast<QBoxLayout*>(parent->layout())->insertWidget(0, chat);
-			//QMessageBox::information(0, "debug", "widget_add_done", QMessageBox::Ok);
 
 			chatTabWidget->setMinimumHeight(24);
 			chatTabWidget->setMaximumHeight(24);
 
 			c = QObject::connect(chatTabWidget, &QTabWidget::currentChanged, receiveTabChange);
-			//c = QObject::connect(chatTabWidget, &QTabWidget::tabBarClicked, receive);
 			d = QObject::connect(chatTabWidget, &QTabWidget::tabCloseRequested, receiveTabClose);
 			chatTabWidget->setMovable(false);
 			
@@ -517,7 +507,7 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 		char *res;
 		if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_UNIQUE_IDENTIFIER, &res) == ERROR_ok)
 		{
-			QString s = QString(res).replace(QRegExp("[+/=]"), "0");
+			const QString s = QString(res).replace(QRegExp("[+/=]"), "0");
 			chat->addServer(s);
 			char *msg;
 			if (!servers.values().contains(s))
@@ -538,7 +528,6 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 	if (newStatus == STATUS_DISCONNECTED)
 	{
 		chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_Disconnected", "Server Disconnected");
-		//clients.remove(serverConnectionHandlerID);
 	}
 }
 
@@ -568,7 +557,7 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 	if (oldChannelID == 0)
 	{
 		// client connected
-		Client client = getClient(serverConnectionHandlerID, clientID);
+		const Client client = getClient(serverConnectionHandlerID, clientID);
 		clients[serverConnectionHandlerID].insert(clientID, client);
 
 		//chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientConnected", QString("<span class=\\'TextMessage_UserLink\\'>%1</span> connected").arg(client.nickname));
@@ -576,7 +565,7 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 	}
 	if (newChannelID == 0)
 	{
-		Client client = clients[serverConnectionHandlerID].value(clientID);
+		const Client &client = clients[serverConnectionHandlerID].value(clientID);
 		//chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDisconnected", QString("<span class=\\'TextMessage_UserLink\\'>%1</span> disconnected (%2)").arg(client.nickname).arg(moveMessage));
 		chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDisconnected", QString("%1 disconnected (%2)").arg(client.nickname).arg(moveMessage));
 	}
@@ -587,8 +576,7 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 
 // client drops connection
 void ts3plugin_onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* timeoutMessage) {
-	//QString name = clients[serverConnectionHandlerID].take(clientID);
-	Client client = clients[serverConnectionHandlerID].value(clientID);
+	const Client &client = clients[serverConnectionHandlerID].value(clientID);
 	//chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDropped", QString("<span class=\\'TextMessage_UserLink\\'>%1</span> timed out").arg(client.nickname));
 	chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDropped", QString("%1 timed out").arg(client.nickname));
 }
@@ -670,17 +658,11 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 	{
 		if (fromID == myID)
 		{
-			//char *res;
-			//ts3Functions.getClientVariableAsString(serverConnectionHandlerID, toID, CLIENT_UNIQUE_IDENTIFIER, &res);
 			key = QString("tab-%1-private-%2").arg(servers[serverConnectionHandlerID]).arg(clients[serverConnectionHandlerID].value(toID).uid);
-			//ts3plugin_freeMemory(res);
 		}
 		else
 		{
-			//char *res;
-			//ts3Functions.getClientVariableAsString(serverConnectionHandlerID, fromID, CLIENT_UNIQUE_IDENTIFIER, &res);
 			key = QString("tab-%1-private-%2").arg(servers[serverConnectionHandlerID]).arg(clients[serverConnectionHandlerID].value(fromID).uid);
-			//ts3plugin_freeMemory(res);
 		}
 	}
 	chat->messageReceived(key, direction(outgoing), QTime::currentTime().toString("hh:mm:ss"), fromName, format(message));
@@ -941,9 +923,6 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 
 /* Called when client custom nickname changed */
 void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, const char* displayName, const char* uniqueClientIdentifier) {
-	//clients[serverConnectionHandlerID].insert(clientID, QString(displayName));
-	//clients[serverConnectionHandlerID].value(clientID)->setNickname(displayName);
-
 	Client t = clients[serverConnectionHandlerID].value(clientID);
 	t.nickname = displayName;
 	clients[serverConnectionHandlerID].insert(clientID, t);
