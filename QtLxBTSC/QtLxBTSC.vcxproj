@@ -140,9 +140,13 @@
     <ClCompile Include="ChatWidget.cpp" />
     <ClCompile Include="TsWebEnginePage.cpp" />
     <ClCompile Include="TsWebObject.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="client.h" />
     <ClInclude Include="plugin.h" />
+    <ClInclude Include="server.h" />
+    <ClInclude Include="utils.h" />
     <CustomBuild Include="TsWebObject.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing TsWebObject.h...</Message>
