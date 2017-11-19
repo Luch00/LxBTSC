@@ -28,8 +28,6 @@
 #include <QPlainTextEdit>
 #include <QToolButton>
 #include <QtWidgets/QVBoxLayout>
-#include <QRegularExpression>
-#include <QDir>
 #include <server.h>
 #include <utils.h>
 
@@ -86,7 +84,7 @@ const char* ts3plugin_name() {
 
 /* Plugin version */
 const char* ts3plugin_version() {
-    return "1.2";
+    return "1.3";
 }
 
 /* Plugin API version. Must be the same as the clients API major version, else the plugin fails to load. */
@@ -412,13 +410,11 @@ Client getClient(uint64 serverConnectionHandlerID, anyID id)
 	{
 	}
 	char *uid;
-	QString s;
 	if (ts3Functions.getClientVariableAsString(serverConnectionHandlerID, id, CLIENT_UNIQUE_IDENTIFIER, &uid) == ERROR_ok)
 	{
-		s = QString(uid).replace(QRegExp("[+/=]"), "0");
 		ts3plugin_freeMemory(uid);
 	}
-	return Client(res, s);
+	return Client(res, uid);
 }
 
 // cache all connected clients

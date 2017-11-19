@@ -1,5 +1,4 @@
 #pragma once
-#include <QString>
 #include <QRegExp>
 
 namespace utils
