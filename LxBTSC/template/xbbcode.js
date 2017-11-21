@@ -664,6 +664,18 @@ var XBBCODE = (function() {
             processedContent = "";
         }
 
+        if (tagName === "url") {
+            if (tagParams) {
+                if (tagParams.startsWith("=ts3file://")) {
+                    processedContent += " [OPEN FILELINKS IN NORMAL CHAT]";
+                }
+            }
+            else if (processedContent.startsWith("ts3file://")) {
+                processedContent += " [OPEN FILELINKS IN NORMAL CHAT]";
+            }
+            
+        }
+
         return openTag + processedContent + closeTag;
     };
 

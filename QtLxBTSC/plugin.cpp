@@ -192,20 +192,41 @@ static void receiveTabClose(int i)
 	}
 }
 
+void ToggleNormalChat()
+{
+	if (chat->isVisible())
+	{
+		chat->hide();
+		chatTabWidget->setMaximumHeight(16777215);
+	}
+	else
+	{
+		chatTabWidget->setMaximumHeight(24);
+		chat->show();
+	}
+}
+
 static void receiveEmoticonButtonClick(bool c)
 {
-	chat->openCloseEmoteMenu();
+	if(QApplication::keyboardModifiers() == Qt::ControlModifier)
+	{
+		ToggleNormalChat();
+	}
+	else
+	{
+		chat->openCloseEmoteMenu();
+	}
 }
 
 static void receiveFileUrlClick(const QUrl &url)
 {
 	if (url.hasQuery())
 	{
-		QMessageBox::information(0, "Nope", "Use filelinks from default chat, /lxb toggle", QMessageBox::Ok);
+		//QMessageBox::information(0, "Nope", "Use filelinks from default chat, /lxb toggle", QMessageBox::Ok);
 
-
+		// This works but needs some way to show to the user that it is downloading/doing anything
 		// CHECK FOR PASSWORD REQUIREMENT
-		/*QMessageBox::information(0, "debug", QString("tabchange_trigger: %1").arg("yey"), QMessageBox::Ok);
+		/*
 		QUrlQuery query;
 		query.setQuery(url.query());
 		QString server_uid = query.queryItemValue("serverUID", QUrl::FullyDecoded);
@@ -269,6 +290,8 @@ void findChatTabWidget()
 			c = QObject::connect(chatTabWidget, &QTabWidget::currentChanged, receiveTabChange);
 			d = QObject::connect(chatTabWidget, &QTabWidget::tabCloseRequested, receiveTabClose);
 			chatTabWidget->setMovable(false);
+
+			
 			
 			break;
 		}
@@ -318,19 +341,7 @@ void disconnectChatWidget()
 	QObject::disconnect(f);
 }
 
-void ToggleNormalChat()
-{
-	if (chat->isVisible())
-	{
-		chat->hide();
-		chatTabWidget->setMaximumHeight(16777215);
-	}
-	else
-	{
-		chatTabWidget->setMaximumHeight(24);
-		chat->show();
-	}
-}
+
 
 // Init plugin
 int ts3plugin_init() {
