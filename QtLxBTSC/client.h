@@ -10,7 +10,7 @@ public:
 	{
 		this->nickname_ = nickname;
 		this->uid_ = uid;
-		this->safe_uid_ = uid.replace(QRegExp("[+/=]"), "0");
+		this->safe_uid_ = uid.replace(QRegExp("[+/=]"), "00");
 	}
 	~Client(){}
 

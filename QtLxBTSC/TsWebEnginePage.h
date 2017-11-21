@@ -10,6 +10,7 @@
 #include <QObject>
 #include <QtWebEngineWidgets/QWebEnginePage>
 #include <QDesktopServices>
+#include <QMessageBox>
 
 class TsWebEnginePage : public QWebEnginePage
 {
@@ -24,9 +25,20 @@ public:
 	{
 		if (type == NavigationTypeLinkClicked && isMainFrame == true)
 		{
-			QDesktopServices::openUrl(url);
-			return false;
+			if (url.scheme() == "ts3file")
+			{
+				emit fileUrlClicked(url);
+				return false;
+			}
+			else
+			{
+				QDesktopServices::openUrl(url);
+				return false;
+			}
 		}
 		return true;
 	}
+
+	signals:
+	void fileUrlClicked(const QUrl url);
 };

@@ -6,11 +6,12 @@
 class Server
 {
 public:
-	Server(QString uid, QMap<anyID, Client> clients)
+	Server(uint64 serverid, QString uid, QMap<anyID, Client> clients)
 	{
 		this->clients_ = clients;
+		this->server_connection_handler_id_ = serverid;
 		this->uid_ = uid;
-		this->safe_uid_ = uid.replace(QRegExp("[+/=]"), "0");
+		this->safe_uid_ = uid.replace(QRegExp("[+/=]"), "00");
 	}
 	Server() : uid_("") {}
 	~Server() {}
@@ -37,6 +38,11 @@ public:
 		return safe_uid_;
 	}
 
+	uint64 Server::server_connection_handler_id() const
+	{
+		return server_connection_handler_id_;
+	}
+
 	Client Server::get_client(anyID clientID) const
 	{
 		return clients_.value(clientID);
@@ -61,6 +67,7 @@ public:
 
 private:
 	QMap<anyID, Client> clients_;
+	uint64 server_connection_handler_id_;
 	QString uid_;
 	QString safe_uid_;
 };

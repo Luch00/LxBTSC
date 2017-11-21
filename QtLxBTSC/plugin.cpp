@@ -28,6 +28,7 @@
 #include <QPlainTextEdit>
 #include <QToolButton>
 #include <QtWidgets/QVBoxLayout>
+#include <QUrlQuery>
 #include <server.h>
 #include <utils.h>
 
@@ -145,7 +146,6 @@ static void receiveTabChange(int i)
 		}
 		else
 		{
-			//const QString id = servers[currentServerID].get_client_safe_uid_by_nickname(chatTabWidget->tabText(i));
 			const QString id = servers[currentServerID].get_client_by_nickname(chatTabWidget->tabText(i)).safe_uid();
 			tabName = QString("tab-%1-private-%2").arg(servers[currentServerID].safe_uid()).arg(id);
 		}
@@ -173,7 +173,6 @@ static void recheckSelectedTab()
 			}
 			else
 			{
-				//const QString id = servers[currentServerID].get_client_safe_uid_by_nickname(chatTabWidget->tabText(i));
 				const QString id = servers[currentServerID].get_client_by_nickname(chatTabWidget->tabText(i)).safe_uid();
 				tabName = QString("tab-%1-private-%2").arg(servers[currentServerID].safe_uid()).arg(id);
 			}
@@ -196,6 +195,50 @@ static void receiveTabClose(int i)
 static void receiveEmoticonButtonClick(bool c)
 {
 	chat->openCloseEmoteMenu();
+}
+
+static void receiveFileUrlClick(const QUrl &url)
+{
+	if (url.hasQuery())
+	{
+		QMessageBox::information(0, "Nope", "Use filelinks from default chat, /lxb toggle", QMessageBox::Ok);
+
+
+		// CHECK FOR PASSWORD REQUIREMENT
+		/*QMessageBox::information(0, "debug", QString("tabchange_trigger: %1").arg("yey"), QMessageBox::Ok);
+		QUrlQuery query;
+		query.setQuery(url.query());
+		QString server_uid = query.queryItemValue("serverUID", QUrl::FullyDecoded);
+		QString channel_id = query.queryItemValue("channel", QUrl::FullyDecoded);
+		QString is_dir = query.queryItemValue("isDir", QUrl::FullyDecoded);
+		QString file_path = query.queryItemValue("path", QUrl::FullyDecoded);
+		QString filename = query.queryItemValue("filename", QUrl::FullyDecoded);
+
+		QString full_path;
+		if (file_path == "/")
+		{
+			full_path = QString("/%1").arg(filename);
+		}
+		else
+		{
+			full_path = QString("%1/%2").arg(file_path, filename);
+		}
+		std::string std_filepath = full_path.toStdString();
+
+		QString download_path = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::DownloadLocation);
+		std::string std_download_path = download_path.toStdString();
+		
+		anyID res;
+		const char ret = '1';
+		for each(const Server & server in servers)
+		{
+			if (server.uid() == server_uid)
+			{
+				QMessageBox::information(0, "debug", QString("%1 %2, %3 %4").arg(full_path).arg(download_path).arg(channel_id).arg(server.server_connection_handler_id()), QMessageBox::Ok);
+				ts3Functions.requestFile(server.server_connection_handler_id(), channel_id.toULongLong(), "", std_filepath.c_str(), 1, 0, std_download_path.c_str(), &res, &ret);
+			}
+		}*/
+	}
 }
 
 static void receiveEmoticonAppend(QString e)
@@ -253,10 +296,10 @@ void findEmoticonButton()
 	{
 		if (list[i]->objectName() == "EmoticonButton")
 		{
-			emoticonButton = static_cast<QToolButton*>(list[i]);
 			// the one with no tooltip is the correct one :/
-			if (emoticonButton->toolTip().isEmpty())
+			if (list[i]->toolTip().isEmpty())
 			{
+				emoticonButton = static_cast<QToolButton*>(list[i]);
 				emoticonButton->disconnect();
 				e = QObject::connect(emoticonButton, &QToolButton::clicked, receiveEmoticonButtonClick);
 				break;
@@ -297,6 +340,7 @@ int ts3plugin_init() {
 	pathToPlugin = QString(pluginPath);
 	utils::checkEmoteSets(pathToPlugin);
 	chat = new ChatWidget(pathToPlugin);
+	QObject::connect(chat, &ChatWidget::fileUrlClicked, receiveFileUrlClick);
 	chat->setStyleSheet("border: 1px solid gray");
 
     return 0;  /* 0 = success, 1 = failure, -2 = failure but client will not show a "failed to load" warning */
@@ -357,7 +401,7 @@ void ts3plugin_registerPluginID(const char* id) {
 
 /* Plugin command keyword. Return NULL or "" if not used. */
 const char* ts3plugin_commandKeyword() {
-	return "lxbtsc";
+	return "lxb";
 	//return "";
 }
 
@@ -409,12 +453,14 @@ Client getClient(uint64 serverConnectionHandlerID, anyID id)
 	if (ts3Functions.getClientDisplayName(serverConnectionHandlerID, id, res, TS3_MAX_SIZE_CLIENT_NICKNAME) == ERROR_ok)
 	{
 	}
+	QString uniqueid;
 	char *uid;
 	if (ts3Functions.getClientVariableAsString(serverConnectionHandlerID, id, CLIENT_UNIQUE_IDENTIFIER, &uid) == ERROR_ok)
 	{
+		uniqueid = uid;
 		ts3plugin_freeMemory(uid);
 	}
-	return Client(res, uid);
+	return Client(res, uniqueid);
 }
 
 // cache all connected clients
@@ -448,7 +494,7 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 		char *res;
 		if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_UNIQUE_IDENTIFIER, &res) == ERROR_ok)
 		{
-			const Server server(res, getAllClientNicks(serverConnectionHandlerID));
+			const Server server(serverConnectionHandlerID, res, getAllClientNicks(serverConnectionHandlerID));
 			chat->addServer(server.safe_uid());
 			char *msg;
 			if (!servers.values().contains(server))

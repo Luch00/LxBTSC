@@ -39,11 +39,15 @@ public:
 	QWebEngineView *view;
 	TsWebObject *wObject;
 
+	signals:
+	void fileUrlClicked(const QUrl &url);
+
 	private slots:
 	void copyActivated();
 	void copyUrlActivated();
 	void showContextMenu(const QPoint &);
 	void linkHovered(const QUrl &);
+	void onFileUrlClicked(const QUrl &url);
 
 private:
 	TsWebEnginePage *page;

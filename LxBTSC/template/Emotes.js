@@ -55,7 +55,7 @@ var Emotes = {
                 alt: emote.code,
                 'data-key': emote.code
             }).click(function(e) {
-                emoteClicked($(this).data('key'));
+                emoteClicked($(this).data('key'), e.shiftKey);
             });
             emote_container.append(emote_img);
         });
