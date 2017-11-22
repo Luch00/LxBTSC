@@ -21,8 +21,8 @@ namespace utils
 		original.replace(QRegExp("[\r\n]"), "\\r\\n");
 
 		// escape single quotes
-		original.replace("'", "\\'");
-		original.replace("\\", "\\\\");
+		original.replace("'", "&#39;");
+		original.replace("\\", "&#92;");
 
 		return original;
 	}
