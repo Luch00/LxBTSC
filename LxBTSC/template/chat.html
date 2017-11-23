@@ -181,7 +181,7 @@
             while (match = paste.exec(line)) {
                 console.log('Found pornhub link:' + match[1])
                 var embed_paste = $('<div/>', { class:'embed-container' })
-                .html('<iframe src="https://de.pornhub.com/embed/' + match[1] + '" style="border:none;width:100%" scrolling="no" allowfullscreen></iframe>')
+                .html('<iframe src="https://pornhub.com/embed/' + match[1] + '" style="border:none;width:100%" scrolling="no" allowfullscreen></iframe>')
                 .wrap('<div/>').parent()
                 .appendTo(embeds_div);
             }
