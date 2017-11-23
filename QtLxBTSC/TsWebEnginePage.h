@@ -7,10 +7,9 @@
 
 #pragma once
 
-#include <QObject>
+//#include <QObject>
 #include <QtWebEngineWidgets/QWebEnginePage>
 #include <QDesktopServices>
-#include <QMessageBox>
 
 class TsWebEnginePage : public QWebEnginePage
 {

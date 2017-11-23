@@ -17,12 +17,12 @@ namespace utils
 
 	QString format(QString original)
 	{
-		// escape newlines to not break javascript
-		original.replace(QRegExp("[\r\n]"), "\\r\\n");
-
 		// escape single quotes
 		original.replace("'", "&#39;");
 		original.replace("\\", "&#92;");
+
+		// escape newlines to not break javascript
+		original.replace(QRegExp("[\r\n]"), "\\r\\n");
 
 		return original;
 	}

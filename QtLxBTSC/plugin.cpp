@@ -29,6 +29,7 @@
 #include <QToolButton>
 #include <QtWidgets/QVBoxLayout>
 #include <QUrlQuery>
+#include <QTabbar>
 #include <server.h>
 #include <utils.h>
 
@@ -200,7 +201,7 @@ void ToggleNormalChat()
 		chatTabWidget->setMaximumHeight(16777215);
 	}
 	else
-	{
+	{	
 		chatTabWidget->setMaximumHeight(24);
 		chat->show();
 	}

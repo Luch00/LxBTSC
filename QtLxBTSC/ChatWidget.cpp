@@ -6,7 +6,6 @@
 */
 
 #include "ChatWidget.h"
-#include "QString"
 
 ChatWidget::ChatWidget(QString path, QWidget *parent)
 	: QFrame(parent)

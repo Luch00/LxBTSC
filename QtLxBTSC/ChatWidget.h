@@ -10,7 +10,6 @@
 #include <QWidget>
 #include <QtWebEngineWidgets/QWebEngineView>
 #include <QtWebEngineWidgets/qwebenginesettings.h>
-#include <QtWebEngineWidgets/qwebengineprofile.h>
 #include <QtWidgets/QVBoxLayout>
 #include <QStackedWidget>
 #include <TsWebEnginePage.h>
