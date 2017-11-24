@@ -81,6 +81,11 @@ void ChatWidget::copyUrlActivated()
 	QGuiApplication::clipboard()->setText(currentHoveredUrl.toString(), QClipboard::Clipboard);
 }
 
+void ChatWidget::reload() const
+{
+	view->reload();
+}
+
 void ChatWidget::createPage()
 {
 	page = new TsWebEnginePage();
@@ -96,3 +101,5 @@ void ChatWidget::createPage()
 	wObject = new TsWebObject(channel);
 	channel->registerObject("wObject", wObject);
 }
+
+

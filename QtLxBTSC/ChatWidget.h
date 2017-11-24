@@ -28,6 +28,7 @@ public:
 	ChatWidget(QString path, QWidget *parent = Q_NULLPTR);
 	~ChatWidget();
 	void createPage();
+	void reload() const;
 
 	TsWebObject* ChatWidget::webObject() const
 	{

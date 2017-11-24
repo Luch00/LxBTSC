@@ -1,3 +1,3 @@
-Add your custom style to user.style.css to prevent
+Add your custom style to style.user.css to prevent
 overwriting your changes when updating the plugin.
 Use !important on parameters to override default style.css

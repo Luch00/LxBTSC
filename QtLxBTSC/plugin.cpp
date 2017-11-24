@@ -424,6 +424,10 @@ int ts3plugin_processCommand(uint64 serverConnectionHandlerID, const char* comma
 	{
 		ToggleNormalChat();
 	}
+	if (strcmp(command, "reload") == 0)
+	{
+		chat->reload();
+	}
 	return 0;  /* Plugin handled command */
 }
 

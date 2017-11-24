@@ -4,15 +4,10 @@ body {
     word-wrap: break-word;
     font-family: 'Helvetica Neue',Helvetica,sans-serif, 'Segoe UI', 'Segoe UI Symbol';
     background-color: #FEFEFE;
-    /*background-image: url('chatlog.jpg');*/
-    background-repeat: no-repeat;
-    background-position: right bottom;
-    background-attachment: fixed;
 }
 p {
     padding: 0px;
     margin: 0px;
-    /*min-height: 32px;*/
 }
 .TextMessage_UserLink {
     color: red;

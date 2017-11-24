@@ -4,9 +4,7 @@
         <meta charset='utf-8'>
         <meta name='viewport' content='width=device-width, initial-scale=1.0'>
         <link rel='stylesheet' type='text/css' href='style/style.css'/>
-        <link rel='stylesheet' type'text/css' href='style/xbbcode.css'/>
-        <link rel='stylesheet' type'text/css' href='style/user.style.css'/>
-        <!--<link rel='stylesheet' type='text/css' href='../../../styles/style.qss'/>-->
+        <link rel='stylesheet' type='text/css' href='style/xbbcode.css'/>
 
         <script type='text/javascript' src='js/jquery-3.2.1.min.js'></script>
         <script type='text/javascript' src='js/qwebchannel.js'></script>
@@ -186,7 +184,7 @@
             }
 
             var pornhub = /https?:\/\/(?:[a-z0-9]+[.])*pornhub[.]com\/view_video.php\?viewkey=([0-9a-z]+)/gi;
-            while (match = paste.exec(line)) {
+            while (match = pornhub.exec(line)) {
                 console.log('Found pornhub link:' + match[1])
                 var embed_paste = $('<div/>', { class:'embed-container' })
                 .html('<iframe src="https://pornhub.com/embed/' + match[1] + '" style="border:none;width:100%" scrolling="no" allowfullscreen></iframe>')

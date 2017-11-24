@@ -7,7 +7,9 @@ var Emotes = {
         if (!this.emoteList.hasOwnProperty(key)) {
             //console.log("ADDED: " + key);
             this.emoteList[key] = value;
+            return true;
         }
+        return false;
     },
     emoticonize: function (string) {
         this.emoteKeyList.forEach(function(key) {
@@ -47,17 +49,17 @@ var Emotes = {
         set_element.append(emote_container);
         json.emoticons.forEach(function(emote) {
             var e = { name: `${json.pathbase}${emote.name}${json.pathappend}` }
-            Emotes.addEmote(emote.code, e);
-            
-            var emote_img = $('<img >', {
-                class: 'emote',
-                src: e.name,
-                alt: emote.code,
-                'data-key': emote.code
-            }).click(function(e) {
-                emoteClicked($(this).data('key'), e.shiftKey);
-            });
-            emote_container.append(emote_img);
+            if (Emotes.addEmote(emote.code, e)) {
+                var emote_img = $('<img >', {
+                    class: 'emote',
+                    src: e.name,
+                    alt: emote.code,
+                    'data-key': emote.code
+                }).click(function(e) {
+                    emoteClicked($(this).data('key'), e.shiftKey);
+                });
+                emote_container.append(emote_img);
+            }
         });
         this.emote_list_element.append(set_element);
     }
