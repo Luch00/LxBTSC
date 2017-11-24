@@ -27,16 +27,12 @@ class ChatWidget : public QFrame
 public:
 	ChatWidget(QString path, QWidget *parent = Q_NULLPTR);
 	~ChatWidget();
-	void messageReceived(const QString &target, const QString &direction, const QString &time, const QString &name, const QString &message);
-	void statusReceived(const QString &target, const QString &time, const QString &type, const QString &message);
 	void createPage();
-	void switchTab(const QString &key);
-	void addServer(const QString &key);
-	void openCloseEmoteMenu();
 
-	QVBoxLayout *verticalLayout;
-	QWebEngineView *view;
-	TsWebObject *wObject;
+	TsWebObject* ChatWidget::webObject() const
+	{
+		return wObject;
+	}
 
 	signals:
 	void fileUrlClicked(const QUrl &url);
@@ -49,6 +45,9 @@ public:
 	void onFileUrlClicked(const QUrl &url);
 
 private:
+	QVBoxLayout *verticalLayout;
+	QWebEngineView *view;
+	TsWebObject *wObject;
 	TsWebEnginePage *page;
 	void setupUi(QWidget *ChatWidget);
 	QString pathToPage;

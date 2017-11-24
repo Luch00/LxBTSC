@@ -23,11 +23,18 @@
                     window.scroll(0, document.body.scrollHeight);
                 }
             };
-            
-        window.onload = function() {
+
             new QWebChannel(qt.webChannelTransport, function(channel) {
                 QtObject = channel.objects.wObject;
+                
+                QtObject.toggleEmoteMenu.connect(ToggleEmoteMenu);
+                QtObject.textMessageReceived.connect(AddLine);
+                QtObject.statusMessageReceived.connect(AddStatusLine);
+                QtObject.tabChanged.connect(ShowTarget);
+                QtObject.addServer.connect(AddServer);
             });
+            
+        window.onload = function() {
             main = $('#main');
             Emotes.emote_list_element = $('#emote-list');
             $.when(Emotes.load()).always(function(){
@@ -198,14 +205,14 @@
             embeds_div.not(':empty').append(close_a).insertAfter(element);
         }
 
-        function ShowOrHideMenu() {
+        function ToggleEmoteMenu() {
             $("#popup").toggleClass('menu-visible');
         }
 
         function emoteClicked(key, shift) {
             QtObject.emoteClicked(key);
             if(!shift) {
-                ShowOrHideMenu();
+                ToggleEmoteMenu();
             }
         }
         </script>
