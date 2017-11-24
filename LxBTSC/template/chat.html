@@ -134,6 +134,7 @@
             //var yt = /http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w-]*)(&(amp;)?[\w\?=]*)?/gi;
             var yt = /http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([-_A-Za-z0-9]{10}[AEIMQUYcgkosw048]*)(&(amp;)?[\w\?=]*)?/gi;
             while (match = yt.exec(line)) {
+                console.log('Found youtube link:' + match[1])
                 var embed_video = $('<div/>', { class:'embed-container' })
                 .html('<iframe frameborder="0" src="https://www.youtube.com/embed/'+ match[1] +'" width="400" height="225"></iframe>')
                 .wrap('<div/>').parent()
@@ -142,6 +143,7 @@
 
             var img = /(https?:\/\/\S*?\.(?:png|jpe?g|gif|webp)(?:\?(?:(?:(?:[\w_-]+=[\w_-]+)(?:&[\w_-]+=[\w_-]+)*)|(?:[\w_-]+)))?)/gi;
             while (match = img.exec(line)) {
+                console.log('Found image link:' + match[1])
                 var embed_image = $('<div/>', { class:'embed-container' })
                 .html('<a href="' + match[1] + '"><img src="' + match[1] + '"></a>')
                 .wrap('<div/>').parent()
@@ -150,6 +152,7 @@
 
             var audio = /(https?:\/\/\S*?\.(?:opus|ogg|oga|wav|wma|flac)(?:\?(?:(?:(?:[\w_-]+=[\w_-]+)(?:&[\w_-]+=[\w_-]+)*)|(?:[\w_-]+)))?)/gi;
             while (match = audio.exec(line)) {
+                console.log('Found audio link:' + match[1])
                 var embed_audio = $('<div/>', { class:'embed-container' })
                 .html('<audio controls preload="metadata" src="' + match[1] + '">')
                 .wrap('<div/>').parent()
@@ -158,16 +161,27 @@
 
             var video = /(https?:\/\/\S*?\.(?:webm|ogv)(?:\?(?:(?:(?:[\w_-]+=[\w_-]+)(?:&[\w_-]+=[\w_-]+)*)|(?:[\w_-]+)))?)/gi;
             while (match = video.exec(line)) {
+                console.log('Found video link:' + match[1])
                 var embed_video = $('<div/>', { class:'embed-container' })
                 .html('<video width="100%" height="100%" controls preload="metadata" src="' + match[1] + '" loop autoplay>')
                 .wrap('<div/>').parent()
                 .appendTo(embeds_div);
             }
 
-            var paste = /https:\/\/pastebin.com\/([0-9a-zA-Z]+)/gi;
+            var paste = /https?:\/\/pastebin.com\/([0-9a-zA-Z]+)/gi;
             while (match = paste.exec(line)) {
+                console.log('Found pastebin link:' + match[1])
                 var embed_paste = $('<div/>', { class:'embed-container' })
                 .html('<iframe src="https://pastebin.com/embed_iframe/' + match[1] + '" style="border:none;width:100%"></iframe>')
+                .wrap('<div/>').parent()
+                .appendTo(embeds_div);
+            }
+
+            var pornhub = /https?:\/\/(?:[a-z0-9]+[.])*pornhub[.]com\/view_video.php\?viewkey=([0-9a-z]+)/gi;
+            while (match = paste.exec(line)) {
+                console.log('Found pornhub link:' + match[1])
+                var embed_paste = $('<div/>', { class:'embed-container' })
+                .html('<iframe src="https://pornhub.com/embed/' + match[1] + '" style="border:none;width:100%" scrolling="no" allowfullscreen></iframe>')
                 .wrap('<div/>').parent()
                 .appendTo(embeds_div);
             }
