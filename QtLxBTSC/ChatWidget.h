@@ -35,6 +35,11 @@ public:
 		return wObject;
 	}
 
+	bool ChatWidget::loaded() const
+	{
+		return isLoaded;
+	}
+
 	signals:
 	void fileUrlClicked(const QUrl &url);
 
@@ -44,6 +49,7 @@ public:
 	void showContextMenu(const QPoint &);
 	void linkHovered(const QUrl &);
 	void onFileUrlClicked(const QUrl &url);
+	void onPageLoaded();
 
 private:
 	QVBoxLayout *verticalLayout;
@@ -58,4 +64,5 @@ private:
 	QAction *copyAction;
 	QAction *copyUrlAction;
 	QWebChannel *channel;
+	bool isLoaded = false;
 };

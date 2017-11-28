@@ -5,11 +5,11 @@ var Emotes = {
     emote_list_element: {},
     addEmote: function (key, value) {
         if (!this.emoteList.hasOwnProperty(key)) {
-            console.log("ADDED: " + key);
+            //console.log("ADDED: " + key);
             this.emoteList[key] = value;
             return true;
         }
-        console.log("NOT ADDED: " + key);
+        //console.log("NOT ADDED: " + key);
         return false;
     },
     emoticonize: function (string) {
@@ -20,8 +20,6 @@ var Emotes = {
         return string;
     },
     makeKeyList: function () {
-        console.log("buu");
-        console.log(this.emoteList);
         this.emoteKeyList = Object.keys(this.emoteList).sort(function(a, b) {
             return b.length - a.length;
         });
@@ -46,12 +44,8 @@ var Emotes = {
         return $.getJSON("Emotes/" + set).then(function(data) {
             Emotes.parseJson(data);
         });
-        /*$.getJSON("Emotes/" + set, function(data) {
-            Emotes.parseJson(data);
-        });*/
     },
     parseJson: function(json) {
-        console.log(json.setname);
         var set_element = $('<div>', {
             class: 'emoteset',
             'data-name': json.setname

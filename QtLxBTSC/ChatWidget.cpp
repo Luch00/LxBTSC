@@ -81,6 +81,12 @@ void ChatWidget::copyUrlActivated()
 	QGuiApplication::clipboard()->setText(currentHoveredUrl.toString(), QClipboard::Clipboard);
 }
 
+void ChatWidget::onPageLoaded()
+{
+	isLoaded = true;
+
+}
+
 void ChatWidget::reload() const
 {
 	view->reload();
@@ -92,6 +98,7 @@ void ChatWidget::createPage()
 	page->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
 	page->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
 	page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
+	QObject::connect(page, &TsWebEnginePage::loadFinished, this, &ChatWidget::onPageLoaded);
 	QObject::connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::linkHovered);
 	QObject::connect(page, &TsWebEnginePage::fileUrlClicked, this, &ChatWidget::onFileUrlClicked);
 	page->setUrl(QUrl(pathToPage));

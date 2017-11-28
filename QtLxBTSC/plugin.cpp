@@ -29,7 +29,7 @@
 #include <QToolButton>
 #include <QtWidgets/QVBoxLayout>
 #include <QUrlQuery>
-#include <QTabbar>
+#include <QThread>
 #include <server.h>
 #include <utils.h>
 
@@ -86,7 +86,7 @@ const char* ts3plugin_name() {
 
 /* Plugin version */
 const char* ts3plugin_version() {
-    return "1.4";
+    return "1.5";
 }
 
 /* Plugin API version. Must be the same as the clients API major version, else the plugin fails to load. */
@@ -341,7 +341,17 @@ void disconnectChatWidget()
 	QObject::disconnect(f);
 }
 
-
+// delay ts a bit until webview  is loaded
+void waitForLoad()
+{
+	int waited = 0; //timeout after about 5s
+	while(!chat->loaded() && waited < 50)
+	{
+		QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+		++waited;
+		QThread::msleep(100);
+	}
+}
 
 // Init plugin
 int ts3plugin_init() {
@@ -351,6 +361,7 @@ int ts3plugin_init() {
 	pathToPlugin = QString(pluginPath);
 	utils::checkEmoteSets(pathToPlugin);
 	chat = new ChatWidget(pathToPlugin);
+	waitForLoad();
 	QObject::connect(chat, &ChatWidget::fileUrlClicked, receiveFileUrlClick);
 	chat->setStyleSheet("border: 1px solid gray");
 
