@@ -292,8 +292,6 @@ void findChatTabWidget()
 			c = QObject::connect(chatTabWidget, &QTabWidget::currentChanged, receiveTabChange);
 			d = QObject::connect(chatTabWidget, &QTabWidget::tabCloseRequested, receiveTabClose);
 			chatTabWidget->setMovable(false);
-
-			
 			
 			break;
 		}
@@ -427,6 +425,11 @@ int ts3plugin_processCommand(uint64 serverConnectionHandlerID, const char* comma
 	if (strcmp(command, "reload") == 0)
 	{
 		chat->reload();
+	}
+	if (strcmp(command, "emotes") == 0)
+	{
+		utils::checkEmoteSets(pathToPlugin);
+		emit chat->webObject()->loadEmotes();
 	}
 	return 0;  /* Plugin handled command */
 }

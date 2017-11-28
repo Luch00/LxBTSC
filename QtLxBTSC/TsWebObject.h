@@ -18,4 +18,5 @@ signals:
 	void statusMessageReceived(QString target, QString time, QString type, QString message);
 	void toggleEmoteMenu();
 	void emoteSignal(QString e);
+	void loadEmotes();
 };

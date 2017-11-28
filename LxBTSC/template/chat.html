@@ -30,14 +30,13 @@
                 QtObject.statusMessageReceived.connect(AddStatusLine);
                 QtObject.tabChanged.connect(ShowTarget);
                 QtObject.addServer.connect(AddServer);
+                QtObject.loadEmotes.connect(LoadEmotes);
             });
             
         window.onload = function() {
             main = $('#main');
             Emotes.emote_list_element = $('#emote-list');
-            $.when(Emotes.load()).always(function(){
-                Emotes.makeKeyList();
-            });
+            LoadEmotes();
             $('#main').resize(stayDown);
         };
 
@@ -131,7 +130,7 @@
 
         function Embed(element, line) {
             var embeds_div = $('<div/>', { class:'embeds'});
-            var close_a = $('<a/>', { class:'close-embeds', href:'#', title:'close', text:'x' })
+            var close_a = $('<a/>', { class:'close-embeds', href:'#_', title:'close', text:'x' })
             .click(function(e) {
                 $(this).parent().remove();
             });
@@ -169,7 +168,7 @@
             while (match = video.exec(line)) {
                 console.log('Found video link:' + match[1])
                 var embed_video = $('<div/>', { class:'embed-container' })
-                .html('<video width="100%" height="100%" controls preload="metadata" src="' + match[1] + '" loop autoplay>')
+                .html('<video width="100%" height="100%" controls preload="metadata" src="' + match[1] + '" loop >')
                 .wrap('<div/>').parent()
                 .appendTo(embeds_div);
             }
@@ -212,6 +211,11 @@
             if(!shift) {
                 ToggleEmoteMenu();
             }
+        }
+
+        function LoadEmotes() {
+            Emotes.clear();
+            Emotes.load();
         }
         </script>
     </head>

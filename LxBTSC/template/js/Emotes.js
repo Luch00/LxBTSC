@@ -5,10 +5,11 @@ var Emotes = {
     emote_list_element: {},
     addEmote: function (key, value) {
         if (!this.emoteList.hasOwnProperty(key)) {
-            //console.log("ADDED: " + key);
+            console.log("ADDED: " + key);
             this.emoteList[key] = value;
             return true;
         }
+        console.log("NOT ADDED: " + key);
         return false;
     },
     emoticonize: function (string) {
@@ -19,25 +20,38 @@ var Emotes = {
         return string;
     },
     makeKeyList: function () {
+        console.log("buu");
+        console.log(this.emoteList);
         this.emoteKeyList = Object.keys(this.emoteList).sort(function(a, b) {
             return b.length - a.length;
         });
     },
+    clear: function () {
+        Emotes.emoteList = {};
+        Emotes.emoteKeyList = [];
+        Emotes.emote_list_element.empty();
+    },
     load: function () {
-        return new Promise((resolve, reject) => {
-            $.getJSON(this.emoteset_json, function(setlist) {
-                setlist.forEach(function(set) {
-                    Emotes.getSet(set);
-                }), resolve();
+        return $.getJSON(this.emoteset_json).then(function(setlist) {
+            setlist.forEach(function(set, index, array) {
+                Emotes.getSet(set).then(function() {
+                    if (index === array.length -1) {
+                        Emotes.makeKeyList();
+                    }
+                });
             });
         });
     },
     getSet: function(set) {
-        $.getJSON("Emotes/" + set, function(data) {
+        return $.getJSON("Emotes/" + set).then(function(data) {
             Emotes.parseJson(data);
         });
+        /*$.getJSON("Emotes/" + set, function(data) {
+            Emotes.parseJson(data);
+        });*/
     },
     parseJson: function(json) {
+        console.log(json.setname);
         var set_element = $('<div>', {
             class: 'emoteset',
             'data-name': json.setname

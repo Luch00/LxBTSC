@@ -29,11 +29,8 @@ public:
 				emit fileUrlClicked(url);
 				return false;
 			}
-			else
-			{
-				QDesktopServices::openUrl(url);
-				return false;
-			}
+			QDesktopServices::openUrl(url);
+			return false;
 		}
 		return true;
 	}
