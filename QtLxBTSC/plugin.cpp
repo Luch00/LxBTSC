@@ -127,6 +127,7 @@ QMetaObject::Connection c;
 QMetaObject::Connection d;
 QMetaObject::Connection e;
 QMetaObject::Connection f;
+QMetaObject::Connection g;
 QString pathToPlugin;
 bool first = true;
 
@@ -330,6 +331,19 @@ void findEmoticonButton()
 	}
 }
 
+// silly thing to prevent webengineview freezing on minimize
+Qt::ApplicationState currentState;
+void appStateChanged(Qt::ApplicationState state)
+{
+	if (currentState == Qt::ApplicationHidden || currentState == Qt::ApplicationInactive)
+	{
+		QSize s = chat->size();
+		chat->resize(s.width() + 1, s.height() + 1);
+		chat->resize(s);
+	}
+	currentState = state;
+}
+
 // Disconnect used signals
 void disconnectChatWidget()
 {
@@ -338,6 +352,7 @@ void disconnectChatWidget()
 	QObject::disconnect(d);
 	QObject::disconnect(e);
 	QObject::disconnect(f);
+	QObject::disconnect(g);
 }
 
 // delay ts a bit until webview  is loaded
@@ -363,6 +378,7 @@ int ts3plugin_init() {
 	chat = new ChatWidget(pathToPlugin);
 	waitForLoad();
 	QObject::connect(chat, &ChatWidget::fileUrlClicked, receiveFileUrlClick);
+	g = QObject::connect(qApp, &QApplication::applicationStateChanged, appStateChanged);
 	chat->setStyleSheet("border: 1px solid gray");
 
     return 0;  /* 0 = success, 1 = failure, -2 = failure but client will not show a "failed to load" warning */
