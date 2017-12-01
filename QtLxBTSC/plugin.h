@@ -117,7 +117,7 @@ PLUGINS_EXPORTDLL int  ts3plugin_onTextMessageEvent(uint64 serverConnectionHandl
 //PLUGINS_EXPORTDLL void ts3plugin_onServerGroupClientDeletedEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientName, const char* clientUniqueIdentity, uint64 serverGroupID, anyID invokerClientID, const char* invokerName, const char* invokerUniqueIdentity);
 //PLUGINS_EXPORTDLL void ts3plugin_onClientNeededPermissionsEvent(uint64 serverConnectionHandlerID, unsigned int permissionID, int permissionValue);
 //PLUGINS_EXPORTDLL void ts3plugin_onClientNeededPermissionsFinishedEvent(uint64 serverConnectionHandlerID);
-//PLUGINS_EXPORTDLL void ts3plugin_onFileTransferStatusEvent(anyID transferID, unsigned int status, const char* statusMessage, uint64 remotefileSize, uint64 serverConnectionHandlerID);
+PLUGINS_EXPORTDLL void ts3plugin_onFileTransferStatusEvent(anyID transferID, unsigned int status, const char* statusMessage, uint64 remotefileSize, uint64 serverConnectionHandlerID);
 //PLUGINS_EXPORTDLL void ts3plugin_onClientChatClosedEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientUniqueIdentity);
 //PLUGINS_EXPORTDLL void ts3plugin_onClientChatComposingEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientUniqueIdentity);
 //PLUGINS_EXPORTDLL void ts3plugin_onServerLogEvent(uint64 serverConnectionHandlerID, const char* logMsg);

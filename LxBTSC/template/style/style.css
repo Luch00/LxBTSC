@@ -131,3 +131,30 @@ img.Outgoing {
       text-align: center;
       padding: 2px;
   }
+
+  .progress {
+    width: 3em;
+    height: 1em;
+    border: 1px solid #2980b9;
+    border-radius: 3px;
+    background-image: 
+      repeating-linear-gradient(
+        -45deg,
+        #2980b9,
+        #2980b9 11px,
+        #eee 10px,
+        #eee 20px /* determines size */
+      );
+    background-size: 28px 28px;
+    animation: move .5s linear infinite;
+    display: inline-block;
+  }
+  
+  @keyframes move {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 28px 0;
+    }
+  }

@@ -215,7 +215,6 @@ static void receiveEmoticonButtonClick(bool c)
 	}
 	else
 	{
-		//chat->openCloseEmoteMenu();
 		emit chat->webObject()->toggleEmoteMenu();
 	}
 }
@@ -224,11 +223,8 @@ static void receiveFileUrlClick(const QUrl &url)
 {
 	if (url.hasQuery())
 	{
-		//QMessageBox::information(0, "Nope", "Use filelinks from default chat, /lxb toggle", QMessageBox::Ok);
-
-		// This works but needs some way to show to the user that it is downloading/doing anything
 		// CHECK FOR PASSWORD REQUIREMENT
-		/*
+		
 		QUrlQuery query;
 		query.setQuery(url.query());
 		QString server_uid = query.queryItemValue("serverUID", QUrl::FullyDecoded);
@@ -236,6 +232,7 @@ static void receiveFileUrlClick(const QUrl &url)
 		QString is_dir = query.queryItemValue("isDir", QUrl::FullyDecoded);
 		QString file_path = query.queryItemValue("path", QUrl::FullyDecoded);
 		QString filename = query.queryItemValue("filename", QUrl::FullyDecoded);
+		QString message_id = query.queryItemValue("message_id", QUrl::FullyDecoded);
 
 		QString full_path;
 		if (file_path == "/")
@@ -252,15 +249,17 @@ static void receiveFileUrlClick(const QUrl &url)
 		std::string std_download_path = download_path.toStdString();
 		
 		anyID res;
-		const char ret = '1';
 		for each(const Server & server in servers)
 		{
 			if (server.uid() == server_uid)
 			{
-				QMessageBox::information(0, "debug", QString("%1 %2, %3 %4").arg(full_path).arg(download_path).arg(channel_id).arg(server.server_connection_handler_id()), QMessageBox::Ok);
-				ts3Functions.requestFile(server.server_connection_handler_id(), channel_id.toULongLong(), "", std_filepath.c_str(), 1, 0, std_download_path.c_str(), &res, &ret);
+				//QMessageBox::information(0, "debug", QString("%1 %2, %3 %4").arg(full_path).arg(download_path).arg(channel_id).arg(server.server_connection_handler_id()), QMessageBox::Ok);
+				if (ts3Functions.requestFile(server.server_connection_handler_id(), channel_id.toULongLong(), "", std_filepath.c_str(), 1, 0, std_download_path.c_str(), &res, nullptr) == ERROR_ok)
+				{
+					emit chat->webObject()->downloadStarted(message_id, res);
+				}
 			}
-		}*/
+		}
 	}
 }
 
@@ -352,6 +351,7 @@ void waitForLoad()
 		QThread::msleep(100);
 	}
 }
+
 
 // Init plugin
 int ts3plugin_init() {
@@ -834,8 +834,26 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 //void ts3plugin_onClientNeededPermissionsFinishedEvent(uint64 serverConnectionHandlerID) {
 //}
 
-//void ts3plugin_onFileTransferStatusEvent(anyID transferID, unsigned int status, const char* statusMessage, uint64 remotefileSize, uint64 serverConnectionHandlerID) {
-//}
+void ts3plugin_onFileTransferStatusEvent(anyID transferID, unsigned int status, const char* statusMessage, uint64 remotefileSize, uint64 serverConnectionHandlerID) {
+	switch (status)
+	{
+		case ERROR_file_transfer_complete:
+			QMetaObject::invokeMethod(chat->webObject(), "downloadFinished", Q_ARG(int, transferID));
+		break;
+		case ERROR_file_transfer_canceled:
+			QMetaObject::invokeMethod(chat->webObject(), "downloadCancelled", Q_ARG(int, transferID));
+		break;
+		case ERROR_file_transfer_interrupted:
+			QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
+		break;
+		case ERROR_file_transfer_reset:
+			QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
+		break;
+		default:
+			QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
+		break;
+	}
+}
 
 //void ts3plugin_onClientChatClosedEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientUniqueIdentity) {
 //}

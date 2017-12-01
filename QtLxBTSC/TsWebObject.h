@@ -19,4 +19,8 @@ signals:
 	void toggleEmoteMenu();
 	void emoteSignal(QString e);
 	void loadEmotes();
+	void downloadStarted(QString message_id, int download_id);
+	void downloadFinished(int download_id);
+	void downloadCancelled(int download_id);
+	void downloadFailed(int download_id);
 };

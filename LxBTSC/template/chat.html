@@ -15,6 +15,7 @@
         <script type='text/javascript'>
             var main;
             var IsBottom = true;
+            var msgid = 0;
             var QtObject;
             var stayDown = function() {
                 if (IsBottom) {
@@ -31,6 +32,11 @@
                 QtObject.tabChanged.connect(ShowTarget);
                 QtObject.addServer.connect(AddServer);
                 QtObject.loadEmotes.connect(LoadEmotes);
+
+                QtObject.downloadStarted.connect(Ts3fileDownloadStarted);
+                QtObject.downloadFinished.connect(Ts3fileDownloadFinished);
+                QtObject.downloadCancelled.connect(Ts3fileDownloadCancelled);
+                QtObject.downloadFailed.connect(Ts3fileDownloadFailed);
             });
             
         window.onload = function() {
@@ -56,9 +62,10 @@
             ShowTarget(`tab-${serverId}-server`);
         }
 
-        function ParseBBCode(line) {
+        function ParseBBCode(line, message_id) {
             var result = XBBCODE.process({
-                text: line
+                text: line,
+                id: message_id
             });
             //console.error("err", result.error);
             //console.dir(result.errorQueue);
@@ -71,15 +78,16 @@
             if ($(`.${target}`).childElementCount > 500) {
                 $(`.${target}`).firstElementChild.remove();
             }
-
+            ++msgid;
             var p = $('<p/>', {
+                id: msgid,
                 class: 'TextMessage_Normal'
             }).html(
                 `<span class='Body'>
                  <img class='${direction}'>
                  <span class='TextMessage_Time'><${time}> </span>
                  <span class='TextMessage_UserLink'>"${name}"</span>: 
-                 <span class='TextMessage_Text'>${Emotes.emoticonize(ParseBBCode(line))}</span>
+                 <span class='TextMessage_Text'>${Emotes.emoticonize(ParseBBCode(line, msgid))}</span>
                  </span>`
             ).appendTo($(`.${target}`));
             
@@ -96,10 +104,11 @@
             if ($(`.${target}`).childElementCount > 500) {
                 $(`.${target}`).firstElementChild.remove();
             }
-            var formatted = `<p class='${type}'>
+            ++msgid;
+            var formatted = `<p id='${msgid}' class='${type}'>
                                 <img class='Incoming'>
                                 <span class='TextMessage_Time'><${time}> </span>
-                                <span class='TextMessage_Text'>${ParseBBCode(line)}</span>
+                                <span class='TextMessage_Text'>${ParseBBCode(line, msgid)}</span>
                             </p>`;
             
             $(`.${target}`).append(formatted);
@@ -216,6 +225,23 @@
         function LoadEmotes() {
             Emotes.clear();
             Emotes.load();
+        }
+
+        function Ts3fileDownloadStarted(message_id, download_id) {
+            var download = $('<div/>', { id: "download_"+download_id, class: "download" }).html('Downloading: <span class="progress"></span>');
+            $('#'+message_id).append(download);
+        }
+
+        function Ts3fileDownloadFinished(download_id) {
+            $('#download_'+download_id).html('Downloading: <span class="download-finished">Complete</span>');
+        }
+
+        function Ts3fileDownloadCancelled(download_id) {
+            $('#download_'+download_id).html('Downloading: <span class="download-cancelled">Cancelled</span>');
+        }
+
+        function Ts3fileDownloadFailed(download_id) {
+            $('#download_'+download_id).html('Downloading: <span class="download-failed">Failed</span>');
         }
         </script>
     </head>
