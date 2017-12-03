@@ -15,18 +15,6 @@ namespace utils
 		return "Incoming";
 	}
 
-	QString format(QString original)
-	{
-		// escape single quotes
-		original.replace("'", "&#39;");
-		original.replace("\\", "&#92;");
-
-		// escape newlines to not break javascript
-		original.replace(QRegExp("[\r\n]"), "\\r\\n");
-
-		return original;
-	}
-
 	void checkEmoteSets(const QString &path)
 	{
 		QDir directory(path + "LxBTSC/template/Emotes");

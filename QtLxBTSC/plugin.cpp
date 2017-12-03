@@ -35,7 +35,7 @@
 
 #include <QInputDialog>
 
-#include <QMessageBox>
+//#include <QMessageBox>
 
 static struct TS3Functions ts3Functions;
 
@@ -114,11 +114,6 @@ const char* ts3plugin_description() {
 void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
     ts3Functions = funcs;
 }
-
-/*
- * Custom code called right after loading the plugin. Returns 0 on success, 1 on failure.
- * If the function returns 1 on failure, the plugin will be unloaded again.
- */
 
 uint64 currentServerID;
 ChatWidget *chat;
@@ -199,7 +194,8 @@ static void receiveTabClose(int i)
 	}
 }
 
-void ToggleNormalChat()
+// hides plugin webview and restores the default chatwidget
+void toggleNormalChat()
 {
 	if (chat->isVisible())
 	{
@@ -213,11 +209,12 @@ void ToggleNormalChat()
 	}
 }
 
+// called when teamspeak emote menu button is clicked
 static void receiveEmoticonButtonClick(bool c)
 {
 	if(QApplication::keyboardModifiers() == Qt::ControlModifier)
 	{
-		ToggleNormalChat();
+		toggleNormalChat();
 	}
 	else
 	{
@@ -225,6 +222,7 @@ static void receiveEmoticonButtonClick(bool c)
 	}
 }
 
+// called when webview tries to navigate to url with ts3file protocol
 static void receiveFileUrlClick(const QUrl &url)
 {
 	if (url.hasQuery())
@@ -262,14 +260,6 @@ static void receiveFileUrlClick(const QUrl &url)
 			pwDialog->setProperty("url", url);
 			pwDialog->show();
 			return;
-
-			//bool ok;
-			//password = QInputDialog::getText(chat, "Channel Password", "Password", QLineEdit::Password, "", &ok);
-			//if (ok == false || password.isEmpty())
-			//{
-				//password required but user cancelled or gave empty string -> cancel
-				//return;
-			//}
 		}
 
 		QString is_dir = query.queryItemValue("isDir", QUrl::FullyDecoded);
@@ -300,6 +290,7 @@ static void receiveFileUrlClick(const QUrl &url)
 	}
 }
 
+// called when emote is clicked in html emote menu
 static void receiveEmoticonAppend(QString e)
 {
 	if (!chatLineEdit->document()->isModified())
@@ -334,6 +325,7 @@ void findChatTabWidget()
 	}
 }
 
+// find the chatline
 void findChatLineEdit()
 {
 	QWidgetList list = qApp->allWidgets();
@@ -348,6 +340,7 @@ void findChatLineEdit()
 	}
 }
 
+// find the button for emote menu
 void findEmoticonButton()
 {
 	QWidgetList list = qApp->allWidgets();
@@ -403,12 +396,14 @@ void waitForLoad()
 	}
 }
 
+// called when 'ok' is pressed in password dialog
 static void pwDialogAccepted(const QString pw)
 {
 	QVariant url = pwDialog->property("url");
 	receiveFileUrlClick(QUrl(url.toString() + "&password=" + pw.toHtmlEscaped()));
 }
 
+// set up the dialog for file transfer passwords
 void initPwDialog()
 {
 	pwDialog = new QInputDialog(chat);
@@ -434,10 +429,7 @@ int ts3plugin_init() {
 	g = QObject::connect(qApp, &QApplication::applicationStateChanged, appStateChanged);
 	chat->setStyleSheet("border: 1px solid gray");
 
-    return 0;  /* 0 = success, 1 = failure, -2 = failure but client will not show a "failed to load" warning */
-	/* -2 is a very special case and should only be used if a plugin displays a dialog (e.g. overlay) asking the user to disable
-	 * the plugin again, avoiding the show another dialog by the client telling the user the plugin failed to load.
-	 * For normal case, if a plugin really failed to load because of an error, the correct return value is 1. */
+    return 0;
 }
 
 /* Custom code called right before the plugin is unloaded */
@@ -446,12 +438,6 @@ void ts3plugin_shutdown() {
 	disconnectChatWidget();
 	delete chat;
 	delete pwDialog;
-	
-	/*
-	 * Note:
-	 * If your plugin implements a settings dialog, it must be closed and deleted here, else the
-	 * TeamSpeak client will most likely crash (DLL removed but dialog from DLL code still open).
-	 */
 
 	/* Free pluginID if we registered it */
 	if(pluginID) {
@@ -480,11 +466,6 @@ void ts3plugin_shutdown() {
 //void ts3plugin_configure(void* handle, void* qParentWidget) {
 //}
 
-/*
- * If the plugin wants to use error return codes, plugin commands, hotkeys or menu items, it needs to register a command ID. This function will be
- * automatically called after the plugin was initialized. This function is optional. If you don't use these features, this function can be omitted.
- * Note the passed pluginID parameter is no longer valid after calling this function, so you must copy it and store it in the plugin.
- */
 void ts3plugin_registerPluginID(const char* id) {
 	const size_t sz = strlen(id) + 1;
 	pluginID = (char*)malloc(sz * sizeof(char));
@@ -494,14 +475,13 @@ void ts3plugin_registerPluginID(const char* id) {
 /* Plugin command keyword. Return NULL or "" if not used. */
 const char* ts3plugin_commandKeyword() {
 	return "lxb";
-	//return "";
 }
 
 /* Plugin processes console command. Return 0 if plugin handled the command, 1 if not handled. */
 int ts3plugin_processCommand(uint64 serverConnectionHandlerID, const char* command) {
 	if (strcmp(command, "toggle") == 0)
 	{
-		ToggleNormalChat();
+		toggleNormalChat();
 	}
 	if (strcmp(command, "reload") == 0)
 	{
@@ -530,11 +510,6 @@ void ts3plugin_freeMemory(void* data) {
 	free(data);
 }
 
-/*
- * Plugin requests to be always automatically loaded by the TeamSpeak 3 client unless
- * the user manually disabled it in the plugin dialog.
- * This function is optional. If missing, no autoload is assumed.
- */
 int ts3plugin_requestAutoload() {
 	return 0;  /* 1 = request autoloaded, 0 = do not request autoload */
 }
@@ -580,6 +555,7 @@ QMap<unsigned short, Client> getAllClientNicks(uint64 serverConnectionHandlerID)
 	return map;
 }
 
+// connected to or disconnected from a server
 void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber) {
 	if (newStatus == STATUS_CONNECTION_ESTABLISHED)
 	{
@@ -596,14 +572,13 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 		if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_UNIQUE_IDENTIFIER, &res) == ERROR_ok)
 		{
 			const Server server(serverConnectionHandlerID, res, getAllClientNicks(serverConnectionHandlerID));
-			//chat->addServer(server.safe_uid());
 			emit chat->webObject()->addServer(server.safe_uid());
 			char *msg;
 			if (!servers.values().contains(server))
 			{
 				if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_WELCOMEMESSAGE, &msg) == ERROR_ok)
 				{
-					emit chat->webObject()->statusMessageReceived(QString("tab-%1-server").arg(server.safe_uid()), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_Welcome", utils::format(msg));
+					emit chat->webObject()->statusMessageReceived(QString("tab-%1-server").arg(server.safe_uid()), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_Welcome", msg);
 					ts3plugin_freeMemory(msg);
 				}
 			}
@@ -618,27 +593,6 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 	}
 }
 
-//void ts3plugin_onNewChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID) {
-//}
-
-//void ts3plugin_onNewChannelCreatedEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
-//}
-
-//void ts3plugin_onDelChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
-//}
-
-//void ts3plugin_onChannelMoveEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 newChannelParentID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
-//}
-
-//void ts3plugin_onUpdateChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID) {
-//}
-
-//void ts3plugin_onUpdateChannelEditedEvent(uint64 serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
-//}
-
-//void ts3plugin_onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clientID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
-//}
-
 // Show a status message when a client connects or disconnects
 void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* moveMessage) {
 	if (oldChannelID == 0)
@@ -647,7 +601,7 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 		const Client client = getClient(serverConnectionHandlerID, clientID);
 		servers[serverConnectionHandlerID].add_client(clientID, client);
 
-		//chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientConnected", QString("<span class=\\'TextMessage_UserLink\\'>%1</span> connected").arg(client.nickname));
+		//emit chat->webObject()->statusMessageReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID].safe_uid()), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientConnected", QString("<span class='TextMessage_UserLink'>%1</span> connected").arg(client.nickname()));
 		emit chat->webObject()->statusMessageReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID].safe_uid()), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientConnected", QString("%1 connected").arg(client.nickname()));
 	}
 	if (newChannelID == 0)
@@ -658,51 +612,19 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 	}
 }
 
-//void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility) {
-//}
-
 // client drops connection
 void ts3plugin_onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* timeoutMessage) {
 	const Client &client = servers[serverConnectionHandlerID].get_client(clientID);
 	//chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDropped", QString("<span class=\\'TextMessage_UserLink\\'>%1</span> timed out").arg(client.nickname));
 	emit chat->webObject()->statusMessageReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID].safe_uid()), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDropped", QString("%1 timed out").arg(client.nickname()));
-	//statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID].safe_uid()), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDropped", QString("%1 timed out").arg(client.nickname()));
 }
-
-//void ts3plugin_onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID moverID, const char* moverName, const char* moverUniqueIdentifier, const char* moveMessage) {
-//}
-
-//void ts3plugin_onClientKickFromChannelEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage) {
-//}
-
-//void ts3plugin_onClientKickFromServerEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage) {
-//}
-
-//void ts3plugin_onClientIDsEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, anyID clientID, const char* clientName) {
-//}
-
-//void ts3plugin_onClientIDsFinishedEvent(uint64 serverConnectionHandlerID) {
-//}
-
-//void ts3plugin_onServerEditedEvent(uint64 serverConnectionHandlerID, anyID editerID, const char* editerName, const char* editerUniqueIdentifier) {
-//}
-
-//void ts3plugin_onServerUpdatedEvent(uint64 serverConnectionHandlerID) {
-//}
 
 int ts3plugin_onServerErrorEvent(uint64 serverConnectionHandlerID, const char* errorMessage, unsigned int error, const char* returnCode, const char* extraMessage) {
 	if(returnCode) {
-		/* A plugin could now check the returnCode with previously (when calling a function) remembered returnCodes and react accordingly */
-		/* In case of using a a plugin return code, the plugin can return:
-		 * 0: Client will continue handling this error (print to chat tab)
-		 * 1: Client will ignore this error, the plugin announces it has handled it */
 		return 1;
 	}
 	return 0;  /* If no plugin return code was used, the return value of this function is ignored */
 }
-
-//void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage) {
-//}
 
 // Client received a text message
 int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID, const char* fromName, const char* fromUniqueIdentifier, const char* message, int ffIgnored) {
@@ -743,9 +665,86 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 			key = QString("tab-%1-private-%2").arg(servers[serverConnectionHandlerID].safe_uid()).arg(servers[serverConnectionHandlerID].get_client(fromID).safe_uid());
 		}
 	}
-	emit chat->webObject()->textMessageReceived(key, utils::direction(outgoing), QTime::currentTime().toString("hh:mm:ss"), fromName, utils::format(message));
+	emit chat->webObject()->textMessageReceived(key, utils::direction(outgoing), QTime::currentTime().toString("hh:mm:ss"), fromName, message);
     return 0;  /* 0 = handle normally, 1 = client will ignore the text message */
 }
+
+// this is called when file transfer ends in some way
+void ts3plugin_onFileTransferStatusEvent(anyID transferID, unsigned int status, const char* statusMessage, uint64 remotefileSize, uint64 serverConnectionHandlerID) {
+	switch (status)
+	{
+	case ERROR_file_transfer_complete:
+		QMetaObject::invokeMethod(chat->webObject(), "downloadFinished", Q_ARG(int, transferID));
+		break;
+	case ERROR_file_transfer_canceled:
+		QMetaObject::invokeMethod(chat->webObject(), "downloadCancelled", Q_ARG(int, transferID));
+		break;
+	case ERROR_file_transfer_interrupted:
+		QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
+		break;
+	case ERROR_file_transfer_reset:
+		QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
+		break;
+	default:
+		QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
+		break;
+	}
+}
+
+/* Called when client custom nickname changed */
+void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, const char* displayName, const char* uniqueClientIdentifier) {
+	Client c = servers[serverConnectionHandlerID].get_client(clientID);
+	c.set_nickname(displayName);
+	servers[serverConnectionHandlerID].add_client(clientID, c);
+}
+
+//void ts3plugin_onNewChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID) {
+//}
+
+//void ts3plugin_onNewChannelCreatedEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
+//}
+
+//void ts3plugin_onDelChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
+//}
+
+//void ts3plugin_onChannelMoveEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 newChannelParentID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
+//}
+
+//void ts3plugin_onUpdateChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID) {
+//}
+
+//void ts3plugin_onUpdateChannelEditedEvent(uint64 serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
+//}
+
+//void ts3plugin_onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clientID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
+//}
+
+//void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility) {
+//}
+
+//void ts3plugin_onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID moverID, const char* moverName, const char* moverUniqueIdentifier, const char* moveMessage) {
+//}
+
+//void ts3plugin_onClientKickFromChannelEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage) {
+//}
+
+//void ts3plugin_onClientKickFromServerEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage) {
+//}
+
+//void ts3plugin_onClientIDsEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, anyID clientID, const char* clientName) {
+//}
+
+//void ts3plugin_onClientIDsFinishedEvent(uint64 serverConnectionHandlerID) {
+//}
+
+//void ts3plugin_onServerEditedEvent(uint64 serverConnectionHandlerID, anyID editerID, const char* editerName, const char* editerUniqueIdentifier) {
+//}
+
+//void ts3plugin_onServerUpdatedEvent(uint64 serverConnectionHandlerID) {
+//}
+
+//void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage) {
+//}
 
 //void ts3plugin_onTalkStatusChangeEvent(uint64 serverConnectionHandlerID, int status, int isReceivedWhisper, anyID clientID) {
 //}
@@ -904,27 +903,6 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 //void ts3plugin_onClientNeededPermissionsFinishedEvent(uint64 serverConnectionHandlerID) {
 //}
 
-void ts3plugin_onFileTransferStatusEvent(anyID transferID, unsigned int status, const char* statusMessage, uint64 remotefileSize, uint64 serverConnectionHandlerID) {
-	switch (status)
-	{
-		case ERROR_file_transfer_complete:
-			QMetaObject::invokeMethod(chat->webObject(), "downloadFinished", Q_ARG(int, transferID));
-		break;
-		case ERROR_file_transfer_canceled:
-			QMetaObject::invokeMethod(chat->webObject(), "downloadCancelled", Q_ARG(int, transferID));
-		break;
-		case ERROR_file_transfer_interrupted:
-			QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
-		break;
-		case ERROR_file_transfer_reset:
-			QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
-		break;
-		default:
-			QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
-		break;
-	}
-}
-
 //void ts3plugin_onClientChatClosedEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientUniqueIdentity) {
 //}
 
@@ -1017,9 +995,3 @@ void ts3plugin_onFileTransferStatusEvent(anyID transferID, unsigned int status, 
 //	return NULL;
 //}
 
-/* Called when client custom nickname changed */
-void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, const char* displayName, const char* uniqueClientIdentifier) {
-	Client c = servers[serverConnectionHandlerID].get_client(clientID);
-	c.set_nickname(displayName);
-	servers[serverConnectionHandlerID].add_client(clientID, c);
-}
