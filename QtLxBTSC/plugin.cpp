@@ -33,6 +33,10 @@
 #include <server.h>
 #include <utils.h>
 
+#include <QInputDialog>
+
+#include <QMessageBox>
+
 static struct TS3Functions ts3Functions;
 
 #ifdef _WIN32
@@ -118,6 +122,7 @@ void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
 
 uint64 currentServerID;
 ChatWidget *chat;
+QInputDialog *pwDialog;
 
 QMap<uint64, Server> servers;
 QTabWidget *chatTabWidget;
@@ -224,12 +229,49 @@ static void receiveFileUrlClick(const QUrl &url)
 {
 	if (url.hasQuery())
 	{
-		// CHECK FOR PASSWORD REQUIREMENT
-		
 		QUrlQuery query;
 		query.setQuery(url.query());
 		QString server_uid = query.queryItemValue("serverUID", QUrl::FullyDecoded);
+
+		uint64 schi = NULL;
+		for each(const Server & server in servers)
+		{
+			if (server.uid() == server_uid)
+			{
+				schi = server.server_connection_handler_id();
+			}
+		}
+
+		if (schi == NULL)
+		{
+			// failed to get serverconnectionhandlerid -> cancel
+			return;
+		}
+		// CHECK FOR PASSWORD REQUIREMENT
 		QString channel_id = query.queryItemValue("channel", QUrl::FullyDecoded);
+		int has_password = 0;
+		if (ts3Functions.getChannelVariableAsInt(schi, channel_id.toULongLong(), CHANNEL_FLAG_PASSWORD, &has_password) != ERROR_ok)
+		{
+			// failed to get channel information -> cancel
+			return;
+		}
+
+		QString password = query.queryItemValue("password", QUrl::FullyDecoded); //"";
+		if (has_password == 1 && password.isEmpty())
+		{
+			pwDialog->setProperty("url", url);
+			pwDialog->show();
+			return;
+
+			//bool ok;
+			//password = QInputDialog::getText(chat, "Channel Password", "Password", QLineEdit::Password, "", &ok);
+			//if (ok == false || password.isEmpty())
+			//{
+				//password required but user cancelled or gave empty string -> cancel
+				//return;
+			//}
+		}
+
 		QString is_dir = query.queryItemValue("isDir", QUrl::FullyDecoded);
 		QString file_path = query.queryItemValue("path", QUrl::FullyDecoded);
 		QString filename = query.queryItemValue("filename", QUrl::FullyDecoded);
@@ -248,18 +290,12 @@ static void receiveFileUrlClick(const QUrl &url)
 
 		QString download_path = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::DownloadLocation);
 		std::string std_download_path = download_path.toStdString();
-		
+		std::string std_password = password.toStdString();
+
 		anyID res;
-		for each(const Server & server in servers)
+		if (ts3Functions.requestFile(schi, channel_id.toULongLong(), std_password.c_str(), std_filepath.c_str(), 1, 0, std_download_path.c_str(), &res, nullptr) == ERROR_ok)
 		{
-			if (server.uid() == server_uid)
-			{
-				//QMessageBox::information(0, "debug", QString("%1 %2, %3 %4").arg(full_path).arg(download_path).arg(channel_id).arg(server.server_connection_handler_id()), QMessageBox::Ok);
-				if (ts3Functions.requestFile(server.server_connection_handler_id(), channel_id.toULongLong(), "", std_filepath.c_str(), 1, 0, std_download_path.c_str(), &res, nullptr) == ERROR_ok)
-				{
-					emit chat->webObject()->downloadStarted(message_id, res);
-				}
-			}
+			emit chat->webObject()->downloadStarted(message_id, res);
 		}
 	}
 }
@@ -367,6 +403,22 @@ void waitForLoad()
 	}
 }
 
+static void pwDialogAccepted(const QString pw)
+{
+	QVariant url = pwDialog->property("url");
+	receiveFileUrlClick(QUrl(url.toString() + "&password=" + pw.toHtmlEscaped()));
+}
+
+void initPwDialog()
+{
+	pwDialog = new QInputDialog(chat);
+	pwDialog->setInputMode(QInputDialog::TextInput);
+	pwDialog->setLabelText("Password");
+	pwDialog->setTextEchoMode(QLineEdit::Password);
+	QObject::connect(pwDialog, &QInputDialog::textValueSelected, pwDialogAccepted);
+	pwDialog->setModal(true);
+	pwDialog->setProperty("url", "");
+}
 
 // Init plugin
 int ts3plugin_init() {
@@ -375,6 +427,7 @@ int ts3plugin_init() {
 	ts3Functions.getPluginPath(pluginPath, PATH_BUFSIZE, pluginID);
 	pathToPlugin = QString(pluginPath);
 	utils::checkEmoteSets(pathToPlugin);
+	initPwDialog();
 	chat = new ChatWidget(pathToPlugin);
 	waitForLoad();
 	QObject::connect(chat, &ChatWidget::fileUrlClicked, receiveFileUrlClick);
@@ -392,6 +445,7 @@ void ts3plugin_shutdown() {
     /* Your plugin cleanup code here */
 	disconnectChatWidget();
 	delete chat;
+	delete pwDialog;
 	
 	/*
 	 * Note:
