@@ -36,6 +36,8 @@ var XBBCODE = (function() {
     // Set up private variables
     // -----------------------------------------------------------------------------
 
+    var message_id = 0;
+
     var me = {},
         urlPattern = /^(?:https?|ts3file|file|c):(?:\/{1,3}|\\{1})[-a-zA-Z0-9:;,@#%&()~_?\+=\/\\\.]*$/,
         colorNamePattern = /^(?:aliceblue|antiquewhite|aqua|aquamarine|azure|beige|bisque|black|blanchedalmond|blue|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategray|darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dodgerblue|firebrick|floralwhite|forestgreen|fuchsia|gainsboro|ghostwhite|gold|goldenrod|gray|green|greenyellow|honeydew|hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgray|lightgreen|lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightsteelblue|lightyellow|lime|limegreen|linen|magenta|maroon|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|navy|oldlace|olive|olivedrab|orange|orangered|orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|purple|red|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|sienna|silver|skyblue|slateblue|slategray|snow|springgreen|steelblue|tan|teal|thistle|tomato|turquoise|violet|wheat|white|whitesmoke|yellow|yellowgreen)$/,
@@ -496,7 +498,10 @@ var XBBCODE = (function() {
 
                 urlPattern.lastIndex = 0;
                 if ( !urlPattern.test( myUrl ) ) {
-                    myUrl = "#";
+                    myUrl = "_#";
+                }
+                else if (myUrl.startsWith("ts3file://")) {
+                    myUrl = myUrl + "&message_id=" + me.message_id;
                 }
 
                 return '<a href="' + myUrl + '">';
@@ -664,7 +669,7 @@ var XBBCODE = (function() {
             processedContent = "";
         }
 
-        if (tagName === "url") {
+        /*if (tagName === "url") {
             if (tagParams) {
                 if (tagParams.startsWith("=ts3file://")) {
                     processedContent += " [OPEN FILELINKS IN NORMAL CHAT]";
@@ -674,13 +679,14 @@ var XBBCODE = (function() {
                 processedContent += " [OPEN FILELINKS IN NORMAL CHAT]";
             }
             
-        }
+        }*/
 
         return openTag + processedContent + closeTag;
     };
 
     function parse(config) {
         var output = config.text;
+        me.message_id = config.id;        
         output = output.replace(bbRegExp, replaceFunct);
         return output;
     }

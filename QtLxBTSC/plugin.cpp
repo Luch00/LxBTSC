@@ -32,6 +32,7 @@
 #include <QThread>
 #include <server.h>
 #include <utils.h>
+#include <file.h>
 
 #include <QInputDialog>
 
@@ -90,7 +91,7 @@ const char* ts3plugin_name() {
 
 /* Plugin version */
 const char* ts3plugin_version() {
-    return "1.5";
+    return "1.6";
 }
 
 /* Plugin API version. Must be the same as the clients API major version, else the plugin fails to load. */
@@ -118,7 +119,9 @@ void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
 uint64 currentServerID;
 ChatWidget *chat;
 QInputDialog *pwDialog;
+QMainWindow *mainwindow;
 
+QMap<anyID, File> filetransfers;
 QMap<uint64, Server> servers;
 QTabWidget *chatTabWidget;
 QPlainTextEdit *chatLineEdit;
@@ -229,6 +232,16 @@ static void receiveFileUrlClick(const QUrl &url)
 	{
 		QUrlQuery query;
 		query.setQuery(url.query());
+
+		QString filename = query.queryItemValue("filename", QUrl::FullyDecoded);
+		QString size = query.queryItemValue("size", QUrl::FullyDecoded);
+		File file(filename, size);
+		if (filetransfers.values().contains(file))
+		{
+			// this file is already being transferred -> cancel
+			return;
+		}
+		
 		QString server_uid = query.queryItemValue("serverUID", QUrl::FullyDecoded);
 
 		uint64 schi = NULL;
@@ -264,7 +277,7 @@ static void receiveFileUrlClick(const QUrl &url)
 
 		QString is_dir = query.queryItemValue("isDir", QUrl::FullyDecoded);
 		QString file_path = query.queryItemValue("path", QUrl::FullyDecoded);
-		QString filename = query.queryItemValue("filename", QUrl::FullyDecoded);
+		
 		QString message_id = query.queryItemValue("message_id", QUrl::FullyDecoded);
 
 		QString full_path;
@@ -285,7 +298,12 @@ static void receiveFileUrlClick(const QUrl &url)
 		anyID res;
 		if (ts3Functions.requestFile(schi, channel_id.toULongLong(), std_password.c_str(), std_filepath.c_str(), 1, 0, std_download_path.c_str(), &res, nullptr) == ERROR_ok)
 		{
+			filetransfers.insert(res, file);
 			emit chat->webObject()->downloadStarted(message_id, res);
+		}
+		else
+		{
+			emit chat->webObject()->downloadStartFailed(message_id);
 		}
 	}
 }
@@ -336,6 +354,18 @@ void findChatLineEdit()
 			chatLineEdit = static_cast<QPlainTextEdit*>(list[i]);
 			QObject::connect(chat->webObject(), &TsWebObject::emoteSignal, receiveEmoticonAppend);
 			break;
+		}
+	}
+}
+
+void findMainWindow()
+{
+	foreach(QWidget *widget, qApp->topLevelWidgets())
+	{
+		if (QMainWindow *mainWindowa = qobject_cast<QMainWindow*>(widget))
+		{
+			mainwindow = mainWindowa;
+			return;
 		}
 	}
 }
@@ -565,6 +595,7 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 			findChatLineEdit();
 			findEmoticonButton();
 			findChatTabWidget();
+			findMainWindow();
 			first = false;
 		}
 
@@ -671,23 +702,28 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 
 // this is called when file transfer ends in some way
 void ts3plugin_onFileTransferStatusEvent(anyID transferID, unsigned int status, const char* statusMessage, uint64 remotefileSize, uint64 serverConnectionHandlerID) {
-	switch (status)
+	if (filetransfers.contains(transferID))
 	{
-	case ERROR_file_transfer_complete:
-		QMetaObject::invokeMethod(chat->webObject(), "downloadFinished", Q_ARG(int, transferID));
-		break;
-	case ERROR_file_transfer_canceled:
-		QMetaObject::invokeMethod(chat->webObject(), "downloadCancelled", Q_ARG(int, transferID));
-		break;
-	case ERROR_file_transfer_interrupted:
-		QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
-		break;
-	case ERROR_file_transfer_reset:
-		QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
-		break;
-	default:
-		QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
-		break;
+		File file = filetransfers.take(transferID);
+		switch (status)
+		{
+		case ERROR_file_transfer_complete:
+			QMetaObject::invokeMethod(chat->webObject(), "downloadFinished", Q_ARG(int, transferID));
+			QMetaObject::invokeMethod(mainwindow, "onShowFileTransferTrayMessage", Q_ARG(QString, file.filename()));
+			break;
+		case ERROR_file_transfer_canceled:
+			QMetaObject::invokeMethod(chat->webObject(), "downloadCancelled", Q_ARG(int, transferID));
+			break;
+		case ERROR_file_transfer_interrupted:
+			QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
+			break;
+		case ERROR_file_transfer_reset:
+			QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
+			break;
+		default:
+			QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
+			break;
+		}
 	}
 }
 

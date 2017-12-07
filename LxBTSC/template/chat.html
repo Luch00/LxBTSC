@@ -34,6 +34,7 @@
                 QtObject.loadEmotes.connect(LoadEmotes);
 
                 QtObject.downloadStarted.connect(Ts3fileDownloadStarted);
+                QtObject.downloadStartFailed.connect(Ts3fileDownloadStartFailed)
                 QtObject.downloadFinished.connect(Ts3fileDownloadFinished);
                 QtObject.downloadCancelled.connect(Ts3fileDownloadCancelled);
                 QtObject.downloadFailed.connect(Ts3fileDownloadFailed);
@@ -228,7 +229,17 @@
         }
 
         function Ts3fileDownloadStarted(message_id, download_id) {
-            var download = $('<div/>', { id: "download_"+download_id, class: "download" }).html('Downloading: <span class="progress"></span>');
+            if (!$(`#${message_id} > #download_${download_id}`).length) {
+                var download = $('<div/>', { id: "download_"+download_id, class: "download" }).html('Downloading: <span class="progress"></span>');
+                $('#'+message_id).append(download);
+            }
+            else {
+                $(`#${message_id} > #download_${download_id}`).html('Downloading: <span class="progress"></span>');
+            }
+        }
+
+        function Ts3fileDownloadStartFailed(message_id) {
+            var download = $('<div/>', { id: "download_FAIL", class: "download" }).html('Downloading: <span class="download-failed">Failed</span>');
             $('#'+message_id).append(download);
         }
 

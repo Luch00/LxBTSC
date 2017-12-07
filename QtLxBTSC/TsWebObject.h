@@ -20,6 +20,7 @@ signals:
 	void emoteSignal(QString e);
 	void loadEmotes();
 	void downloadStarted(QString message_id, int download_id);
+	void downloadStartFailed(QString message_id);
 	void downloadFinished(int download_id);
 	void downloadCancelled(int download_id);
 	void downloadFailed(int download_id);

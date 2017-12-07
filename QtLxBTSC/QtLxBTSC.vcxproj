@@ -145,6 +145,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client.h" />
+    <ClInclude Include="file.h" />
     <ClInclude Include="plugin.h" />
     <ClInclude Include="server.h" />
     <ClInclude Include="utils.h" />
