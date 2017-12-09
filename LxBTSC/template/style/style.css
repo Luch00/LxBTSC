@@ -130,6 +130,26 @@ img.Outgoing {
   .set-header {
       text-align: center;
       padding: 2px;
+      font-size: 8pt;
+  }
+
+  .download {
+      height: 1em;
+      margin-left: 10px;
+      margin-top: 2px;
+  }
+
+  .download-finished {
+    color: #0AA537;
+  }
+
+  .download-failed, .download-cancelled, .download-failed {
+    color: #C9070A;
+  }
+
+  .download-cancel {
+      margin-left: 4px;
+      font-size: 10px;
   }
 
   .progress {

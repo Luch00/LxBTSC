@@ -36,8 +36,6 @@
 
 #include <QInputDialog>
 
-//#include <QMessageBox>
-
 static struct TS3Functions ts3Functions;
 
 #ifdef _WIN32
@@ -235,12 +233,6 @@ static void receiveFileUrlClick(const QUrl &url)
 
 		QString filename = query.queryItemValue("filename", QUrl::FullyDecoded);
 		QString size = query.queryItemValue("size", QUrl::FullyDecoded);
-		File file(filename, size);
-		if (filetransfers.values().contains(file))
-		{
-			// this file is already being transferred -> cancel
-			return;
-		}
 		
 		QString server_uid = query.queryItemValue("serverUID", QUrl::FullyDecoded);
 
@@ -258,6 +250,14 @@ static void receiveFileUrlClick(const QUrl &url)
 			// failed to get serverconnectionhandlerid -> cancel
 			return;
 		}
+
+		File file(filename, size, schi);
+		if (filetransfers.values().contains(file))
+		{
+			// this file is already being transferred -> cancel
+			return;
+		}
+
 		// CHECK FOR PASSWORD REQUIREMENT
 		QString channel_id = query.queryItemValue("channel", QUrl::FullyDecoded);
 		int has_password = 0;
@@ -305,6 +305,15 @@ static void receiveFileUrlClick(const QUrl &url)
 		{
 			emit chat->webObject()->downloadStartFailed(message_id);
 		}
+	}
+}
+
+void onTransferCancelled(int id)
+{
+	if (filetransfers.contains(id))
+	{
+		File f = filetransfers.value(id);
+		ts3Functions.haltTransfer(f.serverConnectionHandlerId(), id, 1, nullptr);
 	}
 }
 
@@ -456,6 +465,7 @@ int ts3plugin_init() {
 	chat = new ChatWidget(pathToPlugin);
 	waitForLoad();
 	QObject::connect(chat, &ChatWidget::fileUrlClicked, receiveFileUrlClick);
+	QObject::connect(chat->webObject(), &TsWebObject::transferCancelled, onTransferCancelled);
 	g = QObject::connect(qApp, &QApplication::applicationStateChanged, appStateChanged);
 	chat->setStyleSheet("border: 1px solid gray");
 

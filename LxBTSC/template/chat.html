@@ -230,12 +230,17 @@
 
         function Ts3fileDownloadStarted(message_id, download_id) {
             if (!$(`#${message_id} > #download_${download_id}`).length) {
-                var download = $('<div/>', { id: "download_"+download_id, class: "download" }).html('Downloading: <span class="progress"></span>');
+                var download = $('<div/>', { id: "download_"+download_id, class: "download" }).html(`Downloading: <span class="progress"></span><a href="_#" class="download-cancel" onclick="Ts3fileDownloadCancel(${download_id})">Cancel</a>`);
                 $('#'+message_id).append(download);
             }
             else {
-                $(`#${message_id} > #download_${download_id}`).html('Downloading: <span class="progress"></span>');
+                $(`#${message_id} > #download_${download_id}`).html(`Downloading: <span class="progress"></span><a href="#_" class="download-cancel" onclick="Ts3fileDownloadCancel(${download_id})">Cancel</a>`);
             }
+            console.log("Started: " +download_id);
+        }
+
+        function Ts3fileDownloadCancel(id) {
+            QtObject.cancelTransfer(id);
         }
 
         function Ts3fileDownloadStartFailed(message_id) {
@@ -245,10 +250,12 @@
 
         function Ts3fileDownloadFinished(download_id) {
             $('#download_'+download_id).html('Downloading: <span class="download-finished">Complete</span>');
+            console.log("Finished: " +download_id);
         }
 
         function Ts3fileDownloadCancelled(download_id) {
             $('#download_'+download_id).html('Downloading: <span class="download-cancelled">Cancelled</span>');
+            console.log("Cancelled: " +download_id);
         }
 
         function Ts3fileDownloadFailed(download_id) {

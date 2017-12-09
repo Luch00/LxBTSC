@@ -4,8 +4,8 @@
 class File
 {
 public:
-	File() : filename_(""), size_("") {}
-	File(QString filename, QString size) : filename_(filename), size_(size)	{}
+	File() : filename_(""), size_(""), serverConnectionHandlerId_(0) {}
+	File(QString filename, QString size, uint64 serverConnectionHandlerId) : filename_(filename), size_(size), serverConnectionHandlerId_(serverConnectionHandlerId) {}
 	~File(){}
 
 	QString filename() const
@@ -18,6 +18,11 @@ public:
 		return size_;
 	}
 
+	uint64 serverConnectionHandlerId() const
+	{
+		return serverConnectionHandlerId_;
+	}
+
 	bool operator==(const File & file) const
 	{
 		return this->filename_.compare(file.filename()) == 0 && this->size_.compare(file.size()) == 0;
@@ -25,4 +30,5 @@ public:
 private:
 	QString filename_;
 	QString size_;
+	uint64 serverConnectionHandlerId_;
 };
