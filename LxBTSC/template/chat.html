@@ -10,6 +10,7 @@
         <script type='text/javascript' src='js/qwebchannel.js'></script>
         <script type='text/javascript' src='js/jquery.resize.js'></script>
         <script type='text/javascript' src='js/xbbcode.js'></script>
+        <script type='text/javascript' src='js/Embed.js'></script>
         <script type='text/javascript' src='js/Emotes.js'></script>
 
         <script type='text/javascript'>
@@ -80,6 +81,7 @@
                 $(`.${target}`).firstElementChild.remove();
             }
             ++msgid;
+            var parsed = ParseBBCode(line, msgid);
             var p = $('<p/>', {
                 id: msgid,
                 class: 'TextMessage_Normal'
@@ -88,11 +90,12 @@
                  <img class='${direction}'>
                  <span class='TextMessage_Time'><${time}> </span>
                  <span class='TextMessage_UserLink'>"${name}"</span>: 
-                 <span class='TextMessage_Text'>${Emotes.emoticonize(ParseBBCode(line, msgid))}</span>
+                 <span class='TextMessage_Text'>${Emotes.emoticonize(parsed)}</span>
                  </span>`
             ).appendTo($(`.${target}`));
             
-            Embed(p, line);
+            //Embed(p, line);
+            Embed(msgid, parsed);
 
             if (IsBottom) {
                 window.scroll(0, document.body.scrollHeight);
@@ -136,80 +139,6 @@
 
         function escapeRegExp(str) {
             return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-        }
-
-        function Embed(element, line) {
-            var embeds_div = $('<div/>', { class:'embeds'});
-            var close_a = $('<a/>', { class:'close-embeds', href:'#_', title:'close', text:'x' })
-            .click(function(e) {
-                $(this).parent().remove();
-            });
-
-            var match;
-            //var yt = /http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w-]*)(&(amp;)?[\w\?=]*)?/gi;
-            var yt = /http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([-_A-Za-z0-9]{10}[AEIMQUYcgkosw048]*)(&(amp;)?[\w\?=]*)?/gi;
-            while (match = yt.exec(line)) {
-                console.log('Found youtube link:' + match[1])
-                var embed_video = $('<div/>', { class:'embed-container' })
-                .html('<iframe frameborder="0" src="https://www.youtube.com/embed/'+ match[1] +'" width="400" height="225"></iframe>')
-                .wrap('<div/>').parent()
-                .appendTo(embeds_div);
-            }
-
-            var img = /(https?:\/\/\S*?\.(?:png|jpe?g|gif|webp)(?:\?(?:(?:(?:[\w_-]+=[\w_-]+)(?:&[\w_-]+=[\w_-]+)*)|(?:[\w_-]+)))?)/gi;
-            while (match = img.exec(line)) {
-                console.log('Found image link:' + match[1])
-                var embed_image = $('<div/>', { class:'embed-container' })
-                .html('<a href="' + match[1] + '"><img src="' + match[1] + '"></a>')
-                .wrap('<div/>').parent()
-                .appendTo(embeds_div);
-            }
-
-            var audio = /(https?:\/\/\S*?\.(?:opus|ogg|oga|wav|wma|flac)(?:\?(?:(?:(?:[\w_-]+=[\w_-]+)(?:&[\w_-]+=[\w_-]+)*)|(?:[\w_-]+)))?)/gi;
-            while (match = audio.exec(line)) {
-                console.log('Found audio link:' + match[1])
-                var embed_audio = $('<div/>', { class:'embed-container' })
-                .html('<audio controls preload="metadata" src="' + match[1] + '">')
-                .wrap('<div/>').parent()
-                .appendTo(embeds_div);
-            }
-
-            var video = /(https?:\/\/\S*?\.(?:webm|ogv)(?:\?(?:(?:(?:[\w_-]+=[\w_-]+)(?:&[\w_-]+=[\w_-]+)*)|(?:[\w_-]+)))?)/gi;
-            while (match = video.exec(line)) {
-                console.log('Found video link:' + match[1])
-                var embed_video = $('<div/>', { class:'embed-container' })
-                .html('<video width="100%" height="100%" controls preload="metadata" src="' + match[1] + '" loop >')
-                .wrap('<div/>').parent()
-                .appendTo(embeds_div);
-            }
-
-            var paste = /https?:\/\/pastebin.com\/([0-9a-zA-Z]+)/gi;
-            while (match = paste.exec(line)) {
-                console.log('Found pastebin link:' + match[1])
-                var embed_paste = $('<div/>', { class:'embed-container' })
-                .html('<iframe src="https://pastebin.com/embed_iframe/' + match[1] + '" style="border:none;width:100%"></iframe>')
-                .wrap('<div/>').parent()
-                .appendTo(embeds_div);
-            }
-
-            var pornhub = /https?:\/\/(?:[a-z0-9]+[.])*pornhub[.]com\/view_video.php\?viewkey=([0-9a-z]+)/gi;
-            while (match = pornhub.exec(line)) {
-                console.log('Found pornhub link:' + match[1])
-                var embed_paste = $('<div/>', { class:'embed-container' })
-                .html('<iframe src="https://pornhub.com/embed/' + match[1] + '" style="border:none;width:100%" scrolling="no" allowfullscreen></iframe>')
-                .wrap('<div/>').parent()
-                .appendTo(embeds_div);
-            }
-
-            /*var gist = /https:\/\/gist\.github\.com\/[0-9a-zA-Z]+\/[0-9a-zA-Z]+/gi;
-            while (match = gist.exec(line)) {
-                var embed_paste = $('<div/>', { class:'embed-container' })
-                .html('  NEEDS SOME KIND OF IFRAME HERE ')
-                .wrap('<div/>').parent()
-                .appendTo(embeds_div);
-            }*/
-
-            embeds_div.not(':empty').append(close_a).insertAfter(element);
         }
 
         function ToggleEmoteMenu() {

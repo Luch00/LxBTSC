@@ -19,6 +19,7 @@
 #include <QMenu>
 #include <QtWebChannel/qwebchannel.h>
 #include <TsWebObject.h>
+#include <QtWebEngineWidgets/QWebEngineFullScreenRequest>
 
 class ChatWidget : public QFrame
 {
@@ -50,6 +51,7 @@ public:
 	void linkHovered(const QUrl &);
 	void onFileUrlClicked(const QUrl &url);
 	void onPageLoaded();
+	void fullScreenRequested(QWebEngineFullScreenRequest request);
 
 private:
 	QVBoxLayout *verticalLayout;

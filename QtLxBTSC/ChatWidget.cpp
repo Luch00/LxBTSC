@@ -92,12 +92,19 @@ void ChatWidget::reload() const
 	view->reload();
 }
 
+void ChatWidget::fullScreenRequested(QWebEngineFullScreenRequest request)
+{
+	request.accept();
+}
+
+
 void ChatWidget::createPage()
 {
 	page = new TsWebEnginePage();
 	page->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
 	page->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
 	page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
+	QObject::connect(page, &TsWebEnginePage::fullScreenRequested, this, &ChatWidget::fullScreenRequested);
 	QObject::connect(page, &TsWebEnginePage::loadFinished, this, &ChatWidget::onPageLoaded);
 	QObject::connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::linkHovered);
 	QObject::connect(page, &TsWebEnginePage::fileUrlClicked, this, &ChatWidget::onFileUrlClicked);
