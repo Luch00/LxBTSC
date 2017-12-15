@@ -57,7 +57,7 @@ video {
 .close-embeds {
     position: absolute;
     margin-left: -5px;
-    margin-top: -10px;
+    /*margin-top: -10px;*/
     cursor: pointer;
     color: black;
     text-align: center;

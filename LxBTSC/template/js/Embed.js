@@ -75,17 +75,27 @@ function Embed(message_id, message_text) {
              }
 
              // gfycat (simple)
-             match = /(?:https?:\/\/)?(?:gfycat\.com)\/?([A-Z][\w\-_]+)/.exec(url.href);
+             match = /(?:gfycat\.com)\/(?:([A-Z][\w\-_]+)|(?:gifs\/detail\/([\w\-_]+)))/.exec(url.href);
              if (match) {
-                console.log('Found gfycat link:' + match[1]);
+                 let id = match[1];
+                 if (match[2]) {
+                     id = match[2];
+                 }
+                console.log('Found gfycat link:' + id);
+                
                 let embed = $('<video/>', {
                     width: "100%",
                     height: "100%",
                     controls: true,
                     loop: true,
                     allowfullscreen: true,
-                    preload: "metadata",
-                    src: "https://giant.gfycat.com/" + match[1] + ".webm"
+                    preload: "metadata"
+                    //src: "https://giant.gfycat.com/" + id + ".webm"
+                });
+                // get the url
+                $.getJSON('https://gfycat.com/cajax/get/' + id).then(function(json) {
+                    let webmurl = json.gfyItem.webmUrl;
+                    embed.attr('src', webmurl);
                 });
                 embeds.push(EmbedBlock(embed));
                 return;
