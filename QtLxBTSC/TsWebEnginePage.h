@@ -20,7 +20,7 @@ public:
 	~TsWebEnginePage();
 	
 	// clicked links open in external browser
-	bool acceptNavigationRequest(const QUrl & url, QWebEnginePage::NavigationType type, bool isMainFrame)
+	bool acceptNavigationRequest(const QUrl & url, QWebEnginePage::NavigationType type, bool isMainFrame) override
 	{
 		if (type == NavigationTypeLinkClicked && isMainFrame == true)
 		{
@@ -33,6 +33,12 @@ public:
 			return false;
 		}
 		return true;
+	}
+
+	// required to open links from iframes
+	QWebEnginePage* TsWebEnginePage::createWindow(WebWindowType type) override
+	{
+		return new TsWebEnginePage();
 	}
 
 	signals:

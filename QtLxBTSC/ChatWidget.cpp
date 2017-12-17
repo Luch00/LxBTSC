@@ -29,9 +29,10 @@ void ChatWidget::setupUi(QWidget *ChatWidget)
 	verticalLayout->setContentsMargins(1, 1, 1, 1);
 	verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
 	view = new QWebEngineView(ChatWidget);
+	verticalLayout->addWidget(view);
 
 	view->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-	menu = new QMenu(this);
+	menu = new QMenu(view);
 	copy = new QShortcut(QKeySequence::Copy, view);
 	copyAction = new QAction("Copy", this);
 	copyUrlAction = new QAction("Copy Link", this);
@@ -40,8 +41,6 @@ void ChatWidget::setupUi(QWidget *ChatWidget)
 	QObject::connect(copyUrlAction, &QAction::triggered, this, &ChatWidget::copyUrlActivated);
 	QObject::connect(view, &QWebEngineView::customContextMenuRequested, this, &ChatWidget::showContextMenu);
 	QObject::connect(copy, &QShortcut::activated, this, &ChatWidget::copyActivated);
-
-	verticalLayout->addWidget(view);
 }
 
 void ChatWidget::showContextMenu(const QPoint &p)
@@ -104,6 +103,7 @@ void ChatWidget::createPage()
 	page->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
 	page->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
 	page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
+	page->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
 	QObject::connect(page, &TsWebEnginePage::fullScreenRequested, this, &ChatWidget::fullScreenRequested);
 	QObject::connect(page, &TsWebEnginePage::loadFinished, this, &ChatWidget::onPageLoaded);
 	QObject::connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::linkHovered);
