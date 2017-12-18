@@ -8,6 +8,8 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
+#include "globals.h"
+
 #ifdef WIN32
 #define PLUGINS_EXPORTDLL __declspec(dllexport)
 #else

@@ -55,6 +55,15 @@
     <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_PluginHelper.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PluginHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="globals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="plugin.h">
@@ -72,6 +81,9 @@
     <ClInclude Include="file.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="globals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="TsWebEnginePage.h">
@@ -81,6 +93,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="TsWebObject.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="PluginHelper.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

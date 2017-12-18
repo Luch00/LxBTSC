@@ -1,0 +1,345 @@
+#include "PluginHelper.h"
+#include "utils.h"
+#include <QThread>
+#include <QUrlQuery>
+#include <QMessageBox>
+
+PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
+	: QObject(parent)
+{
+	pathToPlugin = QString(pluginPath);
+	utils::checkEmoteSets(pathToPlugin);
+	//QMessageBox::information(0, "debug", QString("Chatwidget"), QMessageBox::Ok);
+	chat = new ChatWidget(pathToPlugin);
+	waitForLoad();
+	initPwDialog();
+	connect(chat, &ChatWidget::fileUrlClicked, this, &PluginHelper::receiveFileUrlClick);
+	connect(chat->webObject(), &TsWebObject::transferCancelled, this, &PluginHelper::onTransferCancelled);
+	g = connect(qApp, &QApplication::applicationStateChanged, this, &PluginHelper::appStateChanged);
+	chat->setStyleSheet("border: 1px solid gray");
+}
+
+PluginHelper::~PluginHelper()
+{
+}
+
+// Disconnect used signals
+/*void disconnectChatWidget()
+{
+	// disconnect or crash
+	QObject::disconnect(c);
+	QObject::disconnect(d);
+	QObject::disconnect(e);
+	QObject::disconnect(f);
+	QObject::disconnect(g);
+}*/
+
+// delay ts a bit until webview  is loaded
+void PluginHelper::waitForLoad()
+{
+	int waited = 0; //timeout after about 5s
+	while (!chat->loaded() && waited < 50)
+	{
+		QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+		++waited;
+		QThread::msleep(100);
+	}
+}
+
+// silly thing to prevent webengineview freezing on minimize
+void PluginHelper::appStateChanged(Qt::ApplicationState state)
+{
+	if (currentState == Qt::ApplicationHidden || currentState == Qt::ApplicationInactive)
+	{
+		QSize s = chat->size();
+		chat->resize(s.width() + 1, s.height() + 1);
+		chat->resize(s);
+	}
+	currentState = state;
+}
+
+// After server tab change check what chat tab is selected
+void PluginHelper::recheckSelectedTab()
+{
+	if (currentServerID != NULL)
+	{
+		const int i = chatTabWidget->currentIndex();
+
+		if (i >= 0)
+		{
+			QString tabName;
+			if (i == 0)
+			{
+				tabName = QString("tab-%1-server").arg(servers[currentServerID].safe_uid());
+			}
+			else if (i == 1)
+			{
+				tabName = QString("tab-%1-channel").arg(servers[currentServerID].safe_uid());
+			}
+			else
+			{
+				const QString id = servers[currentServerID].get_client_by_nickname(chatTabWidget->tabText(i)).safe_uid();
+				tabName = QString("tab-%1-private-%2").arg(servers[currentServerID].safe_uid()).arg(id);
+			}
+			chat->webObject()->tabChanged(tabName);
+		}
+	}
+}
+
+// called when webview tries to navigate to url with ts3file protocol
+void PluginHelper::receiveFileUrlClick(const QUrl &url)
+{
+	if (url.hasQuery())
+	{
+		QUrlQuery query;
+		query.setQuery(url.query());
+
+		QString filename = query.queryItemValue("filename", QUrl::FullyDecoded);
+		QString size = query.queryItemValue("size", QUrl::FullyDecoded);
+
+		QString server_uid = query.queryItemValue("serverUID", QUrl::FullyDecoded);
+
+		uint64 schi = NULL;
+		for each(const Server & server in servers)
+		{
+			if (server.uid() == server_uid)
+			{
+				schi = server.server_connection_handler_id();
+			}
+		}
+
+		if (schi == NULL)
+		{
+			// failed to get serverconnectionhandlerid -> cancel
+			return;
+		}
+
+		File file(filename, size, schi);
+		if (filetransfers.values().contains(file))
+		{
+			// this file is already being transferred -> cancel
+			return;
+		}
+
+		// CHECK FOR PASSWORD REQUIREMENT
+		QString channel_id = query.queryItemValue("channel", QUrl::FullyDecoded);
+		int has_password = 0;
+		if (ts3Functions.getChannelVariableAsInt(schi, channel_id.toULongLong(), CHANNEL_FLAG_PASSWORD, &has_password) != ERROR_ok)
+		{
+			// failed to get channel information -> cancel
+			return;
+		}
+
+		QString password = query.queryItemValue("password", QUrl::FullyDecoded); //"";
+		if (has_password == 1 && password.isEmpty())
+		{
+			pwDialog->setProperty("url", url);
+			pwDialog->show();
+			return;
+		}
+
+		QString is_dir = query.queryItemValue("isDir", QUrl::FullyDecoded);
+		QString file_path = query.queryItemValue("path", QUrl::FullyDecoded);
+
+		QString message_id = query.queryItemValue("message_id", QUrl::FullyDecoded);
+
+		QString full_path;
+		if (file_path == "/")
+		{
+			full_path = QString("/%1").arg(filename);
+		}
+		else
+		{
+			full_path = QString("%1/%2").arg(file_path, filename);
+		}
+		std::string std_filepath = full_path.toStdString();
+
+		QString download_path = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::DownloadLocation);
+		std::string std_download_path = download_path.toStdString();
+		std::string std_password = password.toStdString();
+
+		anyID res;
+		if (ts3Functions.requestFile(schi, channel_id.toULongLong(), std_password.c_str(), std_filepath.c_str(), 1, 0, std_download_path.c_str(), &res, nullptr) == ERROR_ok)
+		{
+			filetransfers.insert(res, file);
+			emit chat->webObject()->downloadStarted(message_id, res);
+		}
+		else
+		{
+			emit chat->webObject()->downloadStartFailed(message_id);
+		}
+	}
+}
+
+void PluginHelper::onTransferCancelled(int id)
+{
+	if (filetransfers.contains(id))
+	{
+		File f = filetransfers.value(id);
+		ts3Functions.haltTransfer(f.serverConnectionHandlerId(), id, 1, nullptr);
+	}
+}
+
+// called when 'ok' is pressed in password dialog
+void PluginHelper::pwDialogAccepted(const QString pw)
+{
+	QVariant url = pwDialog->property("url");
+	receiveFileUrlClick(QUrl(url.toString() + "&password=" + pw.toHtmlEscaped()));
+}
+
+// set up the dialog for file transfer passwords
+void PluginHelper::initPwDialog()
+{
+	pwDialog = new QInputDialog(chat);
+	pwDialog->setInputMode(QInputDialog::TextInput);
+	pwDialog->setLabelText("Password");
+	pwDialog->setTextEchoMode(QLineEdit::Password);
+	connect(pwDialog, &QInputDialog::textValueSelected, this, &PluginHelper::pwDialogAccepted);
+	pwDialog->setModal(true);
+	pwDialog->setProperty("url", "");
+}
+
+// called when emote is clicked in html emote menu
+void PluginHelper::receiveEmoticonAppend(QString e)
+{
+	if (!chatLineEdit->document()->isModified())
+	{
+		chatLineEdit->document()->clear();
+	}
+	chatLineEdit->insertPlainText(e);
+	chatLineEdit->setFocus();
+}
+
+// called when teamspeak emote menu button is clicked
+void PluginHelper::receiveEmoticonButtonClick(bool c)
+{
+	if (QApplication::keyboardModifiers() == Qt::ControlModifier)
+	{
+		toggleNormalChat();
+	}
+	else
+	{
+		emit chat->webObject()->toggleEmoteMenu();
+	}
+}
+
+// hides plugin webview and restores the default chatwidget
+void PluginHelper::toggleNormalChat()
+{
+	if (chat->isVisible())
+	{
+		chat->hide();
+		chatTabWidget->setMaximumHeight(16777215);
+	}
+	else
+	{
+		chatTabWidget->setMaximumHeight(24);
+		chat->show();
+	}
+}
+
+// Receive chat tab changed signal
+void PluginHelper::receiveTabChange(int i)
+{
+	//QMessageBox::information(0, "debug", QString("tabchange_trigger: %1 %2").arg(currentServerID).arg(i), QMessageBox::Ok);
+	if (i >= 0)
+	{
+		QString tabName;
+		if (i == 0)
+		{
+			tabName = QString("tab-%1-server").arg(servers[currentServerID].safe_uid());
+		}
+		else if (i == 1)
+		{
+			tabName = QString("tab-%1-channel").arg(servers[currentServerID].safe_uid());
+		}
+		else
+		{
+			const QString id = servers[currentServerID].get_client_by_nickname(chatTabWidget->tabText(i)).safe_uid();
+			tabName = QString("tab-%1-private-%2").arg(servers[currentServerID].safe_uid()).arg(id);
+		}
+		chat->webObject()->tabChanged(tabName);
+	}
+}
+
+// Receive chat tab closed signal
+void PluginHelper::receiveTabClose(int i)
+{
+	if (i > 1)
+	{
+		const QString tabName = QString("tab-%1-server").arg(servers[currentServerID].safe_uid());
+		chat->webObject()->tabChanged(tabName);
+		chatTabWidget->setCurrentIndex(0);
+	}
+}
+
+// Find the widget containing chat tabs and store it for later use
+void PluginHelper::findChatTabWidget()
+{
+	QWidgetList list = qApp->allWidgets();
+	for (int i = 0; i < list.count(); i++)
+	{
+		if (list[i]->objectName() == "ChatTabWidget")
+		{
+			chatTabWidget = static_cast<QTabWidget*>(list[i]);
+			QWidget *parent = chatTabWidget->parentWidget();
+			static_cast<QBoxLayout*>(parent->layout())->insertWidget(0, chat);
+
+			chatTabWidget->setMinimumHeight(24);
+			chatTabWidget->setMaximumHeight(24);
+
+			c = connect(chatTabWidget, &QTabWidget::currentChanged, this, &PluginHelper::receiveTabChange);
+			d = connect(chatTabWidget, &QTabWidget::tabCloseRequested, this, &PluginHelper::receiveTabClose);
+			chatTabWidget->setMovable(false);
+
+			break;
+		}
+	}
+}
+
+// find the chatline
+void PluginHelper::findChatLineEdit()
+{
+	QWidgetList list = qApp->allWidgets();
+	for (int i = 0; i < list.count(); i++)
+	{
+		if (list[i]->objectName() == "ChatLineEdit")
+		{
+			chatLineEdit = static_cast<QPlainTextEdit*>(list[i]);
+			connect(chat->webObject(), &TsWebObject::emoteSignal, this, &PluginHelper::receiveEmoticonAppend);
+			break;
+		}
+	}
+}
+
+void PluginHelper::findMainWindow()
+{
+	foreach(QWidget *widget, qApp->topLevelWidgets())
+	{
+		if (QMainWindow *mainWindowa = qobject_cast<QMainWindow*>(widget))
+		{
+			mainwindow = mainWindowa;
+			return;
+		}
+	}
+}
+
+// find the button for emote menu
+void PluginHelper::findEmoticonButton()
+{
+	QWidgetList list = qApp->allWidgets();
+	for (int i = 0; i < list.count(); i++)
+	{
+		if (list[i]->objectName() == "EmoticonButton")
+		{
+			// the one with no tooltip is the correct one :/
+			if (list[i]->toolTip().isEmpty())
+			{
+				emoticonButton = static_cast<QToolButton*>(list[i]);
+				emoticonButton->disconnect();
+				e = connect(emoticonButton, &QToolButton::clicked, this, &PluginHelper::receiveEmoticonButtonClick);
+				break;
+			}
+		}
+	}
+}
