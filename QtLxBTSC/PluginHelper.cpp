@@ -2,40 +2,42 @@
 #include "utils.h"
 #include <QThread>
 #include <QUrlQuery>
-#include <QMessageBox>
+//#include <QMessageBox>
 
 PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 	: QObject(parent)
 {
+	//QMessageBox::information(0, "debug", QString(""), QMessageBox::Ok);
 	pathToPlugin = QString(pluginPath);
 	utils::checkEmoteSets(pathToPlugin);
-	//QMessageBox::information(0, "debug", QString("Chatwidget"), QMessageBox::Ok);
 	chat = new ChatWidget(pathToPlugin);
 	waitForLoad();
 	initPwDialog();
-	connect(chat, &ChatWidget::fileUrlClicked, this, &PluginHelper::receiveFileUrlClick);
+	connect(chat, &ChatWidget::fileUrlClicked, this, &PluginHelper::onFileUrlClicked);
 	connect(chat->webObject(), &TsWebObject::transferCancelled, this, &PluginHelper::onTransferCancelled);
-	g = connect(qApp, &QApplication::applicationStateChanged, this, &PluginHelper::appStateChanged);
+	g = connect(qApp, &QApplication::applicationStateChanged, this, &PluginHelper::onAppStateChanged);
 	chat->setStyleSheet("border: 1px solid gray");
 }
 
 PluginHelper::~PluginHelper()
 {
+	disconnect();
+	delete pwDialog;
+	delete chat;
 }
 
 // Disconnect used signals
-/*void disconnectChatWidget()
+void PluginHelper::disconnect() const
 {
 	// disconnect or crash
 	QObject::disconnect(c);
 	QObject::disconnect(d);
 	QObject::disconnect(e);
-	QObject::disconnect(f);
 	QObject::disconnect(g);
-}*/
+}
 
 // delay ts a bit until webview  is loaded
-void PluginHelper::waitForLoad()
+void PluginHelper::waitForLoad() const
 {
 	int waited = 0; //timeout after about 5s
 	while (!chat->loaded() && waited < 50)
@@ -47,7 +49,7 @@ void PluginHelper::waitForLoad()
 }
 
 // silly thing to prevent webengineview freezing on minimize
-void PluginHelper::appStateChanged(Qt::ApplicationState state)
+void PluginHelper::onAppStateChanged(Qt::ApplicationState state)
 {
 	if (currentState == Qt::ApplicationHidden || currentState == Qt::ApplicationInactive)
 	{
@@ -87,7 +89,7 @@ void PluginHelper::recheckSelectedTab()
 }
 
 // called when webview tries to navigate to url with ts3file protocol
-void PluginHelper::receiveFileUrlClick(const QUrl &url)
+void PluginHelper::onFileUrlClicked(const QUrl &url)
 {
 	if (url.hasQuery())
 	{
@@ -171,7 +173,7 @@ void PluginHelper::receiveFileUrlClick(const QUrl &url)
 	}
 }
 
-void PluginHelper::onTransferCancelled(int id)
+void PluginHelper::onTransferCancelled(int id) const
 {
 	if (filetransfers.contains(id))
 	{
@@ -181,10 +183,10 @@ void PluginHelper::onTransferCancelled(int id)
 }
 
 // called when 'ok' is pressed in password dialog
-void PluginHelper::pwDialogAccepted(const QString pw)
+void PluginHelper::onPwDialogAccepted(const QString pw)
 {
 	QVariant url = pwDialog->property("url");
-	receiveFileUrlClick(QUrl(url.toString() + "&password=" + pw.toHtmlEscaped()));
+	onFileUrlClicked(QUrl(url.toString() + "&password=" + pw.toHtmlEscaped()));
 }
 
 // set up the dialog for file transfer passwords
@@ -194,13 +196,13 @@ void PluginHelper::initPwDialog()
 	pwDialog->setInputMode(QInputDialog::TextInput);
 	pwDialog->setLabelText("Password");
 	pwDialog->setTextEchoMode(QLineEdit::Password);
-	connect(pwDialog, &QInputDialog::textValueSelected, this, &PluginHelper::pwDialogAccepted);
+	connect(pwDialog, &QInputDialog::textValueSelected, this, &PluginHelper::onPwDialogAccepted);
 	pwDialog->setModal(true);
 	pwDialog->setProperty("url", "");
 }
 
 // called when emote is clicked in html emote menu
-void PluginHelper::receiveEmoticonAppend(QString e)
+void PluginHelper::onEmoticonAppend(QString e) const
 {
 	if (!chatLineEdit->document()->isModified())
 	{
@@ -211,7 +213,7 @@ void PluginHelper::receiveEmoticonAppend(QString e)
 }
 
 // called when teamspeak emote menu button is clicked
-void PluginHelper::receiveEmoticonButtonClick(bool c)
+void PluginHelper::onEmoticonButtonClicked(bool c) const
 {
 	if (QApplication::keyboardModifiers() == Qt::ControlModifier)
 	{
@@ -224,7 +226,7 @@ void PluginHelper::receiveEmoticonButtonClick(bool c)
 }
 
 // hides plugin webview and restores the default chatwidget
-void PluginHelper::toggleNormalChat()
+void PluginHelper::toggleNormalChat() const
 {
 	if (chat->isVisible())
 	{
@@ -239,7 +241,7 @@ void PluginHelper::toggleNormalChat()
 }
 
 // Receive chat tab changed signal
-void PluginHelper::receiveTabChange(int i)
+void PluginHelper::onTabChange(int i)
 {
 	//QMessageBox::information(0, "debug", QString("tabchange_trigger: %1 %2").arg(currentServerID).arg(i), QMessageBox::Ok);
 	if (i >= 0)
@@ -263,7 +265,7 @@ void PluginHelper::receiveTabChange(int i)
 }
 
 // Receive chat tab closed signal
-void PluginHelper::receiveTabClose(int i)
+void PluginHelper::onTabClose(int i)
 {
 	if (i > 1)
 	{
@@ -288,8 +290,8 @@ void PluginHelper::findChatTabWidget()
 			chatTabWidget->setMinimumHeight(24);
 			chatTabWidget->setMaximumHeight(24);
 
-			c = connect(chatTabWidget, &QTabWidget::currentChanged, this, &PluginHelper::receiveTabChange);
-			d = connect(chatTabWidget, &QTabWidget::tabCloseRequested, this, &PluginHelper::receiveTabClose);
+			c = connect(chatTabWidget, &QTabWidget::currentChanged, this, &PluginHelper::onTabChange);
+			d = connect(chatTabWidget, &QTabWidget::tabCloseRequested, this, &PluginHelper::onTabClose);
 			chatTabWidget->setMovable(false);
 
 			break;
@@ -306,7 +308,7 @@ void PluginHelper::findChatLineEdit()
 		if (list[i]->objectName() == "ChatLineEdit")
 		{
 			chatLineEdit = static_cast<QPlainTextEdit*>(list[i]);
-			connect(chat->webObject(), &TsWebObject::emoteSignal, this, &PluginHelper::receiveEmoticonAppend);
+			connect(chat->webObject(), &TsWebObject::emoteSignal, this, &PluginHelper::onEmoticonAppend);
 			break;
 		}
 	}
@@ -316,9 +318,9 @@ void PluginHelper::findMainWindow()
 {
 	foreach(QWidget *widget, qApp->topLevelWidgets())
 	{
-		if (QMainWindow *mainWindowa = qobject_cast<QMainWindow*>(widget))
+		if (QMainWindow *m = qobject_cast<QMainWindow*>(widget))
 		{
-			mainwindow = mainWindowa;
+			mainwindow = m;
 			return;
 		}
 	}
@@ -337,9 +339,191 @@ void PluginHelper::findEmoticonButton()
 			{
 				emoticonButton = static_cast<QToolButton*>(list[i]);
 				emoticonButton->disconnect();
-				e = connect(emoticonButton, &QToolButton::clicked, this, &PluginHelper::receiveEmoticonButtonClick);
+				e = connect(emoticonButton, &QToolButton::clicked, this, &PluginHelper::onEmoticonButtonClicked);
 				break;
 			}
 		}
 	}
+}
+
+void PluginHelper::currentServerChanged(uint64 serverConnectionHandlerID)
+{
+	currentServerID = serverConnectionHandlerID;
+
+	if (first == false)
+	{
+		recheckSelectedTab();
+	}
+}
+
+void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID clientID, anyID targetMode, QString fromName, QString message, bool outgoing)
+{	
+	emit chat->webObject()->textMessageReceived(
+		getMessageTarget(serverConnectionHandlerID, targetMode, clientID),
+		/*utils::direction(outgoing),*/
+		outgoing ? "Outgoing" : "Incoming",
+		QTime::currentTime().toString("hh:mm:ss"),
+		fromName,
+		message
+	);
+}
+
+QString PluginHelper::getMessageTarget(uint64 serverConnectionHandlerID, anyID targetMode, anyID clientID)
+{
+	if (targetMode == 3)
+	{
+		return QString("tab-%1-server").arg(servers[serverConnectionHandlerID].safe_uid());
+	}
+	if (targetMode == 2)
+	{
+		return QString("tab-%1-channel").arg(servers[serverConnectionHandlerID].safe_uid());
+	}
+	return QString("tab-%1-private-%2").arg(servers[serverConnectionHandlerID].safe_uid()).arg(servers[serverConnectionHandlerID].get_client(clientID).safe_uid());
+}
+
+void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
+{
+	if (first)
+	{
+		// Add new chat widget to the UI
+		findChatLineEdit();
+		findEmoticonButton();
+		findChatTabWidget();
+		findMainWindow();
+		first = false;
+	}
+
+	char *res;
+	if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_UNIQUE_IDENTIFIER, &res) == ERROR_ok)
+	{
+		const Server server(serverConnectionHandlerID, res, getAllClientNicks(serverConnectionHandlerID));
+		emit chat->webObject()->addServer(server.safe_uid());
+		bool reconnected = servers.values().contains(server);
+
+		servers.insert(serverConnectionHandlerID, server);
+		free(res);
+
+		if (!reconnected)
+		{
+			char *msg;
+			if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_WELCOMEMESSAGE, &msg) == ERROR_ok)
+			{
+				postStatusMessage(serverConnectionHandlerID, "TextMessage_Welcome", msg);
+				free(msg);
+			}
+		}
+	}
+	postStatusMessage(serverConnectionHandlerID, "TextMessage_Connected", "Server Connected");
+}
+
+void PluginHelper::serverDisconnected(uint serverConnectionHandlerID)
+{
+	postStatusMessage(serverConnectionHandlerID, "TextMessage_Disconnected", "Server Disconnected");
+}
+
+void PluginHelper::clientConnected(uint64 serverConnectionHandlerID, anyID clientID)
+{
+	const Client client = getClient(serverConnectionHandlerID, clientID);
+	servers[serverConnectionHandlerID].add_client(clientID, client);
+	postStatusMessage(serverConnectionHandlerID, "TextMessage_ClientConnected", QString("%1 connected").arg(client.nickname()));
+}
+
+void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message)
+{
+	const Client &client = servers[serverConnectionHandlerID].get_client(clientID);
+	postStatusMessage(serverConnectionHandlerID, "TextMessage_ClientDisconnected", QString("%1 disconnected (%2)").arg(client.nickname()).arg(message));
+}
+
+void PluginHelper::clientTimeout(uint64 serverConnectionHandlerID, anyID clientID)
+{
+	const Client &client = servers[serverConnectionHandlerID].get_client(clientID);
+	postStatusMessage(serverConnectionHandlerID, "TextMessage_ClientDropped", QString("%1 timed out").arg(client.nickname()));
+}
+
+void PluginHelper::postStatusMessage(uint64 serverConnectionHandlerID, QString type, QString message)
+{
+	emit chat->webObject()->statusMessageReceived(
+		QString("tab-%1-server").arg(servers[serverConnectionHandlerID].safe_uid()),
+		QTime::currentTime().toString("hh:mm:ss"),
+		type,
+		message
+	);
+}
+
+void PluginHelper::transferStatusChanged(anyID transferID, unsigned status)
+{
+	if (filetransfers.contains(transferID))
+	{
+		File file = filetransfers.take(transferID);
+		switch (status)
+		{
+		case ERROR_file_transfer_complete:
+			QMetaObject::invokeMethod(chat->webObject(), "downloadFinished", Q_ARG(int, transferID));
+			QMetaObject::invokeMethod(mainwindow, "onShowFileTransferTrayMessage", Q_ARG(QString, file.filename()));
+			break;
+		case ERROR_file_transfer_canceled:
+			QMetaObject::invokeMethod(chat->webObject(), "downloadCancelled", Q_ARG(int, transferID));
+			break;
+		case ERROR_file_transfer_interrupted:
+			QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
+			break;
+		case ERROR_file_transfer_reset:
+			QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
+			break;
+		default:
+			QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
+			break;
+		}
+	}
+}
+
+void PluginHelper::clientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, QString displayName)
+{
+	Client c = servers[serverConnectionHandlerID].get_client(clientID);
+	c.set_nickname(displayName);
+	servers[serverConnectionHandlerID].add_client(clientID, c);
+}
+
+void PluginHelper::reload() const
+{
+	chat->reload();
+}
+
+void PluginHelper::reloadEmotes() const
+{
+	utils::checkEmoteSets(pathToPlugin);
+	emit chat->webObject()->loadEmotes();
+}
+
+// Get the nickname and unique id of a client
+Client PluginHelper::getClient(uint64 serverConnectionHandlerID, anyID id)
+{
+	char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
+	if (ts3Functions.getClientDisplayName(serverConnectionHandlerID, id, res, TS3_MAX_SIZE_CLIENT_NICKNAME) == ERROR_ok)
+	{
+	}
+	QString uniqueid;
+	char *uid;
+	if (ts3Functions.getClientVariableAsString(serverConnectionHandlerID, id, CLIENT_UNIQUE_IDENTIFIER, &uid) == ERROR_ok)
+	{
+		uniqueid = uid;
+		free(uid);
+	}
+	return Client(res, uniqueid);
+}
+
+// cache all connected clients
+QMap<unsigned short, Client> PluginHelper::getAllClientNicks(uint64 serverConnectionHandlerID)
+{
+	QMap<unsigned short, Client> map;
+	anyID *list;
+	if (ts3Functions.getClientList(serverConnectionHandlerID, &list) == ERROR_ok)
+	{
+		for (size_t i = 0; list[i] != NULL; i++)
+		{
+			map.insert(list[i], getClient(serverConnectionHandlerID, list[i]));
+		}
+		free(list);
+	}
+	return map;
 }

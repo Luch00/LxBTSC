@@ -9,43 +9,50 @@
 #define PLUGIN_H
 
 #include "globals.h"
-
-#ifdef WIN32
-#define PLUGINS_EXPORTDLL __declspec(dllexport)
-#else
-#define PLUGINS_EXPORTDLL __attribute__ ((visibility("default")))
-#endif
+#include <qcompilerdetection.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Required functions */
-PLUGINS_EXPORTDLL const char* ts3plugin_name();
-PLUGINS_EXPORTDLL const char* ts3plugin_version();
-PLUGINS_EXPORTDLL int ts3plugin_apiVersion();
-PLUGINS_EXPORTDLL const char* ts3plugin_author();
-PLUGINS_EXPORTDLL const char* ts3plugin_description();
-PLUGINS_EXPORTDLL void ts3plugin_setFunctionPointers(const struct TS3Functions funcs);
-PLUGINS_EXPORTDLL int ts3plugin_init();
-PLUGINS_EXPORTDLL void ts3plugin_shutdown();
+Q_DECL_EXPORT const char* ts3plugin_name();
+Q_DECL_EXPORT const char* ts3plugin_version();
+Q_DECL_EXPORT int ts3plugin_apiVersion();
+Q_DECL_EXPORT const char* ts3plugin_author();
+Q_DECL_EXPORT const char* ts3plugin_description();
+Q_DECL_EXPORT void ts3plugin_setFunctionPointers(const struct TS3Functions funcs);
+Q_DECL_EXPORT int ts3plugin_init();
+Q_DECL_EXPORT void ts3plugin_shutdown();
 
 /* Optional functions */
+Q_DECL_EXPORT void ts3plugin_registerPluginID(const char* id);
+Q_DECL_EXPORT const char* ts3plugin_commandKeyword();
+Q_DECL_EXPORT int ts3plugin_processCommand(uint64 serverConnectionHandlerID, const char* command);
+Q_DECL_EXPORT void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID);
+Q_DECL_EXPORT void ts3plugin_freeMemory(void* data);
+Q_DECL_EXPORT int ts3plugin_requestAutoload();
+
+Q_DECL_EXPORT void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber);
+Q_DECL_EXPORT void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* moveMessage);
+Q_DECL_EXPORT void ts3plugin_onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* timeoutMessage);
+Q_DECL_EXPORT int  ts3plugin_onServerErrorEvent(uint64 serverConnectionHandlerID, const char* errorMessage, unsigned int error, const char* returnCode, const char* extraMessage);
+Q_DECL_EXPORT int  ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID, const char* fromName, const char* fromUniqueIdentifier, const char* message, int ffIgnored);
+
+Q_DECL_EXPORT void ts3plugin_onFileTransferStatusEvent(anyID transferID, unsigned int status, const char* statusMessage, uint64 remotefileSize, uint64 serverConnectionHandlerID);
+
+Q_DECL_EXPORT void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, const char* displayName, const char* uniqueClientIdentifier);
+
+
+
 //PLUGINS_EXPORTDLL int ts3plugin_offersConfigure();
 //PLUGINS_EXPORTDLL void ts3plugin_configure(void* handle, void* qParentWidget);
-PLUGINS_EXPORTDLL void ts3plugin_registerPluginID(const char* id);
-PLUGINS_EXPORTDLL const char* ts3plugin_commandKeyword();
-PLUGINS_EXPORTDLL int ts3plugin_processCommand(uint64 serverConnectionHandlerID, const char* command);
-PLUGINS_EXPORTDLL void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID);
 //PLUGINS_EXPORTDLL const char* ts3plugin_infoTitle();
 //PLUGINS_EXPORTDLL void ts3plugin_infoData(uint64 serverConnectionHandlerID, uint64 id, enum PluginItemType type, char** data);
-PLUGINS_EXPORTDLL void ts3plugin_freeMemory(void* data);
-PLUGINS_EXPORTDLL int ts3plugin_requestAutoload();
 //PLUGINS_EXPORTDLL void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon);
 //PLUGINS_EXPORTDLL void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys);
 
 /* Clientlib */
-PLUGINS_EXPORTDLL void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber);
 //PLUGINS_EXPORTDLL void ts3plugin_onNewChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID);
 //PLUGINS_EXPORTDLL void ts3plugin_onNewChannelCreatedEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier);
 //PLUGINS_EXPORTDLL void ts3plugin_onDelChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier);
@@ -53,9 +60,7 @@ PLUGINS_EXPORTDLL void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnect
 //PLUGINS_EXPORTDLL void ts3plugin_onUpdateChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID);
 //PLUGINS_EXPORTDLL void ts3plugin_onUpdateChannelEditedEvent(uint64 serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier);
 //PLUGINS_EXPORTDLL void ts3plugin_onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clientID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier);
-PLUGINS_EXPORTDLL void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* moveMessage);
 //PLUGINS_EXPORTDLL void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility);
-PLUGINS_EXPORTDLL void ts3plugin_onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* timeoutMessage);
 //PLUGINS_EXPORTDLL void ts3plugin_onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID moverID, const char* moverName, const char* moverUniqueIdentifier, const char* moveMessage);
 //PLUGINS_EXPORTDLL void ts3plugin_onClientKickFromChannelEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage);
 //PLUGINS_EXPORTDLL void ts3plugin_onClientKickFromServerEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage);
@@ -63,9 +68,7 @@ PLUGINS_EXPORTDLL void ts3plugin_onClientMoveTimeoutEvent(uint64 serverConnectio
 //PLUGINS_EXPORTDLL void ts3plugin_onClientIDsFinishedEvent(uint64 serverConnectionHandlerID);
 //PLUGINS_EXPORTDLL void ts3plugin_onServerEditedEvent(uint64 serverConnectionHandlerID, anyID editerID, const char* editerName, const char* editerUniqueIdentifier);
 //PLUGINS_EXPORTDLL void ts3plugin_onServerUpdatedEvent(uint64 serverConnectionHandlerID);
-PLUGINS_EXPORTDLL int  ts3plugin_onServerErrorEvent(uint64 serverConnectionHandlerID, const char* errorMessage, unsigned int error, const char* returnCode, const char* extraMessage);
 //PLUGINS_EXPORTDLL void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage);
-PLUGINS_EXPORTDLL int  ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID, const char* fromName, const char* fromUniqueIdentifier, const char* message, int ffIgnored);
 //PLUGINS_EXPORTDLL void ts3plugin_onTalkStatusChangeEvent(uint64 serverConnectionHandlerID, int status, int isReceivedWhisper, anyID clientID);
 //PLUGINS_EXPORTDLL void ts3plugin_onConnectionInfoEvent(uint64 serverConnectionHandlerID, anyID clientID);
 //PLUGINS_EXPORTDLL void ts3plugin_onServerConnectionInfoEvent(uint64 serverConnectionHandlerID);
@@ -119,7 +122,6 @@ PLUGINS_EXPORTDLL int  ts3plugin_onTextMessageEvent(uint64 serverConnectionHandl
 //PLUGINS_EXPORTDLL void ts3plugin_onServerGroupClientDeletedEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientName, const char* clientUniqueIdentity, uint64 serverGroupID, anyID invokerClientID, const char* invokerName, const char* invokerUniqueIdentity);
 //PLUGINS_EXPORTDLL void ts3plugin_onClientNeededPermissionsEvent(uint64 serverConnectionHandlerID, unsigned int permissionID, int permissionValue);
 //PLUGINS_EXPORTDLL void ts3plugin_onClientNeededPermissionsFinishedEvent(uint64 serverConnectionHandlerID);
-PLUGINS_EXPORTDLL void ts3plugin_onFileTransferStatusEvent(anyID transferID, unsigned int status, const char* statusMessage, uint64 remotefileSize, uint64 serverConnectionHandlerID);
 //PLUGINS_EXPORTDLL void ts3plugin_onClientChatClosedEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientUniqueIdentity);
 //PLUGINS_EXPORTDLL void ts3plugin_onClientChatComposingEvent(uint64 serverConnectionHandlerID, anyID clientID, const char* clientUniqueIdentity);
 //PLUGINS_EXPORTDLL void ts3plugin_onServerLogEvent(uint64 serverConnectionHandlerID, const char* logMsg);
@@ -141,7 +143,6 @@ PLUGINS_EXPORTDLL void ts3plugin_onFileTransferStatusEvent(anyID transferID, uns
 //PLUGINS_EXPORTDLL void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenuType type, int menuItemID, uint64 selectedItemID);
 //PLUGINS_EXPORTDLL void ts3plugin_onHotkeyEvent(const char* keyword);
 //PLUGINS_EXPORTDLL void ts3plugin_onHotkeyRecordedEvent(const char* keyword, const char* key);
-PLUGINS_EXPORTDLL void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, const char* displayName, const char* uniqueClientIdentifier);
 //PLUGINS_EXPORTDLL const char* ts3plugin_keyDeviceName(const char* keyIdentifier);
 //PLUGINS_EXPORTDLL const char* ts3plugin_displayKeyText(const char* keyIdentifier);
 //PLUGINS_EXPORTDLL const char* ts3plugin_keyPrefix();

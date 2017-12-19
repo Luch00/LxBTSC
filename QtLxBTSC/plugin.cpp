@@ -12,8 +12,11 @@
 
 #include "plugin.h"
 #include "PluginHelper.h"
-#include "utils.h"
 
+#define PLUGIN_API_VERSION 22
+#define PATH_BUFSIZE 512
+
+static char* pluginID = nullptr;
 PluginHelper* helper;
 
 /*********************************** Required functions ************************************/
@@ -65,8 +68,6 @@ int ts3plugin_init() {
 /* Custom code called right before the plugin is unloaded */
 void ts3plugin_shutdown() {
     /* Your plugin cleanup code here */
-	//delete chat;
-	//delete pwDialog;
 	delete helper;
 
 	/* Free pluginID if we registered it */
@@ -81,25 +82,10 @@ void ts3plugin_shutdown() {
  * Following functions are optional, if not needed you don't need to implement them.
  */
 
-/* Tell client if plugin offers a configuration window. If this function is not implemented, it's an assumed "does not offer" (PLUGIN_OFFERS_NO_CONFIGURE). */
-//int ts3plugin_offersConfigure() {
-//	/*
-//	 * Return values:
-//	 * PLUGIN_OFFERS_NO_CONFIGURE         - Plugin does not implement ts3plugin_configure
-//	 * PLUGIN_OFFERS_CONFIGURE_NEW_THREAD - Plugin does implement ts3plugin_configure and requests to run this function in an own thread
-//	 * PLUGIN_OFFERS_CONFIGURE_QT_THREAD  - Plugin does implement ts3plugin_configure and requests to run this function in the Qt GUI thread
-//	 */
-//	return PLUGIN_OFFERS_NO_CONFIGURE;  /* In this case ts3plugin_configure does not need to be implemented */
-//}
-
-/* Plugin might offer a configuration window. If ts3plugin_offersConfigure returns 0, this function does not need to be implemented. */
-//void ts3plugin_configure(void* handle, void* qParentWidget) {
-//}
-
 void ts3plugin_registerPluginID(const char* id) {
 	const size_t sz = strlen(id) + 1;
 	pluginID = (char*)malloc(sz * sizeof(char));
-	_strcpy(pluginID, sz, id);  /* The id buffer will invalidate after exiting this function */
+	strcpy_s(pluginID, sz, id);  /* The id buffer will invalidate after exiting this function */
 }
 
 /* Plugin command keyword. Return NULL or "" if not used. */
@@ -112,30 +98,21 @@ int ts3plugin_processCommand(uint64 serverConnectionHandlerID, const char* comma
 	if (strcmp(command, "toggle") == 0)
 	{
 		helper->toggleNormalChat();
-		//toggleNormalChat();
 	}
 	if (strcmp(command, "reload") == 0)
 	{
-		helper->chat->reload();
-		//chat->reload();
+		helper->reload();
 	}
 	if (strcmp(command, "emotes") == 0)
 	{
-		utils::checkEmoteSets(helper->pathToPlugin);
-		emit helper->chat->webObject()->loadEmotes();
+		helper->reloadEmotes();
 	}
 	return 0;  /* Plugin handled command */
 }
 
 /* Client changed current server connection handler */
 void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID) {
-	helper->currentServerID = serverConnectionHandlerID;
-	//currentServerID = serverConnectionHandlerID;
-
-	if (helper->first == false)
-	{
-		helper->recheckSelectedTab();
-	}
+	helper->currentServerChanged(serverConnectionHandlerID);
 }
 
 /* Required to release the memory for parameter "data" allocated in ts3plugin_infoData and ts3plugin_initMenus */
@@ -155,75 +132,15 @@ int ts3plugin_requestAutoload() {
 
 /* Clientlib */
 
-// Get the nickname and unique id of a client
-Client getClient(uint64 serverConnectionHandlerID, anyID id)
-{
-	char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
-	if (ts3Functions.getClientDisplayName(serverConnectionHandlerID, id, res, TS3_MAX_SIZE_CLIENT_NICKNAME) == ERROR_ok)
-	{
-	}
-	QString uniqueid;
-	char *uid;
-	if (ts3Functions.getClientVariableAsString(serverConnectionHandlerID, id, CLIENT_UNIQUE_IDENTIFIER, &uid) == ERROR_ok)
-	{
-		uniqueid = uid;
-		ts3plugin_freeMemory(uid);
-	}
-	return Client(res, uniqueid);
-}
-
-// cache all connected clients
-QMap<unsigned short, Client> getAllClientNicks(uint64 serverConnectionHandlerID)
-{
-	QMap<unsigned short, Client> map;
-	anyID *list;
-	if (ts3Functions.getClientList(serverConnectionHandlerID, &list) == ERROR_ok)
-	{
-		for (size_t i = 0; list[i] != NULL; i++)
-		{
-			map.insert(list[i], getClient(serverConnectionHandlerID, list[i]));
-		}
-		ts3plugin_freeMemory(list);
-	}
-	return map;
-}
-
 // connected to or disconnected from a server
 void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber) {
 	if (newStatus == STATUS_CONNECTION_ESTABLISHED)
 	{
-		if (helper->first)
-		{
-			// Add new chat widget to the UI
-			helper->findChatLineEdit();
-			helper->findEmoticonButton();
-			helper->findChatTabWidget();
-			helper->findMainWindow();
-			helper->first = false;
-		}
-
-		char *res;
-		if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_UNIQUE_IDENTIFIER, &res) == ERROR_ok)
-		{
-			const Server server(serverConnectionHandlerID, res, getAllClientNicks(serverConnectionHandlerID));
-			emit helper->chat->webObject()->addServer(server.safe_uid());
-			char *msg;
-			if (!helper->servers.values().contains(server))
-			{
-				if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_WELCOMEMESSAGE, &msg) == ERROR_ok)
-				{
-					emit helper->chat->webObject()->statusMessageReceived(QString("tab-%1-server").arg(server.safe_uid()), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_Welcome", msg);
-					ts3plugin_freeMemory(msg);
-				}
-			}
-			helper->servers.insert(serverConnectionHandlerID, server);
-			ts3plugin_freeMemory(res);
-		}
-		emit helper->chat->webObject()->statusMessageReceived(QString("tab-%1-server").arg(helper->servers[serverConnectionHandlerID].safe_uid()), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_Connected", "Server Connected");
+		helper->serverConnected(serverConnectionHandlerID);
 	}
 	if (newStatus == STATUS_DISCONNECTED)
 	{
-		emit helper->chat->webObject()->statusMessageReceived(QString("tab-%1-server").arg(helper->servers[serverConnectionHandlerID].safe_uid()), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_Disconnected", "Server Disconnected");
+		helper->serverDisconnected(serverConnectionHandlerID);
 	}
 }
 
@@ -231,26 +148,17 @@ void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* moveMessage) {
 	if (oldChannelID == 0)
 	{
-		// client connected
-		const Client client = getClient(serverConnectionHandlerID, clientID);
-		helper->servers[serverConnectionHandlerID].add_client(clientID, client);
-
-		//emit chat->webObject()->statusMessageReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID].safe_uid()), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientConnected", QString("<span class='TextMessage_UserLink'>%1</span> connected").arg(client.nickname()));
-		emit helper->chat->webObject()->statusMessageReceived(QString("tab-%1-server").arg(helper->servers[serverConnectionHandlerID].safe_uid()), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientConnected", QString("%1 connected").arg(client.nickname()));
+		helper->clientConnected(serverConnectionHandlerID, clientID);
 	}
 	if (newChannelID == 0)
 	{
-		const Client &client = helper->servers[serverConnectionHandlerID].get_client(clientID);
-		//chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDisconnected", QString("<span class=\\'TextMessage_UserLink\\'>%1</span> disconnected (%2)").arg(client.nickname).arg(moveMessage));
-		emit helper->chat->webObject()->statusMessageReceived(QString("tab-%1-server").arg(helper->servers[serverConnectionHandlerID].safe_uid()), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDisconnected", QString("%1 disconnected (%2)").arg(client.nickname()).arg(moveMessage));
+		helper->clientDisconnected(serverConnectionHandlerID, clientID, moveMessage);
 	}
 }
 
 // client drops connection
 void ts3plugin_onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* timeoutMessage) {
-	const Client &client = helper->servers[serverConnectionHandlerID].get_client(clientID);
-	//chat->statusReceived(QString("tab-%1-server").arg(servers[serverConnectionHandlerID]), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDropped", QString("<span class=\\'TextMessage_UserLink\\'>%1</span> timed out").arg(client.nickname));
-	emit helper->chat->webObject()->statusMessageReceived(QString("tab-%1-server").arg(helper->servers[serverConnectionHandlerID].safe_uid()), QTime::currentTime().toString("hh:mm:ss"), "TextMessage_ClientDropped", QString("%1 timed out").arg(client.nickname()));
+	helper->clientTimeout(serverConnectionHandlerID, clientID);
 }
 
 int ts3plugin_onServerErrorEvent(uint64 serverConnectionHandlerID, const char* errorMessage, unsigned int error, const char* returnCode, const char* extraMessage) {
@@ -274,68 +182,38 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 		ts3Functions.logMessage("Error querying own client id", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
 		return 0;
 	}
-	bool outgoing = false;
-	if (myID == fromID) {
-		outgoing = true;
-	}
 
-	QString key;
-	if (targetMode == 3)
-	{
-		key = QString("tab-%1-server").arg(helper->servers[serverConnectionHandlerID].safe_uid());
-	}
-	else if (targetMode == 2)
-	{
-		key = QString("tab-%1-channel").arg(helper->servers[serverConnectionHandlerID].safe_uid());
-	}
-	else
-	{
-		if (fromID == myID)
-		{
-			key = QString("tab-%1-private-%2").arg(helper->servers[serverConnectionHandlerID].safe_uid()).arg(helper->servers[serverConnectionHandlerID].get_client(toID).safe_uid());
-		}
-		else
-		{
-			key = QString("tab-%1-private-%2").arg(helper->servers[serverConnectionHandlerID].safe_uid()).arg(helper->servers[serverConnectionHandlerID].get_client(fromID).safe_uid());
-		}
-	}
-	emit helper->chat->webObject()->textMessageReceived(key, utils::direction(outgoing), QTime::currentTime().toString("hh:mm:ss"), fromName, message);
+	helper->textMessageReceived(serverConnectionHandlerID, myID == fromID ? toID : fromID, targetMode, fromName, message, myID == fromID);
     return 0;  /* 0 = handle normally, 1 = client will ignore the text message */
 }
 
 // this is called when file transfer ends in some way
 void ts3plugin_onFileTransferStatusEvent(anyID transferID, unsigned int status, const char* statusMessage, uint64 remotefileSize, uint64 serverConnectionHandlerID) {
-	if (helper->filetransfers.contains(transferID))
-	{
-		File file = helper->filetransfers.take(transferID);
-		switch (status)
-		{
-		case ERROR_file_transfer_complete:
-			QMetaObject::invokeMethod(helper->chat->webObject(), "downloadFinished", Q_ARG(int, transferID));
-			QMetaObject::invokeMethod(helper->mainwindow, "onShowFileTransferTrayMessage", Q_ARG(QString, file.filename()));
-			break;
-		case ERROR_file_transfer_canceled:
-			QMetaObject::invokeMethod(helper->chat->webObject(), "downloadCancelled", Q_ARG(int, transferID));
-			break;
-		case ERROR_file_transfer_interrupted:
-			QMetaObject::invokeMethod(helper->chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
-			break;
-		case ERROR_file_transfer_reset:
-			QMetaObject::invokeMethod(helper->chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
-			break;
-		default:
-			QMetaObject::invokeMethod(helper->chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
-			break;
-		}
-	}
+	helper->transferStatusChanged(transferID, status);
 }
 
 /* Called when client custom nickname changed */
 void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, const char* displayName, const char* uniqueClientIdentifier) {
-	Client c = helper->servers[serverConnectionHandlerID].get_client(clientID);
-	c.set_nickname(displayName);
-	helper->servers[serverConnectionHandlerID].add_client(clientID, c);
+	helper->clientDisplayNameChanged(serverConnectionHandlerID, clientID, displayName);
 }
+
+
+
+
+/* Tell client if plugin offers a configuration window. If this function is not implemented, it's an assumed "does not offer" (PLUGIN_OFFERS_NO_CONFIGURE). */
+//int ts3plugin_offersConfigure() {
+//	/*
+//	 * Return values:
+//	 * PLUGIN_OFFERS_NO_CONFIGURE         - Plugin does not implement ts3plugin_configure
+//	 * PLUGIN_OFFERS_CONFIGURE_NEW_THREAD - Plugin does implement ts3plugin_configure and requests to run this function in an own thread
+//	 * PLUGIN_OFFERS_CONFIGURE_QT_THREAD  - Plugin does implement ts3plugin_configure and requests to run this function in the Qt GUI thread
+//	 */
+//	return PLUGIN_OFFERS_NO_CONFIGURE;  /* In this case ts3plugin_configure does not need to be implemented */
+//}
+
+/* Plugin might offer a configuration window. If ts3plugin_offersConfigure returns 0, this function does not need to be implemented. */
+//void ts3plugin_configure(void* handle, void* qParentWidget) {
+//}
 
 //void ts3plugin_onNewChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID) {
 //}
