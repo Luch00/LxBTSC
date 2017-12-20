@@ -44,17 +44,17 @@ private slots:
 	void onTransferCancelled(int id) const;
 
 private:
-	QMainWindow * mainwindow;
-	QTabWidget *chatTabWidget;
-	QPlainTextEdit *chatLineEdit;
-	QToolButton *emoticonButton;
+	QMainWindow* mainwindow;
+	QTabWidget* chatTabWidget;
+	QPlainTextEdit* chatLineEdit;
+	QToolButton* emoticonButton;
 	QMetaObject::Connection c;
 	QMetaObject::Connection d;
 	QMetaObject::Connection e;
 	QMetaObject::Connection g;
 
-	ChatWidget *chat;
-	QInputDialog *pwDialog;
+	ChatWidget* chat;
+	QInputDialog* pwDialog;
 
 	uint64 currentServerID;
 	QMap<anyID, File> filetransfers;
@@ -63,15 +63,14 @@ private:
 	bool first = true;
 	Qt::ApplicationState currentState;
 
+	void initUi();
 	void initPwDialog();
 	void waitForLoad() const;
-	void findChatTabWidget();
-	void findChatLineEdit();
-	void findMainWindow();
-	void findEmoticonButton();
 	void disconnect() const;
 	void postStatusMessage(uint64 serverConnectionHandlerID, QString type, QString message);
 	QString getMessageTarget(uint64 serverConnectionHandlerID, anyID targetMode, anyID clientID);
+	QMainWindow* findMainWindow() const;
+	static QWidget* findWidget(QString name, QWidget* parent);
 	static Client getClient(uint64 serverConnectionHandlerID, anyID id);
 	static QMap<unsigned short, Client> getAllClientNicks(uint64 serverConnectionHandlerID);
 };

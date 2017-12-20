@@ -29,7 +29,6 @@ PluginHelper::~PluginHelper()
 // Disconnect used signals
 void PluginHelper::disconnect() const
 {
-	// disconnect or crash
 	QObject::disconnect(c);
 	QObject::disconnect(d);
 	QObject::disconnect(e);
@@ -58,6 +57,30 @@ void PluginHelper::onAppStateChanged(Qt::ApplicationState state)
 		chat->resize(s);
 	}
 	currentState = state;
+}
+
+// Receive chat tab changed signal
+void PluginHelper::onTabChange(int i)
+{
+	//QMessageBox::information(0, "debug", QString("tabchange_trigger: %1 %2").arg(currentServerID).arg(i), QMessageBox::Ok);
+	if (i >= 0)
+	{
+		QString tabName;
+		if (i == 0)
+		{
+			tabName = QString("tab-%1-server").arg(servers[currentServerID].safe_uid());
+		}
+		else if (i == 1)
+		{
+			tabName = QString("tab-%1-channel").arg(servers[currentServerID].safe_uid());
+		}
+		else
+		{
+			const QString id = servers[currentServerID].get_client_by_nickname(chatTabWidget->tabText(i)).safe_uid();
+			tabName = QString("tab-%1-private-%2").arg(servers[currentServerID].safe_uid()).arg(id);
+		}
+		chat->webObject()->tabChanged(tabName);
+	}
 }
 
 // After server tab change check what chat tab is selected
@@ -173,6 +196,7 @@ void PluginHelper::onFileUrlClicked(const QUrl &url)
 	}
 }
 
+// user clicked cancel on transfer
 void PluginHelper::onTransferCancelled(int id) const
 {
 	if (filetransfers.contains(id))
@@ -240,30 +264,6 @@ void PluginHelper::toggleNormalChat() const
 	}
 }
 
-// Receive chat tab changed signal
-void PluginHelper::onTabChange(int i)
-{
-	//QMessageBox::information(0, "debug", QString("tabchange_trigger: %1 %2").arg(currentServerID).arg(i), QMessageBox::Ok);
-	if (i >= 0)
-	{
-		QString tabName;
-		if (i == 0)
-		{
-			tabName = QString("tab-%1-server").arg(servers[currentServerID].safe_uid());
-		}
-		else if (i == 1)
-		{
-			tabName = QString("tab-%1-channel").arg(servers[currentServerID].safe_uid());
-		}
-		else
-		{
-			const QString id = servers[currentServerID].get_client_by_nickname(chatTabWidget->tabText(i)).safe_uid();
-			tabName = QString("tab-%1-private-%2").arg(servers[currentServerID].safe_uid()).arg(id);
-		}
-		chat->webObject()->tabChanged(tabName);
-	}
-}
-
 // Receive chat tab closed signal
 void PluginHelper::onTabClose(int i)
 {
@@ -275,77 +275,56 @@ void PluginHelper::onTabClose(int i)
 	}
 }
 
-// Find the widget containing chat tabs and store it for later use
-void PluginHelper::findChatTabWidget()
+// grab the necessary ui widgets
+void PluginHelper::initUi()
 {
-	QWidgetList list = qApp->allWidgets();
-	for (int i = 0; i < list.count(); i++)
-	{
-		if (list[i]->objectName() == "ChatTabWidget")
-		{
-			chatTabWidget = static_cast<QTabWidget*>(list[i]);
-			QWidget *parent = chatTabWidget->parentWidget();
-			static_cast<QBoxLayout*>(parent->layout())->insertWidget(0, chat);
+	mainwindow = findMainWindow();
+	QWidget* parent = findWidget("MainWindowChatWidget", mainwindow);
+	qobject_cast<QBoxLayout*>(parent->layout())->insertWidget(0, chat);
 
-			chatTabWidget->setMinimumHeight(24);
-			chatTabWidget->setMaximumHeight(24);
+	chatTabWidget = qobject_cast<QTabWidget*>(findWidget("ChatTabWidget", parent));
+	chatTabWidget->setMinimumHeight(24);
+	chatTabWidget->setMaximumHeight(24);
 
-			c = connect(chatTabWidget, &QTabWidget::currentChanged, this, &PluginHelper::onTabChange);
-			d = connect(chatTabWidget, &QTabWidget::tabCloseRequested, this, &PluginHelper::onTabClose);
-			chatTabWidget->setMovable(false);
+	c = connect(chatTabWidget, &QTabWidget::currentChanged, this, &PluginHelper::onTabChange);
+	d = connect(chatTabWidget, &QTabWidget::tabCloseRequested, this, &PluginHelper::onTabClose);
+	chatTabWidget->setMovable(false);
 
-			break;
-		}
-	}
+	chatLineEdit = qobject_cast<QPlainTextEdit*>(findWidget("ChatLineEdit", parent));
+	connect(chat->webObject(), &TsWebObject::emoteSignal, this, &PluginHelper::onEmoticonAppend);
+
+	emoticonButton = qobject_cast<QToolButton*>(findWidget("EmoticonButton", parent));
+	emoticonButton->disconnect();
+	e = connect(emoticonButton, &QToolButton::clicked, this, &PluginHelper::onEmoticonButtonClicked);
 }
 
-// find the chatline
-void PluginHelper::findChatLineEdit()
-{
-	QWidgetList list = qApp->allWidgets();
-	for (int i = 0; i < list.count(); i++)
-	{
-		if (list[i]->objectName() == "ChatLineEdit")
-		{
-			chatLineEdit = static_cast<QPlainTextEdit*>(list[i]);
-			connect(chat->webObject(), &TsWebObject::emoteSignal, this, &PluginHelper::onEmoticonAppend);
-			break;
-		}
-	}
-}
-
-void PluginHelper::findMainWindow()
+// find mainwindow widget
+QMainWindow* PluginHelper::findMainWindow() const
 {
 	foreach(QWidget *widget, qApp->topLevelWidgets())
 	{
 		if (QMainWindow *m = qobject_cast<QMainWindow*>(widget))
 		{
-			mainwindow = m;
-			return;
+			return m;
 		}
 	}
+	return nullptr;
 }
 
-// find the button for emote menu
-void PluginHelper::findEmoticonButton()
+QWidget* PluginHelper::findWidget(QString name, QWidget* parent)
 {
-	QWidgetList list = qApp->allWidgets();
-	for (int i = 0; i < list.count(); i++)
+	QList<QWidget*> children = parent->findChildren<QWidget*>();
+	for (int i = 0; i < children.count(); ++i)
 	{
-		if (list[i]->objectName() == "EmoticonButton")
+		if (children[i]->objectName() == name)
 		{
-			// the one with no tooltip is the correct one :/
-			if (list[i]->toolTip().isEmpty())
-			{
-				emoticonButton = static_cast<QToolButton*>(list[i]);
-				emoticonButton->disconnect();
-				e = connect(emoticonButton, &QToolButton::clicked, this, &PluginHelper::onEmoticonButtonClicked);
-				break;
-			}
+			return children[i];
 		}
 	}
+	return nullptr;
 }
 
+// server tab changed
 void PluginHelper::currentServerChanged(uint64 serverConnectionHandlerID)
 {
 	currentServerID = serverConnectionHandlerID;
@@ -360,7 +339,6 @@ void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID c
 {	
 	emit chat->webObject()->textMessageReceived(
 		getMessageTarget(serverConnectionHandlerID, targetMode, clientID),
-		/*utils::direction(outgoing),*/
 		outgoing ? "Outgoing" : "Incoming",
 		QTime::currentTime().toString("hh:mm:ss"),
 		fromName,
@@ -368,6 +346,7 @@ void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID c
 	);
 }
 
+// string used to identify tabs
 QString PluginHelper::getMessageTarget(uint64 serverConnectionHandlerID, anyID targetMode, anyID clientID)
 {
 	if (targetMode == 3)
@@ -385,11 +364,7 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 {
 	if (first)
 	{
-		// Add new chat widget to the UI
-		findChatLineEdit();
-		findEmoticonButton();
-		findChatTabWidget();
-		findMainWindow();
+		initUi();
 		first = false;
 	}
 
@@ -450,6 +425,7 @@ void PluginHelper::postStatusMessage(uint64 serverConnectionHandlerID, QString t
 	);
 }
 
+// called when file transfer ends in some way
 void PluginHelper::transferStatusChanged(anyID transferID, unsigned status)
 {
 	if (filetransfers.contains(transferID))
