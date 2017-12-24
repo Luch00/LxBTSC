@@ -183,7 +183,8 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 		return 0;
 	}
 
-	helper->textMessageReceived(serverConnectionHandlerID, myID == fromID ? toID : fromID, targetMode, fromName, message, myID == fromID);
+	//helper->textMessageReceived(serverConnectionHandlerID, myID == fromID ? toID : fromID, targetMode, fromName, message, myID == fromID);
+	helper->textMessageReceived(serverConnectionHandlerID, fromID, toID, targetMode, fromUniqueIdentifier, fromName, message, myID == fromID);
     return 0;  /* 0 = handle normally, 1 = client will ignore the text message */
 }
 

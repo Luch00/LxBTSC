@@ -29,6 +29,16 @@ public:
 				emit fileUrlClicked(url);
 				return false;
 			}
+			if (url.scheme() == "client")
+			{
+				emit clientUrlClicked(url);
+				return false;
+			}
+			if (url.scheme() == "channelid")
+			{
+				emit channelUrlClicked(url);
+				return false;
+			}
 			QDesktopServices::openUrl(url);
 			return false;
 		}
@@ -43,4 +53,6 @@ public:
 
 	signals:
 	void fileUrlClicked(const QUrl url);
+	void clientUrlClicked(const QUrl url);
+	void channelUrlClicked(const QUrl url);
 };

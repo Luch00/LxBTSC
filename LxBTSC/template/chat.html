@@ -74,7 +74,7 @@
             return result.html.replace(/(?:\r\n|\r|\n)/g, '<br>');
         }
 
-        function AddLine(target, direction, time, name, line) {
+        function AddLine(target, direction, time, name, userlink, line) {
             CreateTabIfNotExist(target);
 
             if ($(`.${target}`).childElementCount > 500) {
@@ -89,7 +89,7 @@
                 `<span class='Body'>
                  <img class='${direction}'>
                  <span class='TextMessage_Time'><${time}> </span>
-                 <span class='TextMessage_UserLink'>"${name}"</span>: 
+                 <span class='TextMessage_UserLink'><a href='${userlink}' class='TextMessage_UserLink' oncontextmenu='UserLinkClicked(event)'>"${name}"</a></span>: 
                  <span class='TextMessage_Text'>${Emotes.emoticonize(parsed)}</span>
                  </span>`
             ).appendTo($(`.${target}`));
@@ -155,6 +155,13 @@
         function LoadEmotes() {
             Emotes.clear();
             Emotes.load();
+        }
+
+        function UserLinkClicked(event) {
+            if (event.which == 3) {
+                event.preventDefault();
+                $(event.currentTarget)[0].click();
+            }
         }
 
         function Ts3fileDownloadStarted(message_id, download_id) {

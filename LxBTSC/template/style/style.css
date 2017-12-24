@@ -11,6 +11,7 @@ p {
 }
 .TextMessage_UserLink {
     color: red;
+    text-decoration: none;
 }
 .TextMessage_Normal {
     color: #000000;

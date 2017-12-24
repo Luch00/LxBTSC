@@ -20,7 +20,7 @@ public:
 	~PluginHelper();
 
 	void currentServerChanged(uint64 serverConnectionHandlerID);
-	void textMessageReceived(uint64 serverConnectionHandlerID, anyID clientID, anyID targetMode, QString fromName, QString message, bool outgoing);
+	void textMessageReceived(uint64 serverConnectionHandlerID, anyID fromID, anyID toID, anyID targetMode, QString senderUniqueID, QString fromName, QString message, bool outgoing);
 	void serverConnected(uint64 serverConnectionHandlerID);
 	void serverDisconnected(uint serverConnectionHandlerID);
 	void clientConnected(uint64 serverConnectionHandlerID, anyID clientID);
@@ -42,12 +42,16 @@ private slots:
 	void onTabClose(int i);
 	void onFileUrlClicked(const QUrl &url);
 	void onTransferCancelled(int id) const;
+	void onClientUrlClicked(const QUrl &url);
+	void onChannelUrlClicked(const QUrl &url);
 
 private:
 	QMainWindow* mainwindow;
 	QTabWidget* chatTabWidget;
-	QPlainTextEdit* chatLineEdit;
+	QTextEdit* chatLineEdit;
 	QToolButton* emoticonButton;
+	//QTextEdit* infoFrame;
+	QWidget* infoFrame;
 	QMetaObject::Connection c;
 	QMetaObject::Connection d;
 	QMetaObject::Connection e;

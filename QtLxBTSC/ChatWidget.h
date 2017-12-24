@@ -43,6 +43,8 @@ public:
 
 	signals:
 	void fileUrlClicked(const QUrl &url);
+	void clientUrlClicked(const QUrl &url);
+	void channelUrlClicked(const QUrl &url);
 
 	private slots:
 	void copyActivated();
@@ -50,6 +52,8 @@ public:
 	void showContextMenu(const QPoint &);
 	void linkHovered(const QUrl &);
 	void onFileUrlClicked(const QUrl &url);
+	void onClientUrlClicked(const QUrl &url);
+	void onChannelUrlClicked(const QUrl &url);
 	void onPageLoaded();
 	void fullScreenRequested(QWebEngineFullScreenRequest request);
 

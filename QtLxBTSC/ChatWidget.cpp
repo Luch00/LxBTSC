@@ -70,6 +70,16 @@ void ChatWidget::onFileUrlClicked(const QUrl & url)
 	emit fileUrlClicked(url);
 }
 
+void ChatWidget::onClientUrlClicked(const QUrl& url)
+{
+	emit clientUrlClicked(url);
+}
+
+void ChatWidget::onChannelUrlClicked(const QUrl& url)
+{
+	emit channelUrlClicked(url);
+}
+
 void ChatWidget::copyActivated()
 {
 	QGuiApplication::clipboard()->setText(view->selectedText(), QClipboard::Clipboard);
@@ -108,6 +118,8 @@ void ChatWidget::createPage()
 	QObject::connect(page, &TsWebEnginePage::loadFinished, this, &ChatWidget::onPageLoaded);
 	QObject::connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::linkHovered);
 	QObject::connect(page, &TsWebEnginePage::fileUrlClicked, this, &ChatWidget::onFileUrlClicked);
+	connect(page, &TsWebEnginePage::clientUrlClicked, this, &ChatWidget::onClientUrlClicked);
+	connect(page, &TsWebEnginePage::channelUrlClicked, this, &ChatWidget::onChannelUrlClicked);
 	page->setUrl(QUrl(pathToPage));
 	channel = new QWebChannel(page);
 
