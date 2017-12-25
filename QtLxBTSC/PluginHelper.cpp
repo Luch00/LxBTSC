@@ -3,7 +3,7 @@
 #include <QThread>
 #include <QUrlQuery>
 #include <QRegularExpression>
-#include <QMessageBox>
+//#include <QMessageBox>
 
 PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 	: QObject(parent)
@@ -17,6 +17,7 @@ PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 	connect(chat, &ChatWidget::fileUrlClicked, this, &PluginHelper::onFileUrlClicked);
 	connect(chat, &ChatWidget::clientUrlClicked, this, &PluginHelper::onClientUrlClicked);
 	connect(chat, &ChatWidget::channelUrlClicked, this, &PluginHelper::onChannelUrlClicked);
+	connect(chat, &ChatWidget::linkHovered, this, &PluginHelper::onLinkHovered);
 	connect(chat->webObject(), &TsWebObject::transferCancelled, this, &PluginHelper::onTransferCancelled);
 	g = connect(qApp, &QApplication::applicationStateChanged, this, &PluginHelper::onAppStateChanged);
 	chat->setStyleSheet("border: 1px solid gray");
@@ -27,7 +28,6 @@ PluginHelper::~PluginHelper()
 	disconnect();
 	delete pwDialog;
 	delete chat;
-	delete infoFrame;
 }
 
 // Disconnect used signals
@@ -115,24 +115,39 @@ void PluginHelper::recheckSelectedTab()
 	}
 }
 
+void PluginHelper::onLinkHovered(const QUrl &url)
+{
+	QWidget* selectedchat = chatTabWidget->currentWidget();
+	QMetaObject::invokeMethod(selectedchat, "highlighted", Q_ARG(QString, url.toString()));
+}
+
+
 void PluginHelper::onClientUrlClicked(const QUrl &url)
 {
 	QRegularExpression re("client://0\\.0\\.0\\.(\\d+)\\/([\\S]+)~(.+)");
 	QRegularExpressionMatch match = re.match(url.toString(QUrl::FullyDecoded));
 	if (match.hasMatch())
 	{
-		uint64 i = match.captured(1).toULongLong();
+		uint64 id = match.captured(1).toULongLong();
 		QString uid = match.captured(2);
 		QString name = match.captured(3);
 
 		QWidget* selectedchat = chatTabWidget->currentWidget();
-		QMetaObject::invokeMethod(selectedchat, "fireContextMenu", Q_ARG(uint64, i), Q_ARG(QWidget*, chat), Q_ARG(bool, true), Q_ARG(QString, name), Q_ARG(QString, uid));
+		QMetaObject::invokeMethod(selectedchat, "fireContextMenu", Q_ARG(uint64, id), Q_ARG(QWidget*, chat), Q_ARG(bool, true), Q_ARG(QString, name), Q_ARG(QString, uid));
 	}
 }
 
 void PluginHelper::onChannelUrlClicked(const QUrl& url)
 {
-	
+	QRegularExpression re("channelid://0\\.0\\.0\\.(\\d+)");
+	QRegularExpressionMatch match = re.match(url.toString(QUrl::FullyDecoded));
+	if (match.hasMatch())
+	{
+		uint64 id = match.captured(1).toULongLong();
+
+		QWidget* selectedchat = chatTabWidget->currentWidget();
+		QMetaObject::invokeMethod(selectedchat, "fireContextMenu", Q_ARG(uint64, id), Q_ARG(QWidget*, chat), Q_ARG(bool, false), Q_ARG(QString, ""), Q_ARG(QString, ""));
+	}
 }
 
 // called when webview tries to navigate to url with ts3file protocol
@@ -320,9 +335,6 @@ void PluginHelper::initUi()
 	emoticonButton = qobject_cast<QToolButton*>(findWidget("EmoticonButton", parent));
 	emoticonButton->disconnect();
 	e = connect(emoticonButton, &QToolButton::clicked, this, &PluginHelper::onEmoticonButtonClicked);
-
-	//infoFrame = qobject_cast<QTextEdit*>(findWidget("InfoFrame", mainwindow));
-	infoFrame = findWidget("", mainwindow);
 }
 
 // find mainwindow widget
@@ -343,7 +355,7 @@ QWidget* PluginHelper::findWidget(QString name, QWidget* parent)
 	QList<QWidget*> children = parent->findChildren<QWidget*>();
 	for (int i = 0; i < children.count(); ++i)
 	{
-		if (children[i]->objectName() == name || children[i]->metaObject()->className() == name)
+		if (children[i]->objectName() == name)
 		{
 			return children[i];
 		}
@@ -363,7 +375,7 @@ void PluginHelper::currentServerChanged(uint64 serverConnectionHandlerID)
 }
 
 void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID fromID, anyID toID, anyID targetMode, QString senderUniqueID, QString fromName, QString message, bool outgoing)
-{	
+{
 	QString userlink = QString("client://%1/%2~%3").arg(QString::number(fromID), senderUniqueID, fromName.toHtmlEscaped());
 	emit chat->webObject()->textMessageReceived(
 		getMessageTarget(serverConnectionHandlerID, targetMode, outgoing ? toID : fromID),

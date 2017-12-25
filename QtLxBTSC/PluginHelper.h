@@ -44,14 +44,13 @@ private slots:
 	void onTransferCancelled(int id) const;
 	void onClientUrlClicked(const QUrl &url);
 	void onChannelUrlClicked(const QUrl &url);
+	void onLinkHovered(const QUrl &url);
 
 private:
 	QMainWindow* mainwindow;
 	QTabWidget* chatTabWidget;
 	QTextEdit* chatLineEdit;
 	QToolButton* emoticonButton;
-	//QTextEdit* infoFrame;
-	QWidget* infoFrame;
 	QMetaObject::Connection c;
 	QMetaObject::Connection d;
 	QMetaObject::Connection e;

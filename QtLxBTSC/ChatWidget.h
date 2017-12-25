@@ -45,12 +45,13 @@ public:
 	void fileUrlClicked(const QUrl &url);
 	void clientUrlClicked(const QUrl &url);
 	void channelUrlClicked(const QUrl &url);
+	void linkHovered(const QUrl &url);
 
 	private slots:
 	void copyActivated();
 	void copyUrlActivated();
 	void showContextMenu(const QPoint &);
-	void linkHovered(const QUrl &);
+	void onLinkHovered(const QUrl &);
 	void onFileUrlClicked(const QUrl &url);
 	void onClientUrlClicked(const QUrl &url);
 	void onChannelUrlClicked(const QUrl &url);

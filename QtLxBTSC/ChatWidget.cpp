@@ -44,7 +44,7 @@ void ChatWidget::setupUi(QWidget *ChatWidget)
 }
 
 void ChatWidget::showContextMenu(const QPoint &p)
-{
+{	
 	menu->clear();
 	if (view->hasSelection())
 	{
@@ -60,9 +60,10 @@ void ChatWidget::showContextMenu(const QPoint &p)
 	}
 }
 
-void ChatWidget::linkHovered(const QUrl &u)
+void ChatWidget::onLinkHovered(const QUrl &u)
 {
 	currentHoveredUrl = u;
+	emit linkHovered(u);
 }
 
 void ChatWidget::onFileUrlClicked(const QUrl & url)
@@ -116,7 +117,7 @@ void ChatWidget::createPage()
 	page->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
 	QObject::connect(page, &TsWebEnginePage::fullScreenRequested, this, &ChatWidget::fullScreenRequested);
 	QObject::connect(page, &TsWebEnginePage::loadFinished, this, &ChatWidget::onPageLoaded);
-	QObject::connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::linkHovered);
+	QObject::connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::onLinkHovered);
 	QObject::connect(page, &TsWebEnginePage::fileUrlClicked, this, &ChatWidget::onFileUrlClicked);
 	connect(page, &TsWebEnginePage::clientUrlClicked, this, &ChatWidget::onClientUrlClicked);
 	connect(page, &TsWebEnginePage::channelUrlClicked, this, &ChatWidget::onChannelUrlClicked);

@@ -495,13 +495,17 @@ var XBBCODE = (function() {
                 } else {
                     myUrl = params.substr(1);
                 }
-
+                myUrl = encodeURI(myUrl);
                 urlPattern.lastIndex = 0;
                 if ( !urlPattern.test( myUrl ) ) {
                     myUrl = "_#";
                 }
                 else if (myUrl.startsWith("ts3file://")) {
                     myUrl = myUrl + "&message_id=" + me.message_id;
+                }
+                //channelid and clientid context menu
+                if (myUrl.startsWith("c")) {
+                    return '<a href="' + myUrl + '" oncontextmenu="UserLinkClicked(event)">';
                 }
 
                 return '<a href="' + myUrl + '">';

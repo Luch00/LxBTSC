@@ -14,7 +14,7 @@ var Emotes = {
     },
     emoticonize: function (string) {
         this.emoteKeyList.forEach(function(key) {
-            string = string.replace(new RegExp('(?!<[^>]*?>)('+escapeRegExp(key)+')(?![^<]*?(</a>|">))', 'g'), 
+            string = string.replace(new RegExp(escapeRegExp(key)+'(?![^<]*?(?:</a>|">))', 'g'), 
                 '<img class="emote" src="'+Emotes.emoteList[key].name+'" alt="'+key+'">');
         });
         return string;
