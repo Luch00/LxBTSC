@@ -8,18 +8,19 @@
 #pragma once
 
 #include <QWidget>
-#include <QtWebEngineWidgets/QWebEngineView>
-#include <QtWebEngineWidgets/qwebenginesettings.h>
-#include <QtWidgets/QVBoxLayout>
+#include <QWebEngineView>
+#include <QWebEngineSettings>
+#include <QVBoxLayout>
 #include <QStackedWidget>
 #include <TsWebEnginePage.h>
-#include <QShortcut>
 #include <QClipboard>
-#include <QGuiApplication>
+//#include <QGuiApplication>
 #include <QMenu>
 #include <QtWebChannel/qwebchannel.h>
 #include <TsWebObject.h>
-#include <QtWebEngineWidgets/QWebEngineFullScreenRequest>
+#include <QWebEngineFullScreenRequest>
+#include <QApplication>
+#include <QKeyEvent>
 
 class ChatWidget : public QFrame
 {
@@ -48,28 +49,28 @@ public:
 	void linkHovered(const QUrl &url);
 
 	private slots:
-	void copyActivated();
-	void copyUrlActivated();
-	void showContextMenu(const QPoint &);
+	void onCopyActivated();
+	void onCopyUrlActivated();
+	void onShowContextMenu(const QPoint &);
 	void onLinkHovered(const QUrl &);
 	void onFileUrlClicked(const QUrl &url);
 	void onClientUrlClicked(const QUrl &url);
 	void onChannelUrlClicked(const QUrl &url);
 	void onPageLoaded();
-	void fullScreenRequested(QWebEngineFullScreenRequest request);
+	void onFullScreenRequested(QWebEngineFullScreenRequest request);
 
 private:
 	QVBoxLayout *verticalLayout;
 	QWebEngineView *view;
 	TsWebObject *wObject;
 	TsWebEnginePage *page;
-	void setupUi(QWidget *ChatWidget);
+	void setupUi();
 	QString pathToPage;
 	QUrl currentHoveredUrl;
 	QMenu * menu;
-	QShortcut *copy;
 	QAction *copyAction;
 	QAction *copyUrlAction;
 	QWebChannel *channel;
 	bool isLoaded = false;
+	void keyReleaseEvent(QKeyEvent* event) override;
 };

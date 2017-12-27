@@ -318,6 +318,7 @@ void PluginHelper::onTabClose(int i)
 void PluginHelper::initUi()
 {
 	mainwindow = findMainWindow();
+	
 	QWidget* parent = findWidget("MainWindowChatWidget", mainwindow);
 	qobject_cast<QBoxLayout*>(parent->layout())->insertWidget(0, chat);
 
@@ -427,14 +428,20 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 				postStatusMessage(serverConnectionHandlerID, "TextMessage_Welcome", msg);
 				free(msg);
 			}
+			if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &msg) == ERROR_ok)
+			{
+				postStatusMessage(serverConnectionHandlerID, "TextMessage_Connected", QString("Connected to Server: [B][URL=channelid://0]%1[/URL][/B]").arg(msg));
+				free(msg);
+				return;
+			}
 		}
 	}
-	postStatusMessage(serverConnectionHandlerID, "TextMessage_Connected", "Server Connected");
+	postStatusMessage(serverConnectionHandlerID, "TextMessage_Connected", "Connected");
 }
 
 void PluginHelper::serverDisconnected(uint serverConnectionHandlerID)
 {
-	postStatusMessage(serverConnectionHandlerID, "TextMessage_Disconnected", "Server Disconnected");
+	postStatusMessage(serverConnectionHandlerID, "TextMessage_Disconnected", "Disconnected");
 }
 
 void PluginHelper::clientConnected(uint64 serverConnectionHandlerID, anyID clientID)

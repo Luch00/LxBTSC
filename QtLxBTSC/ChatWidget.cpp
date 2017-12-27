@@ -6,11 +6,13 @@
 */
 
 #include "ChatWidget.h"
+//#include <QMessageBox>
+
 
 ChatWidget::ChatWidget(QString path, QWidget *parent)
 	: QFrame(parent)
 {
-	setupUi(this);
+	setupUi();
 	pathToPage = QString("file:///%1LxBTSC/template/chat.html").arg(path);
 	createPage();
 	view->setPage(page);
@@ -20,33 +22,41 @@ ChatWidget::~ChatWidget()
 {
 }
 
-void ChatWidget::setupUi(QWidget *ChatWidget)
+void ChatWidget::setupUi()
 {
-	if (ChatWidget->objectName().isEmpty())
-		ChatWidget->setObjectName(QStringLiteral("ChatWidget"));
-	verticalLayout = new QVBoxLayout(ChatWidget);
+	if (this->objectName().isEmpty())
+		this->setObjectName(QStringLiteral("ChatWidget"));
+
+	verticalLayout = new QVBoxLayout(this);
 	verticalLayout->setSpacing(1);
 	verticalLayout->setContentsMargins(1, 1, 1, 1);
 	verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
-	view = new QWebEngineView(ChatWidget);
+	view = new QWebEngineView(this);
 	verticalLayout->addWidget(view);
-
 	view->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
 	menu = new QMenu(view);
-	copy = new QShortcut(QKeySequence::Copy, view);
 	copyAction = new QAction("Copy", this);
 	copyUrlAction = new QAction("Copy Link", this);
 
-	QObject::connect(copyAction, &QAction::triggered, this, &ChatWidget::copyActivated);
-	QObject::connect(copyUrlAction, &QAction::triggered, this, &ChatWidget::copyUrlActivated);
-	QObject::connect(view, &QWebEngineView::customContextMenuRequested, this, &ChatWidget::showContextMenu);
-	QObject::connect(copy, &QShortcut::activated, this, &ChatWidget::copyActivated);
+	connect(copyAction, &QAction::triggered, this, &ChatWidget::onCopyActivated);
+	connect(copyUrlAction, &QAction::triggered, this, &ChatWidget::onCopyUrlActivated);
+	connect(view, &QWebEngineView::customContextMenuRequested, this, &ChatWidget::onShowContextMenu);
 }
 
-void ChatWidget::showContextMenu(const QPoint &p)
+void ChatWidget::keyReleaseEvent(QKeyEvent* event)
+{
+	if (event->key() == Qt::Key_C && QApplication::keyboardModifiers().testFlag(Qt::ControlModifier) == true)
+	{
+		onCopyActivated();
+		return;
+	}
+	QFrame::keyReleaseEvent(event);
+}
+
+void ChatWidget::onShowContextMenu(const QPoint &p)
 {	
 	menu->clear();
-	if (view->hasSelection())
+	if (page->hasSelection())
 	{
 		menu->addAction(copyAction);
 	}
@@ -81,12 +91,12 @@ void ChatWidget::onChannelUrlClicked(const QUrl& url)
 	emit channelUrlClicked(url);
 }
 
-void ChatWidget::copyActivated()
+void ChatWidget::onCopyActivated()
 {
-	QGuiApplication::clipboard()->setText(view->selectedText(), QClipboard::Clipboard);
+	QGuiApplication::clipboard()->setText(page->selectedText(), QClipboard::Clipboard);
 }
 
-void ChatWidget::copyUrlActivated()
+void ChatWidget::onCopyUrlActivated()
 {
 	QGuiApplication::clipboard()->setText(currentHoveredUrl.toString(), QClipboard::Clipboard);
 }
@@ -102,7 +112,7 @@ void ChatWidget::reload() const
 	view->reload();
 }
 
-void ChatWidget::fullScreenRequested(QWebEngineFullScreenRequest request)
+void ChatWidget::onFullScreenRequested(QWebEngineFullScreenRequest request)
 {
 	request.accept();
 }
@@ -110,15 +120,15 @@ void ChatWidget::fullScreenRequested(QWebEngineFullScreenRequest request)
 
 void ChatWidget::createPage()
 {
-	page = new TsWebEnginePage();
+	page = new TsWebEnginePage(view);
 	page->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
 	page->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
 	page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 	page->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
-	QObject::connect(page, &TsWebEnginePage::fullScreenRequested, this, &ChatWidget::fullScreenRequested);
-	QObject::connect(page, &TsWebEnginePage::loadFinished, this, &ChatWidget::onPageLoaded);
-	QObject::connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::onLinkHovered);
-	QObject::connect(page, &TsWebEnginePage::fileUrlClicked, this, &ChatWidget::onFileUrlClicked);
+	connect(page, &TsWebEnginePage::fullScreenRequested, this, &ChatWidget::onFullScreenRequested);
+	connect(page, &TsWebEnginePage::loadFinished, this, &ChatWidget::onPageLoaded);
+	connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::onLinkHovered);
+	connect(page, &TsWebEnginePage::fileUrlClicked, this, &ChatWidget::onFileUrlClicked);
 	connect(page, &TsWebEnginePage::clientUrlClicked, this, &ChatWidget::onClientUrlClicked);
 	connect(page, &TsWebEnginePage::channelUrlClicked, this, &ChatWidget::onChannelUrlClicked);
 	page->setUrl(QUrl(pathToPage));
