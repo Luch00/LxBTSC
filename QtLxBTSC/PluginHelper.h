@@ -8,6 +8,7 @@
 #include <QPlainTextEdit>
 #include <QApplication>
 #include <QToolButton>
+#include <QMetaMethod>
 #include "file.h"
 #include "server.h"
 
@@ -45,6 +46,8 @@ private slots:
 	void onClientUrlClicked(const QUrl &url);
 	void onChannelUrlClicked(const QUrl &url);
 	void onLinkHovered(const QUrl &url);
+	void onPrintConsoleMessageToCurrentTab(QString message);
+	void onPrintConsoleMessage(uint64 serverConnectionHandlerID, QString message, int targetMode);
 
 private:
 	QMainWindow* mainwindow;
@@ -65,6 +68,7 @@ private:
 	QString pathToPlugin;
 	bool first = true;
 	Qt::ApplicationState currentState;
+	QString currentTabName;
 
 	void initUi();
 	void initPwDialog();
@@ -76,4 +80,5 @@ private:
 	static QWidget* findWidget(QString name, QWidget* parent);
 	static Client getClient(uint64 serverConnectionHandlerID, anyID id);
 	static QMap<unsigned short, Client> getAllClientNicks(uint64 serverConnectionHandlerID);
+	void dynamicConnect(const QString &signalName, const QString &slotName);
 };

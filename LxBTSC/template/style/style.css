@@ -32,6 +32,9 @@ p {
 .TextMessage_ClientDropped {
   color: #C9070A;
 }
+.TextMessage_Console {
+    color: #0000ee;
+}
 img {
     max-width: 100%;
     max-height: 250px;

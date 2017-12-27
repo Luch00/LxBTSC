@@ -83,6 +83,7 @@ void PluginHelper::onTabChange(int i)
 			const QString id = servers[currentServerID].get_client_by_nickname(chatTabWidget->tabText(i)).safe_uid();
 			tabName = QString("tab-%1-private-%2").arg(servers[currentServerID].safe_uid()).arg(id);
 		}
+		currentTabName = tabName;
 		chat->webObject()->tabChanged(tabName);
 	}
 }
@@ -110,6 +111,7 @@ void PluginHelper::recheckSelectedTab()
 				const QString id = servers[currentServerID].get_client_by_nickname(chatTabWidget->tabText(i)).safe_uid();
 				tabName = QString("tab-%1-private-%2").arg(servers[currentServerID].safe_uid()).arg(id);
 			}
+			currentTabName = tabName;
 			chat->webObject()->tabChanged(tabName);
 		}
 	}
@@ -318,7 +320,9 @@ void PluginHelper::onTabClose(int i)
 void PluginHelper::initUi()
 {
 	mainwindow = findMainWindow();
-	
+	dynamicConnect("callPrintConsoleMessage(uint64,QString,int)", "onPrintConsoleMessage(uint64,QString,int)");
+	dynamicConnect("callPrintConsoleMessageToCurrentTab(QString)", "onPrintConsoleMessageToCurrentTab(QString)");
+
 	QWidget* parent = findWidget("MainWindowChatWidget", mainwindow);
 	qobject_cast<QBoxLayout*>(parent->layout())->insertWidget(0, chat);
 
@@ -337,6 +341,46 @@ void PluginHelper::initUi()
 	emoticonButton->disconnect();
 	e = connect(emoticonButton, &QToolButton::clicked, this, &PluginHelper::onEmoticonButtonClicked);
 }
+
+void PluginHelper::dynamicConnect(const QString& signalName, const QString& slotName)
+{
+	int index = mainwindow->metaObject()->indexOfSignal(QMetaObject::normalizedSignature(qPrintable(signalName)));
+	if (index == -1)
+	{
+		ts3Functions.printMessageToCurrentTab("Signal not found");
+		return;
+	}
+
+	QMetaMethod signal = mainwindow->metaObject()->method(index);
+
+	index = this->metaObject()->indexOfSlot(QMetaObject::normalizedSignature(qPrintable(slotName)));
+	if (index == -1)
+	{
+		ts3Functions.printMessageToCurrentTab("Slot not found");
+		return;
+	}
+
+	QMetaMethod slot = this->metaObject()->method(index);
+
+	connect(mainwindow, signal, this, slot);
+}
+
+
+void PluginHelper::onPrintConsoleMessage(uint64 serverConnectionHandlerID, QString message, int targetMode)
+{
+	chat->webObject()->printConsoleMessage(getMessageTarget(serverConnectionHandlerID, targetMode, 0), message);
+}
+
+void PluginHelper::onPrintConsoleMessageToCurrentTab(QString message)
+{
+	if (currentTabName.isNull())
+	{
+		currentTabName = QString("tab-%1-server").arg(servers[currentServerID].safe_uid());
+	}
+	chat->webObject()->printConsoleMessage(currentTabName, message);
+}
+
+
 
 // find mainwindow widget
 QMainWindow* PluginHelper::findMainWindow() const

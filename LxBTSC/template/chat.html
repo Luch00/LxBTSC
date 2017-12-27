@@ -30,6 +30,7 @@
                 QtObject.toggleEmoteMenu.connect(ToggleEmoteMenu);
                 QtObject.textMessageReceived.connect(AddLine);
                 QtObject.statusMessageReceived.connect(AddStatusLine);
+                QtObject.printConsoleMessage.connect(AddConsoleLine);
                 QtObject.tabChanged.connect(ShowTarget);
                 QtObject.addServer.connect(AddServer);
                 QtObject.loadEmotes.connect(LoadEmotes);
@@ -120,6 +121,12 @@
             if (IsBottom) {
                 window.scroll(0, document.body.scrollHeight);
             }
+        }
+
+        function AddConsoleLine(target, message) {
+            CreateTabIfNotExist(target);
+
+            $(`.${target}`).append('<p class="TextMessage_Console">'+message+'</p>');
         }
 
         function ShowTarget(target) {
