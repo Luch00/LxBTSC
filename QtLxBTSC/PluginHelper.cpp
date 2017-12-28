@@ -365,7 +365,6 @@ void PluginHelper::dynamicConnect(const QString& signalName, const QString& slot
 	connect(mainwindow, signal, this, slot);
 }
 
-
 void PluginHelper::onPrintConsoleMessage(uint64 serverConnectionHandlerID, QString message, int targetMode)
 {
 	chat->webObject()->printConsoleMessage(getMessageTarget(serverConnectionHandlerID, targetMode, 0), message);
@@ -379,8 +378,6 @@ void PluginHelper::onPrintConsoleMessageToCurrentTab(QString message)
 	}
 	chat->webObject()->printConsoleMessage(currentTabName, message);
 }
-
-
 
 // find mainwindow widget
 QMainWindow* PluginHelper::findMainWindow() const
