@@ -57,7 +57,7 @@ public:
 				return c;
 			}
 		}
-		return Client("", "");
+		return Client("", "", 0);
 	}
 
 	bool operator==(const Server & server) const

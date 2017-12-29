@@ -29,11 +29,19 @@
                 
                 QtObject.toggleEmoteMenu.connect(ToggleEmoteMenu);
                 QtObject.textMessageReceived.connect(AddLine);
-                QtObject.statusMessageReceived.connect(AddStatusLine);
+                //QtObject.statusMessageReceived.connect(AddStatusLine);
                 QtObject.printConsoleMessage.connect(AddConsoleLine);
                 QtObject.tabChanged.connect(ShowTarget);
                 QtObject.addServer.connect(AddServer);
                 QtObject.loadEmotes.connect(LoadEmotes);
+
+                QtObject.serverWelcomeMessage.connect(Ts3ServerWelcome);
+                QtObject.serverConnected.connect(Ts3ServerConnected);
+                QtObject.serverDisconnected.connect(Ts3ServerDisconnected);
+
+                QtObject.clientConnected.connect(Ts3ClientConnected);
+                QtObject.clientDisconnected.connect(Ts3ClientDisconnected);
+                QtObject.clientTimeout.connect(Ts3ClientTimeout);
 
                 QtObject.downloadStarted.connect(Ts3fileDownloadStarted);
                 QtObject.downloadStartFailed.connect(Ts3fileDownloadStartFailed)
@@ -90,12 +98,11 @@
                 `<span class='Body'>
                  <img class='${direction}'>
                  <span class='TextMessage_Time'><${time}> </span>
-                 <span class='TextMessage_UserLink'><a href='${userlink}' class='TextMessage_UserLink' oncontextmenu='UserLinkClicked(event)'>"${name}"</a></span>: 
+                 <span class='TextMessage_UserLink'><a href='${userlink}' class='TextMessage_UserLink' oncontextmenu='Ts3LinkClicked(event)'>"${name}"</a></span>: 
                  <span class='TextMessage_Text'>${Emotes.emoticonize(parsed)}</span>
                  </span>`
             ).appendTo($(`.${target}`));
             
-            //Embed(p, line);
             Embed(msgid, parsed);
 
             if (IsBottom) {
@@ -103,20 +110,14 @@
             }
         }
 
-        function AddStatusLine(target, time, type, line) {
+        function AddStatusLine(target, line) {
             CreateTabIfNotExist(target);
 
             if ($(`.${target}`).childElementCount > 500) {
                 $(`.${target}`).firstElementChild.remove();
             }
-            ++msgid;
-            var formatted = `<p id='${msgid}' class='${type}'>
-                                <img class='Incoming'>
-                                <span class='TextMessage_Time'><${time}> </span>
-                                <span class='TextMessage_Text'>${ParseBBCode(line, msgid)}</span>
-                            </p>`;
             
-            $(`.${target}`).append(formatted);
+            $(`.${target}`).append(line);
 
             if (IsBottom) {
                 window.scroll(0, document.body.scrollHeight);
@@ -127,6 +128,14 @@
             CreateTabIfNotExist(target);
 
             $(`.${target}`).append('<p class="TextMessage_Console">'+message+'</p>');
+        }
+
+        function FormatStatusLine(msgid, type, time, text) {
+            return `<p id='${msgid}' class='${type}'>
+                    <img class='Incoming'>
+                    <span class='TextMessage_Time'><${time}> </span>
+                    <span class='TextMessage_Text'>${text}</span>
+                    </p>`;
         }
 
         function ShowTarget(target) {
@@ -164,12 +173,50 @@
             Emotes.load();
         }
 
-        function UserLinkClicked(event) {
+        function Ts3LinkClicked(event) {
             if (event.which == 3) {
                 event.preventDefault();
                 $(event.currentTarget)[0].click();
             }
         }
+
+        function Ts3ServerWelcome(target, time, message) {
+            ++msgid;
+            AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_Welcome", time, ParseBBCode(message, msgid)));
+        }
+
+        function Ts3ServerConnected(target, time, servername) {
+            var text;
+            if (servername.length > 0) {
+                text = 'Connected to Server: <b><a href="channelid://0" class="TextMessage_ServerLink" oncontextmenu="Ts3LinkClicked(event)">'+servername+'</a></b>';
+            }
+            else {
+                text = "Connected";
+            }
+            ++msgid;
+            AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_Connected", time, text))
+        }
+
+        function Ts3ServerDisconnected(target, time) {
+            ++msgid;
+            AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_Disconnected", time, "Disconnected"));
+        }
+
+        function Ts3ClientConnected(target, time, link, name) {
+            ++msgid;
+            AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_ClientConnected", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"'+name+'"</a> connected'));
+        }
+
+        function Ts3ClientDisconnected(target, time, link, name, message) {
+            ++msgid;
+            AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_ClientDisconnected", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"'+name+'"</a> disconnected ('+message+')'));
+        }
+
+        function Ts3ClientTimeout(target, time, link, name) {
+            ++msgid;
+            AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_ClientDropped", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"'+name+'"</a> timed out'));
+        }
+
 
         function Ts3fileDownloadStarted(message_id, download_id) {
             if (!$(`#${message_id} > #download_${download_id}`).length) {

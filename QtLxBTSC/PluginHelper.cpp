@@ -443,6 +443,12 @@ QString PluginHelper::getMessageTarget(uint64 serverConnectionHandlerID, anyID t
 	return QString("tab-%1-private-%2").arg(servers[serverConnectionHandlerID].safe_uid()).arg(servers[serverConnectionHandlerID].get_client(clientID).safe_uid());
 }
 
+// get current time as string
+QString PluginHelper::time()
+{
+	return QTime::currentTime().toString("hh:mm:ss");
+}
+
 void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 {
 	if (first)
@@ -466,52 +472,42 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 			char *msg;
 			if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_WELCOMEMESSAGE, &msg) == ERROR_ok)
 			{
-				postStatusMessage(serverConnectionHandlerID, "TextMessage_Welcome", msg);
+				emit chat->webObject()->serverWelcomeMessage(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), msg);
 				free(msg);
 			}
 			if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &msg) == ERROR_ok)
 			{
-				postStatusMessage(serverConnectionHandlerID, "TextMessage_Connected", QString("Connected to Server: [B][URL=channelid://0]%1[/URL][/B]").arg(msg));
+				emit chat->webObject()->serverConnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), msg);
 				free(msg);
 				return;
 			}
 		}
 	}
-	postStatusMessage(serverConnectionHandlerID, "TextMessage_Connected", "Connected");
+	emit chat->webObject()->serverConnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), "");
 }
 
 void PluginHelper::serverDisconnected(uint serverConnectionHandlerID)
 {
-	postStatusMessage(serverConnectionHandlerID, "TextMessage_Disconnected", "Disconnected");
+	emit chat->webObject()->serverDisconnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time());
 }
 
 void PluginHelper::clientConnected(uint64 serverConnectionHandlerID, anyID clientID)
 {
 	const Client client = getClient(serverConnectionHandlerID, clientID);
 	servers[serverConnectionHandlerID].add_client(clientID, client);
-	postStatusMessage(serverConnectionHandlerID, "TextMessage_ClientConnected", QString("%1 connected").arg(client.nickname()));
+	emit chat->webObject()->clientConnected(getMessageTarget(serverConnectionHandlerID, 3, clientID), time(), client.link(), client.nickname());
 }
 
 void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message)
 {
 	const Client &client = servers[serverConnectionHandlerID].get_client(clientID);
-	postStatusMessage(serverConnectionHandlerID, "TextMessage_ClientDisconnected", QString("%1 disconnected (%2)").arg(client.nickname()).arg(message));
+	emit chat->webObject()->clientDisconnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), client.link(), client.nickname(), message);
 }
 
 void PluginHelper::clientTimeout(uint64 serverConnectionHandlerID, anyID clientID)
 {
 	const Client &client = servers[serverConnectionHandlerID].get_client(clientID);
-	postStatusMessage(serverConnectionHandlerID, "TextMessage_ClientDropped", QString("%1 timed out").arg(client.nickname()));
-}
-
-void PluginHelper::postStatusMessage(uint64 serverConnectionHandlerID, QString type, QString message)
-{
-	emit chat->webObject()->statusMessageReceived(
-		QString("tab-%1-server").arg(servers[serverConnectionHandlerID].safe_uid()),
-		QTime::currentTime().toString("hh:mm:ss"),
-		type,
-		message
-	);
+	emit chat->webObject()->clientTimeout(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), client.link(), client.nickname());
 }
 
 // called when file transfer ends in some way
@@ -574,7 +570,7 @@ Client PluginHelper::getClient(uint64 serverConnectionHandlerID, anyID id)
 		uniqueid = uid;
 		free(uid);
 	}
-	return Client(res, uniqueid);
+	return Client(res, uniqueid, id);
 }
 
 // cache all connected clients

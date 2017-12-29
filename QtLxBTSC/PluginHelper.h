@@ -74,11 +74,11 @@ private:
 	void initPwDialog();
 	void waitForLoad() const;
 	void disconnect() const;
-	void postStatusMessage(uint64 serverConnectionHandlerID, QString type, QString message);
 	QString getMessageTarget(uint64 serverConnectionHandlerID, anyID targetMode, anyID clientID);
 	QMainWindow* findMainWindow() const;
 	static QWidget* findWidget(QString name, QWidget* parent);
 	static Client getClient(uint64 serverConnectionHandlerID, anyID id);
 	static QMap<unsigned short, Client> getAllClientNicks(uint64 serverConnectionHandlerID);
 	void dynamicConnect(const QString &signalName, const QString &slotName);
+	QString time();
 };
