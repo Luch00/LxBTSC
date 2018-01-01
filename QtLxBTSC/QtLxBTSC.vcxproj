@@ -153,6 +153,7 @@
     <ClInclude Include="client.h" />
     <ClInclude Include="globals.h" />
     <ClInclude Include="file.h" />
+    <ClInclude Include="messagehandler.h" />
     <ClInclude Include="plugin.h" />
     <CustomBuild Include="PluginHelper.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

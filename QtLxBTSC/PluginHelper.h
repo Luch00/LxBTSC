@@ -34,6 +34,8 @@ public:
 	void reload() const;
 	void reloadEmotes() const;
 
+	void onDebugMessage(QString message);
+
 private slots:
 	void onAppStateChanged(Qt::ApplicationState state);
 	void onPwDialogAccepted(const QString pw);

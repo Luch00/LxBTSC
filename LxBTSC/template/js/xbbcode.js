@@ -495,9 +495,9 @@ var XBBCODE = (function() {
                 } else {
                     myUrl = params.substr(1);
                 }
-                myUrl = encodeURI(myUrl);
+                
                 urlPattern.lastIndex = 0;
-                if ( !urlPattern.test( myUrl ) ) {
+                if ( !urlPattern.test( encodeURI(myUrl) ) ) {
                     myUrl = "_#";
                 }
                 else if (myUrl.startsWith("ts3file://")) {
@@ -505,7 +505,7 @@ var XBBCODE = (function() {
                 }
                 //channelid and clientid context menu
                 if (myUrl.startsWith("c")) {
-                    return '<a href="' + myUrl + '" oncontextmenu="UserLinkClicked(event)">';
+                    return '<a href="' + encodeURI(myUrl) + '" oncontextmenu="Ts3LinkClicked(event)">';
                 }
 
                 return '<a href="' + myUrl + '">';

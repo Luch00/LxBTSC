@@ -45,7 +45,7 @@ img {
 .embeds {
     margin-top: 5px;
     margin-left: 10px;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
 }
 video {
     max-width: 100%;
@@ -64,7 +64,7 @@ video {
 .close-embeds {
     position: absolute;
     margin-left: -5px;
-    /*margin-top: -10px;*/
+    margin-top: -10px;
     cursor: pointer;
     color: black;
     text-align: center;

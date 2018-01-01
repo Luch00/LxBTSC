@@ -145,8 +145,7 @@ function Embed(message_id, message_text) {
 
 function EmbedBlock(embed) {
     'use strict'
-    let embed_container = $('<div/>', { class:'embed-container'});
-    embed.wrap('<div/>').appendTo(embed_container);
+    let embed_container = $('<div/>').append($('<div/>', { class:'embed-container' }).append(embed));
     return embed_container;
 }
 

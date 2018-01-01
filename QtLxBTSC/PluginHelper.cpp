@@ -3,6 +3,7 @@
 #include <QThread>
 #include <QUrlQuery>
 #include <QRegularExpression>
+#include "messagehandler.h"
 //#include <QMessageBox>
 
 PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
@@ -127,7 +128,7 @@ void PluginHelper::onLinkHovered(const QUrl &url)
 void PluginHelper::onClientUrlClicked(const QUrl &url)
 {
 	QRegularExpression re("client://0\\.0\\.0\\.(\\d+)\\/([\\S]+)~(.+)");
-	QRegularExpressionMatch match = re.match(url.toString(QUrl::FullyDecoded));
+	QRegularExpressionMatch match = re.match(url.toString(QUrl::PrettyDecoded));
 	if (match.hasMatch())
 	{
 		uint64 id = match.captured(1).toULongLong();
@@ -142,7 +143,7 @@ void PluginHelper::onClientUrlClicked(const QUrl &url)
 void PluginHelper::onChannelUrlClicked(const QUrl& url)
 {
 	QRegularExpression re("channelid://0\\.0\\.0\\.(\\d+)");
-	QRegularExpressionMatch match = re.match(url.toString(QUrl::FullyDecoded));
+	QRegularExpressionMatch match = re.match(url.toString(QUrl::PrettyDecoded));
 	if (match.hasMatch())
 	{
 		uint64 id = match.captured(1).toULongLong();
@@ -163,7 +164,7 @@ void PluginHelper::onFileUrlClicked(const QUrl &url)
 		QString filename = query.queryItemValue("filename", QUrl::FullyDecoded);
 		QString size = query.queryItemValue("size", QUrl::FullyDecoded);
 
-		QString server_uid = query.queryItemValue("serverUID", QUrl::FullyDecoded);
+		QString server_uid = query.queryItemValue("serverUID", QUrl::FullyDecoded); 
 
 		uint64 schi = NULL;
 		for each(const Server & server in servers)
@@ -176,7 +177,7 @@ void PluginHelper::onFileUrlClicked(const QUrl &url)
 
 		if (schi == NULL)
 		{
-			// failed to get serverconnectionhandlerid -> cancel
+			// failed to get serverconnectionhandlerid -> cancel 
 			return;
 		}
 
@@ -379,6 +380,12 @@ void PluginHelper::onPrintConsoleMessageToCurrentTab(QString message)
 	chat->webObject()->printConsoleMessage(currentTabName, message);
 }
 
+void PluginHelper::onDebugMessage(QString message)
+{
+	onPrintConsoleMessageToCurrentTab(message);
+}
+
+
 // find mainwindow widget
 QMainWindow* PluginHelper::findMainWindow() const
 {
@@ -455,6 +462,12 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 	{
 		initUi();
 		first = false;
+
+		/*if (QCoreApplication::arguments().contains("-console"))
+		{
+			messageHandler::helper = this;
+			qInstallMessageHandler(messageHandler::handler);
+		}*/
 	}
 
 	char *res;
@@ -463,7 +476,7 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 		const Server server(serverConnectionHandlerID, res, getAllClientNicks(serverConnectionHandlerID));
 		emit chat->webObject()->addServer(server.safe_uid());
 		bool reconnected = servers.values().contains(server);
-
+		
 		servers.insert(serverConnectionHandlerID, server);
 		free(res);
 
