@@ -558,6 +558,13 @@ void PluginHelper::clientDisplayNameChanged(uint64 serverConnectionHandlerID, an
 	servers[serverConnectionHandlerID].add_client(clientID, c);
 }
 
+void PluginHelper::poked(uint64 serverConnectionHandlerID, anyID pokerID, QString pokerName, QString pokerUniqueID, QString pokeMessage)
+{
+	QString userlink = QString("client://%1/%2~%3").arg(QString::number(pokerID), pokerUniqueID, pokerName.toHtmlEscaped());
+	emit chat->webObject()->clientPoked(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), userlink, pokerName, pokeMessage);
+}
+
+
 void PluginHelper::reload() const
 {
 	chat->reload();

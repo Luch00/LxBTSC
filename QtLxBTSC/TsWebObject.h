@@ -31,6 +31,8 @@ signals:
 	void clientDisconnected(QString target, QString time, QString clientLink, QString clientName, QString disconnectMessage);
 	void clientTimeout(QString target, QString time, QString clientLink, QString clientName);
 
+	void clientPoked(QString target, QString time, QString clientLink, QString clientName, QString message);
+
 	void downloadStarted(QString message_id, int download_id);
 	void downloadStartFailed(QString message_id);
 	void downloadFinished(int download_id);

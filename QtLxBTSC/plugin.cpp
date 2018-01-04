@@ -197,6 +197,13 @@ void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyI
 	helper->clientDisplayNameChanged(serverConnectionHandlerID, clientID, displayName);
 }
 
+int ts3plugin_onClientPokeEvent(uint64 serverConnectionHandlerID, anyID fromClientID, const char* pokerName, const char* pokerUniqueIdentity, const char* message, int ffIgnored) {
+	if (ffIgnored)
+		return 0;
+	helper->poked(serverConnectionHandlerID, fromClientID, pokerName, pokerUniqueIdentity, message);
+    return 0;  /* 0 = handle normally, 1 = client will ignore the poke */
+}
+
 
 
 
@@ -320,10 +327,6 @@ void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyI
 /* Clientlib rare */
 
 //void ts3plugin_onClientBanFromServerEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, uint64 time, const char* kickMessage) {
-//}
-
-//int ts3plugin_onClientPokeEvent(uint64 serverConnectionHandlerID, anyID fromClientID, const char* pokerName, const char* pokerUniqueIdentity, const char* message, int ffIgnored) {
-//    return 0;  /* 0 = handle normally, 1 = client will ignore the poke */
 //}
 
 //void ts3plugin_onClientSelfVariableUpdateEvent(uint64 serverConnectionHandlerID, int flag, const char* oldValue, const char* newValue) {

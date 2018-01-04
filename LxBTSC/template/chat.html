@@ -29,7 +29,6 @@
                 
                 QtObject.toggleEmoteMenu.connect(ToggleEmoteMenu);
                 QtObject.textMessageReceived.connect(AddLine);
-                //QtObject.statusMessageReceived.connect(AddStatusLine);
                 QtObject.printConsoleMessage.connect(AddConsoleLine);
                 QtObject.tabChanged.connect(ShowTarget);
                 QtObject.addServer.connect(AddServer);
@@ -42,6 +41,8 @@
                 QtObject.clientConnected.connect(Ts3ClientConnected);
                 QtObject.clientDisconnected.connect(Ts3ClientDisconnected);
                 QtObject.clientTimeout.connect(Ts3ClientTimeout);
+
+                QtObject.clientPoked.connect(Ts3ClientPoked);
 
                 QtObject.downloadStarted.connect(Ts3fileDownloadStarted);
                 QtObject.downloadStartFailed.connect(Ts3fileDownloadStartFailed)
@@ -217,6 +218,31 @@
             AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_ClientDropped", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"'+name+'"</a> timed out'));
         }
 
+        function Ts3ClientPoked(target, time, link, name, message) {
+            CreateTabIfNotExist(target);
+
+            if ($(`.${target}`).childElementCount > 500) {
+                $(`.${target}`).firstElementChild.remove();
+            }
+
+            ++msgid;
+            var parsed = ParseBBCode(message, msgid);
+            var p = $('<p/>', {
+                id: msgid,
+                class: 'TextMessage_Poke'
+            }).html(
+                `<span class='Body'>
+                 <img class='Incoming'>
+                 <span class='TextMessage_Time'><${time}> </span>
+                 <span class='TextMessage_UserLink'><a href='${link}' class='TextMessage_UserLink' oncontextmenu='Ts3LinkClicked(event)'>"${name}"</a></span>
+                 <span class='TextMessage_Text'>pokes you: ${parsed}</span>
+                 </span>`
+            ).appendTo($(`.${target}`));
+
+            if (IsBottom) {
+                window.scroll(0, document.body.scrollHeight);
+            }
+        }
 
         function Ts3fileDownloadStarted(message_id, download_id) {
             if (!$(`#${message_id} > #download_${download_id}`).length) {

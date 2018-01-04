@@ -28,6 +28,7 @@ public:
 	void clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message);
 	void clientTimeout(uint64 serverConnectionHandlerID, anyID clientID);
 	void clientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, QString displayName);
+	void poked(uint64 serverConnectionHandlerID, anyID pokerID, QString pokerName, QString pokerUniqueID, QString pokeMessage);
 	void transferStatusChanged(anyID transferID, unsigned int status);
 	void toggleNormalChat() const;
 	void recheckSelectedTab();
