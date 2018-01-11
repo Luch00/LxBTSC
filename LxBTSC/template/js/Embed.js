@@ -101,6 +101,44 @@ function Embed(message_id, message_text) {
                 return;
              }
 
+             // tweet
+             match = /twitter\.com\/\w+\/status\/(\d+)/.exec(url.href);
+             if (match) {
+                 console.log("tweet found:"+match[1]);
+                 let embed = $('<div/>', {
+                     class: "tweet-container"
+                 });
+                 twttr.widgets.createTweet(match[1], $(embed)[0], { cards: 'hidden', width: '400'});
+                 embeds.push(EmbedBlock(embed));
+                 return;
+             }
+
+             // embed works but does not play
+             // most likely requires a newer version of chromium
+             // spotify track
+             //match = /open\.spotify.com\/track\/(\w+)/.exec(url.href);
+             //if (match) {
+             //    console.log("spotify found");
+
+             //    let embed = $('<iframe/>', {
+             //        width: "300",
+             //        height: "80",
+             //        frameborder: "0",
+             //        allowtransparency: "true",
+             //        src: "https://open.spotify.com/embed?uri=spotify:track:"+match[1]
+             //    });
+             //    embeds.push(EmbedBlock(embed));
+             //    return;
+             //}
+
+             // spotify album
+             //match = /open\.spotify\.com\/album\/(\w+)/.exec(url.href);
+             //if (match) {}
+
+             // spotify playlist
+             //match = /open\.spotify\.com\/user\/(\w+)\/playlist\/(\w+)/.exec(url.href);
+             //if (match) {}
+
              // pastebin
              match = /https?:\/\/pastebin.com\/([0-9a-zA-Z]+)/i.exec(url.href);
              if (match) {
