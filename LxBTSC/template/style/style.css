@@ -153,7 +153,7 @@ img.Outgoing {
     color: #0AA537;
 }
 
-.download-failed, .download-cancelled, .download-failed {
+.download-failed, .download-cancelled {
     color: #C9070A;
 }
 
