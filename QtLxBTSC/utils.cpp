@@ -3,6 +3,8 @@
 #include <utils.h>
 #include <QDir>
 #include <QMetaMethod>
+#include <winuser.h>
+#include <wincon.h>
 
 namespace utils
 {
@@ -37,6 +39,23 @@ namespace utils
 			QTextStream stream(&file);
 			stream << json << endl;
 		}
+	}
+
+	void hideConsole()
+	{
+		HWND handle = 0;
+		do
+		{
+			handle = FindWindowEx(0, handle, L"ConsoleWindowClass", 0);
+			wchar_t *buffer = new wchar_t[10];
+			GetWindowText(handle, buffer, 10);
+			printf(QString::fromWCharArray(buffer).toStdString().c_str());
+			if (wcscmp(buffer, L"ts3client") == 0)
+			{
+				ShowWindow(handle, SW_HIDE);
+				return;
+			}
+		} while (handle != nullptr);
 	}
 
 	// helper function to print some object info

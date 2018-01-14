@@ -373,11 +373,12 @@ void PluginHelper::onPrintConsoleMessage(uint64 serverConnectionHandlerID, QStri
 
 void PluginHelper::onPrintConsoleMessageToCurrentTab(QString message)
 {
-	if (currentTabName.isNull())
-	{
-		currentTabName = QString("tab-%1-server").arg(servers[currentServerID].safe_uid());
-	}
-	chat->webObject()->printConsoleMessage(currentTabName, message);
+	//if (currentTabName.isNull())
+	//{
+		//currentTabName = QString("tab-%1-server").arg(servers[currentServerID].safe_uid());
+	//}
+	//chat->webObject()->printConsoleMessage(currentTabName, message);
+	chat->webObject()->printConsoleMessage(QString("tab-%1-server").arg(servers[currentServerID].safe_uid()), message);
 }
 
 void PluginHelper::onDebugMessage(QString message)
@@ -462,12 +463,6 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 	{
 		initUi();
 		first = false;
-
-		/*if (QCoreApplication::arguments().contains("-console"))
-		{
-			messageHandler::helper = this;
-			qInstallMessageHandler(messageHandler::handler);
-		}*/
 	}
 
 	char *res;
@@ -607,4 +602,24 @@ QMap<unsigned short, Client> PluginHelper::getAllClientNicks(uint64 serverConnec
 		free(list);
 	}
 	return map;
+}
+
+void PluginHelper::onTimerTick()
+{
+	QString out = redirector->readOuts();
+	if (!out.isEmpty())
+	{
+		onPrintConsoleMessageToCurrentTab(out);
+	}
+}
+
+void PluginHelper::initDebugs()
+{
+	redirector = new StdOutRedirector();
+	debugTimer = new QTimer(this);
+	connect(debugTimer, &QTimer::timeout, this, &PluginHelper::onTimerTick);
+	debugTimer->start(500);
+	//utils::hideConsole();
+	messageHandler::helper = this;
+	qInstallMessageHandler(messageHandler::handler);
 }

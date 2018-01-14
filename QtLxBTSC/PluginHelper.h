@@ -9,8 +9,10 @@
 #include <QApplication>
 #include <QToolButton>
 #include <QMetaMethod>
+#include <QTimer>
 #include "file.h"
 #include "server.h"
+#include "StdOutRedirector.h"
 
 class PluginHelper : public QObject
 {
@@ -35,6 +37,7 @@ public:
 	void reload() const;
 	void reloadEmotes() const;
 
+	void initDebugs();
 	void onDebugMessage(QString message);
 
 private slots:
@@ -51,6 +54,7 @@ private slots:
 	void onLinkHovered(const QUrl &url);
 	void onPrintConsoleMessageToCurrentTab(QString message);
 	void onPrintConsoleMessage(uint64 serverConnectionHandlerID, QString message, int targetMode);
+	void onTimerTick();
 
 private:
 	QMainWindow* mainwindow;
@@ -84,4 +88,7 @@ private:
 	static QMap<unsigned short, Client> getAllClientNicks(uint64 serverConnectionHandlerID);
 	void dynamicConnect(const QString &signalName, const QString &slotName);
 	QString time();
+
+	QTimer* debugTimer;
+	StdOutRedirector* redirector;
 };

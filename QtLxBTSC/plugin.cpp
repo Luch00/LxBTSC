@@ -12,6 +12,8 @@
 
 #include "plugin.h"
 #include "PluginHelper.h"
+#include <iostream>
+#include "utils.h"
 
 #define PLUGIN_API_VERSION 22
 #define PATH_BUFSIZE 512
@@ -62,6 +64,11 @@ int ts3plugin_init() {
 	
 	ts3Functions.getPluginPath(pluginPath, PATH_BUFSIZE, pluginID);
 	helper = new PluginHelper(pluginPath);
+	if (QCoreApplication::arguments().contains("-console"))
+	{
+		utils::hideConsole();
+		helper->initDebugs();
+	}
     return 0;
 }
 
