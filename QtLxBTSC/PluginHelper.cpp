@@ -3,7 +3,6 @@
 #include <QThread>
 #include <QUrlQuery>
 #include <QRegularExpression>
-#include "messagehandler.h"
 //#include <QMessageBox>
 
 PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
@@ -373,19 +372,12 @@ void PluginHelper::onPrintConsoleMessage(uint64 serverConnectionHandlerID, QStri
 
 void PluginHelper::onPrintConsoleMessageToCurrentTab(QString message)
 {
-	//if (currentTabName.isNull())
-	//{
-		//currentTabName = QString("tab-%1-server").arg(servers[currentServerID].safe_uid());
-	//}
-	//chat->webObject()->printConsoleMessage(currentTabName, message);
-	chat->webObject()->printConsoleMessage(QString("tab-%1-server").arg(servers[currentServerID].safe_uid()), message);
+	if (currentTabName.isNull())
+	{
+		currentTabName = QString("tab-%1-server").arg(servers[currentServerID].safe_uid());
+	}
+	chat->webObject()->printConsoleMessage(currentTabName, message);
 }
-
-void PluginHelper::onDebugMessage(QString message)
-{
-	onPrintConsoleMessageToCurrentTab(message);
-}
-
 
 // find mainwindow widget
 QMainWindow* PluginHelper::findMainWindow() const
@@ -559,7 +551,6 @@ void PluginHelper::poked(uint64 serverConnectionHandlerID, anyID pokerID, QStrin
 	emit chat->webObject()->clientPoked(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), userlink, pokerName, pokeMessage);
 }
 
-
 void PluginHelper::reload() const
 {
 	chat->reload();
@@ -604,22 +595,3 @@ QMap<unsigned short, Client> PluginHelper::getAllClientNicks(uint64 serverConnec
 	return map;
 }
 
-void PluginHelper::onTimerTick()
-{
-	QString out = redirector->readOuts();
-	if (!out.isEmpty())
-	{
-		onPrintConsoleMessageToCurrentTab(out);
-	}
-}
-
-void PluginHelper::initDebugs()
-{
-	redirector = new StdOutRedirector();
-	debugTimer = new QTimer(this);
-	connect(debugTimer, &QTimer::timeout, this, &PluginHelper::onTimerTick);
-	debugTimer->start(500);
-	//utils::hideConsole();
-	messageHandler::helper = this;
-	qInstallMessageHandler(messageHandler::handler);
-}
