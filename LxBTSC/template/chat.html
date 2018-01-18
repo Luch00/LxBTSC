@@ -131,6 +131,10 @@
 
             ++msgid;
             $(`.${target}`).append('<p class="TextMessage_Console">'+ParseBBCode(message, msgid)+'</p>');
+            
+            if (IsBottom) {
+                window.scroll(0, document.body.scrollHeight);
+            }
         }
 
         function FormatStatusLine(msgid, type, time, text) {
