@@ -11,6 +11,7 @@ PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 	//QMessageBox::information(0, "debug", QString(""), QMessageBox::Ok);
 	pathToPlugin = QString(pluginPath);
 	utils::checkEmoteSets(pathToPlugin);
+	config = new ConfigWidget(pathToPlugin);
 	chat = new ChatWidget(pathToPlugin);
 	waitForLoad();
 	initPwDialog();
@@ -19,6 +20,7 @@ PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 	connect(chat, &ChatWidget::channelUrlClicked, this, &PluginHelper::onChannelUrlClicked);
 	connect(chat, &ChatWidget::linkHovered, this, &PluginHelper::onLinkHovered);
 	connect(chat->webObject(), &TsWebObject::transferCancelled, this, &PluginHelper::onTransferCancelled);
+	connect(config, &ConfigWidget::configChanged, chat->webObject(), &TsWebObject::configChanged);
 	g = connect(qApp, &QApplication::applicationStateChanged, this, &PluginHelper::onAppStateChanged);
 	chat->setStyleSheet("border: 1px solid gray");
 }
@@ -28,6 +30,7 @@ PluginHelper::~PluginHelper()
 	disconnect();
 	delete pwDialog;
 	delete chat;
+	delete config;
 }
 
 // Disconnect used signals
@@ -594,4 +597,10 @@ QMap<unsigned short, Client> PluginHelper::getAllClientNicks(uint64 serverConnec
 	}
 	return map;
 }
+
+void PluginHelper::openConfig()
+{
+	config->open();
+}
+
 

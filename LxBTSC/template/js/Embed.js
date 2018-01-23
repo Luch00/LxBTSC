@@ -1,9 +1,8 @@
 function Embed(message_id, message_text) {
     'use strict'
     let embeds = [];
-    let test = $('<div/>').html(message_text);
 
-    $('a', test).each(function(index, element){
+    $('a', message_text).each(function(index, element){
         let url = element;
         if (url.protocol.toLocaleLowerCase().startsWith("http")) {
             

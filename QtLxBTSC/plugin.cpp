@@ -13,6 +13,7 @@
 #include "plugin.h"
 #include "PluginHelper.h"
 #include <iostream>
+#include <cassert>
 
 #define PLUGIN_API_VERSION 22
 #define PATH_BUFSIZE 512
@@ -206,23 +207,50 @@ int ts3plugin_onClientPokeEvent(uint64 serverConnectionHandlerID, anyID fromClie
     return 0;  /* 0 = handle normally, 1 = client will ignore the poke */
 }
 
-
-
-
 /* Tell client if plugin offers a configuration window. If this function is not implemented, it's an assumed "does not offer" (PLUGIN_OFFERS_NO_CONFIGURE). */
-//int ts3plugin_offersConfigure() {
-//	/*
-//	 * Return values:
-//	 * PLUGIN_OFFERS_NO_CONFIGURE         - Plugin does not implement ts3plugin_configure
-//	 * PLUGIN_OFFERS_CONFIGURE_NEW_THREAD - Plugin does implement ts3plugin_configure and requests to run this function in an own thread
-//	 * PLUGIN_OFFERS_CONFIGURE_QT_THREAD  - Plugin does implement ts3plugin_configure and requests to run this function in the Qt GUI thread
-//	 */
-//	return PLUGIN_OFFERS_NO_CONFIGURE;  /* In this case ts3plugin_configure does not need to be implemented */
-//}
+int ts3plugin_offersConfigure() {
+	return PLUGIN_OFFERS_CONFIGURE_QT_THREAD;
+}
 
 /* Plugin might offer a configuration window. If ts3plugin_offersConfigure returns 0, this function does not need to be implemented. */
-//void ts3plugin_configure(void* handle, void* qParentWidget) {
-//}
+void ts3plugin_configure(void* handle, void* qParentWidget) {
+	helper->openConfig();
+}
+
+/* Helper function to create a menu item */
+static struct PluginMenuItem* createMenuItem(enum PluginMenuType type, int id, const char* text, const char* icon) {
+	struct PluginMenuItem* menuItem = (struct PluginMenuItem*)malloc(sizeof(struct PluginMenuItem));
+	menuItem->type = type;
+	menuItem->id = id;
+	strcpy_s(menuItem->text, PLUGIN_MENU_BUFSZ, text);
+	strcpy_s(menuItem->icon, PLUGIN_MENU_BUFSZ, icon);
+	return menuItem;
+}
+
+/* Some makros to make the code to create menu items a bit more readable */
+#define BEGIN_CREATE_MENUS(x) const size_t sz = x + 1; size_t n = 0; *menuItems = (struct PluginMenuItem**)malloc(sizeof(struct PluginMenuItem*) * sz);
+#define CREATE_MENU_ITEM(a, b, c, d) (*menuItems)[n++] = createMenuItem(a, b, c, d);
+#define END_CREATE_MENUS (*menuItems)[n++] = NULL; assert(n == sz);
+
+void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
+	BEGIN_CREATE_MENUS(1);  /* IMPORTANT: Number of menu items must be correct! */
+	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL,  1,  "Settings",  "");
+	END_CREATE_MENUS;  /* Includes an assert checking if the number of menu items matched */
+
+	*menuIcon = NULL;
+}
+
+// Called when a plugin menu item (see ts3plugin_initMenus) is triggered. Optional function, when not using plugin menus, do not implement this.
+void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenuType type, int menuItemID, uint64 selectedItemID) {
+	if (menuItemID == 1)
+	{
+		helper->openConfig();
+	}
+}
+
+
+
+
 
 //void ts3plugin_onNewChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID) {
 //}
@@ -478,18 +506,6 @@ int ts3plugin_onClientPokeEvent(uint64 serverConnectionHandlerID, anyID fromClie
  * This callback can be called spontaneously or in response to ts3Functions.getAvatar()
  */
 //void ts3plugin_onAvatarUpdated(uint64 serverConnectionHandlerID, anyID clientID, const char* avatarPath) {
-//}
-
-/*
- * Called when a plugin menu item (see ts3plugin_initMenus) is triggered. Optional function, when not using plugin menus, do not implement this.
- *
- * Parameters:
- * - serverConnectionHandlerID: ID of the current server tab
- * - type: Type of the menu (PLUGIN_MENU_TYPE_CHANNEL, PLUGIN_MENU_TYPE_CLIENT or PLUGIN_MENU_TYPE_GLOBAL)
- * - menuItemID: Id used when creating the menu item
- * - selectedItemID: Channel or Client ID in the case of PLUGIN_MENU_TYPE_CHANNEL and PLUGIN_MENU_TYPE_CLIENT. 0 for PLUGIN_MENU_TYPE_GLOBAL.
- */
-//void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenuType type, int menuItemID, uint64 selectedItemID) {
 //}
 
 /* This function is called if a plugin hotkey was pressed. Omit if hotkeys are unused. */

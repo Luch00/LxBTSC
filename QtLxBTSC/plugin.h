@@ -44,13 +44,13 @@ Q_DECL_EXPORT void ts3plugin_onFileTransferStatusEvent(anyID transferID, unsigne
 Q_DECL_EXPORT void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, const char* displayName, const char* uniqueClientIdentifier);
 Q_DECL_EXPORT int  ts3plugin_onClientPokeEvent(uint64 serverConnectionHandlerID, anyID fromClientID, const char* pokerName, const char* pokerUniqueIdentity, const char* message, int ffIgnored);
 
+Q_DECL_EXPORT int ts3plugin_offersConfigure();
+Q_DECL_EXPORT void ts3plugin_configure(void* handle, void* qParentWidget);
+Q_DECL_EXPORT void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon);
+Q_DECL_EXPORT void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenuType type, int menuItemID, uint64 selectedItemID);
 
-
-//PLUGINS_EXPORTDLL int ts3plugin_offersConfigure();
-//PLUGINS_EXPORTDLL void ts3plugin_configure(void* handle, void* qParentWidget);
 //PLUGINS_EXPORTDLL const char* ts3plugin_infoTitle();
 //PLUGINS_EXPORTDLL void ts3plugin_infoData(uint64 serverConnectionHandlerID, uint64 id, enum PluginItemType type, char** data);
-//PLUGINS_EXPORTDLL void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon);
 //PLUGINS_EXPORTDLL void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys);
 
 /* Clientlib */
@@ -140,7 +140,6 @@ Q_DECL_EXPORT int  ts3plugin_onClientPokeEvent(uint64 serverConnectionHandlerID,
 
 /* Client UI callbacks */
 //PLUGINS_EXPORTDLL void ts3plugin_onAvatarUpdated(uint64 serverConnectionHandlerID, anyID clientID, const char* avatarPath);
-//PLUGINS_EXPORTDLL void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenuType type, int menuItemID, uint64 selectedItemID);
 //PLUGINS_EXPORTDLL void ts3plugin_onHotkeyEvent(const char* keyword);
 //PLUGINS_EXPORTDLL void ts3plugin_onHotkeyRecordedEvent(const char* keyword, const char* key);
 //PLUGINS_EXPORTDLL const char* ts3plugin_keyDeviceName(const char* keyIdentifier);

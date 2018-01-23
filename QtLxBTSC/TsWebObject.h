@@ -16,12 +16,12 @@ signals:
 	void addServer(QString key);
 	void tabChanged(QString key);
 	void textMessageReceived(QString target, QString direction, QString time, QString name, QString userlink, QString message);
-	//void statusMessageReceived(QString target, QString time, QString type, QString message, bool parseBBCode);
 	void printConsoleMessage(QString target, QString message);
 	void toggleEmoteMenu();
 	void emoteSignal(QString e);
 	void transferCancelled(int download_id);
 	void loadEmotes();
+	void configChanged();
 
 	void serverWelcomeMessage(QString target, QString time, QString message);
 	void serverConnected(QString target, QString time, QString serverName);

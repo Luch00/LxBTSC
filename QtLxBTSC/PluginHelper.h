@@ -11,6 +11,7 @@
 #include <QMetaMethod>
 #include "file.h"
 #include "server.h"
+#include "ConfigWidget.h"
 
 class PluginHelper : public QObject
 {
@@ -34,6 +35,7 @@ public:
 	void recheckSelectedTab();
 	void reload() const;
 	void reloadEmotes() const;
+	void openConfig();
 
 	void onDebugMessage(QString message);
 
@@ -64,6 +66,7 @@ private:
 
 	ChatWidget* chat;
 	QInputDialog* pwDialog;
+	ConfigWidget* config;
 
 	uint64 currentServerID;
 	QMap<anyID, File> filetransfers;

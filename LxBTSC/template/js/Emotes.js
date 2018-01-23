@@ -13,11 +13,12 @@ var Emotes = {
         return false;
     },
     emoticonize: function (string) {
+        var html = string.html();
         this.emoteKeyList.forEach(function(key) {
-            string = string.replace(new RegExp(escapeRegExp(key)+'(?![^<]*?(?:</a>|">))', 'g'), 
+            html = html.replace(new RegExp(escapeRegExp(key)+'(?![^<]*?(?:</a>|">))', 'g'), 
                 '<img class="emote" src="'+Emotes.emoteList[key].name+'" alt="'+key+'">');
         });
-        return string;
+        string.html(html);
     },
     makeKeyList: function () {
         this.emoteKeyList = Object.keys(this.emoteList).sort(function(a, b) {

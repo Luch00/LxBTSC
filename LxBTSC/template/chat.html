@@ -10,8 +10,10 @@
         <script type='text/javascript' src='js/qwebchannel.js'></script>
         <script type='text/javascript' src='js/jquery.resize.js'></script>
         <script type='text/javascript' src='js/xbbcode.js'></script>
+        <script type='text/javascript' src='js/config.js'></script>
         <script type='text/javascript' src='js/Embed.js'></script>
         <script type='text/javascript' src='js/Emotes.js'></script>
+        <script type='text/javascript' src='js/Favicons.js'></script>
         <script type='text/javascript' src='js/twttr.js'></script>
 
         <script type='text/javascript'>
@@ -34,6 +36,7 @@
                 QtObject.tabChanged.connect(ShowTarget);
                 QtObject.addServer.connect(AddServer);
                 QtObject.loadEmotes.connect(LoadEmotes);
+                QtObject.configChanged.connect(ConfigChanged);
 
                 QtObject.serverWelcomeMessage.connect(Ts3ServerWelcome);
                 QtObject.serverConnected.connect(Ts3ServerConnected);
@@ -88,11 +91,19 @@
         function AddLine(target, direction, time, name, userlink, line) {
             CreateTabIfNotExist(target);
 
-            if ($(`.${target}`).childElementCount > 500) {
+            if ($(`.${target}`).childElementCount > Config.MAX_LINES) {
                 $(`.${target}`).firstElementChild.remove();
             }
             ++msgid;
-            var parsed = ParseBBCode(line, msgid);
+            var parsed = $('<span/>').html(ParseBBCode(line, msgid));
+
+            if (Config.EMOTICONS_ENABLED) {
+                Emotes.emoticonize(parsed);
+            }
+            if (Config.FAVICONS_ENABLED) {
+                GetFavicons(parsed);
+            }
+            
             var p = $('<p/>', {
                 id: msgid,
                 class: 'TextMessage_Normal'
@@ -101,11 +112,13 @@
                  <img class='${direction}'>
                  <span class='TextMessage_Time'><${time}> </span>
                  <span class='TextMessage_UserLink'><a href='${userlink}' class='TextMessage_UserLink' oncontextmenu='Ts3LinkClicked(event)'>"${name}"</a></span>: 
-                 <span class='TextMessage_Text'>${Emotes.emoticonize(parsed)}</span>
+                 <span class='TextMessage_Text'>${parsed.get(0).outerHTML}</span>
                  </span>`
             ).appendTo($(`.${target}`));
             
-            Embed(msgid, parsed);
+            if (Config.EMBED_ENABLED) {
+                Embed(msgid, parsed);
+            }
 
             if (IsBottom) {
                 window.scroll(0, document.body.scrollHeight);
@@ -115,7 +128,7 @@
         function AddStatusLine(target, line) {
             CreateTabIfNotExist(target);
 
-            if ($(`.${target}`).childElementCount > 500) {
+            if ($(`.${target}`).childElementCount > Config.MAX_LINES) {
                 $(`.${target}`).firstElementChild.remove();
             }
             
@@ -180,6 +193,10 @@
             Emotes.load();
         }
 
+        function ConfigChanged() {
+            loadConfig();
+        }
+
         function Ts3LinkClicked(event) {
             if (event.which == 3) {
                 event.preventDefault();
@@ -227,7 +244,7 @@
         function Ts3ClientPoked(target, time, link, name, message) {
             CreateTabIfNotExist(target);
 
-            if ($(`.${target}`).childElementCount > 500) {
+            if ($(`.${target}`).childElementCount > Config.MAX_LINES) {
                 $(`.${target}`).firstElementChild.remove();
             }
 
