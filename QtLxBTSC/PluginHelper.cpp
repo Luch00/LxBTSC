@@ -603,4 +603,10 @@ void PluginHelper::openConfig()
 	config->open();
 }
 
+void PluginHelper::serverStopped(uint64 serverConnectionHandlerID, QString message)
+{
+	emit chat->webObject()->serverStopped(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), message);
+}
+
+
 

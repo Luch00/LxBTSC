@@ -49,6 +49,8 @@ Q_DECL_EXPORT void ts3plugin_configure(void* handle, void* qParentWidget);
 Q_DECL_EXPORT void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon);
 Q_DECL_EXPORT void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenuType type, int menuItemID, uint64 selectedItemID);
 
+Q_DECL_EXPORT void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage);
+
 //PLUGINS_EXPORTDLL const char* ts3plugin_infoTitle();
 //PLUGINS_EXPORTDLL void ts3plugin_infoData(uint64 serverConnectionHandlerID, uint64 id, enum PluginItemType type, char** data);
 //PLUGINS_EXPORTDLL void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys);
@@ -69,7 +71,6 @@ Q_DECL_EXPORT void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, e
 //PLUGINS_EXPORTDLL void ts3plugin_onClientIDsFinishedEvent(uint64 serverConnectionHandlerID);
 //PLUGINS_EXPORTDLL void ts3plugin_onServerEditedEvent(uint64 serverConnectionHandlerID, anyID editerID, const char* editerName, const char* editerUniqueIdentifier);
 //PLUGINS_EXPORTDLL void ts3plugin_onServerUpdatedEvent(uint64 serverConnectionHandlerID);
-//PLUGINS_EXPORTDLL void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage);
 //PLUGINS_EXPORTDLL void ts3plugin_onTalkStatusChangeEvent(uint64 serverConnectionHandlerID, int status, int isReceivedWhisper, anyID clientID);
 //PLUGINS_EXPORTDLL void ts3plugin_onConnectionInfoEvent(uint64 serverConnectionHandlerID, anyID clientID);
 //PLUGINS_EXPORTDLL void ts3plugin_onServerConnectionInfoEvent(uint64 serverConnectionHandlerID);

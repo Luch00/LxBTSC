@@ -37,7 +37,9 @@ public:
 	void reloadEmotes() const;
 	void openConfig();
 
-	void onDebugMessage(QString message);
+	void serverStopped(uint64 serverConnectionHandlerID, QString message);
+
+	//void onDebugMessage(QString message);
 
 private slots:
 	void onAppStateChanged(Qt::ApplicationState state);
