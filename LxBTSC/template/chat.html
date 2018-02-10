@@ -91,8 +91,8 @@
         function AddLine(target, direction, time, name, userlink, line) {
             CreateTabIfNotExist(target);
 
-            if ($(`.${target}`).childElementCount > Config.MAX_LINES) {
-                $(`.${target}`).firstElementChild.remove();
+            if ($(`.${target}`).get(0).childElementCount > Config.MAX_LINES) {
+                $(`.${target}`).get(0).firstElementChild.remove();
             }
             ++msgid;
             var parsed = $('<span/>').html(ParseBBCode(line, msgid));
@@ -127,9 +127,8 @@
 
         function AddStatusLine(target, line) {
             CreateTabIfNotExist(target);
-
-            if ($(`.${target}`).childElementCount > Config.MAX_LINES) {
-                $(`.${target}`).firstElementChild.remove();
+            if ($(`.${target}`).get(0).childElementCount > Config.MAX_LINES) {
+                $(`.${target}`).get(0).firstElementChild.remove();
             }
             
             $(`.${target}`).append(line);
@@ -226,6 +225,11 @@
             AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_Disconnected", time, "Disconnected"));
         }
 
+        function Ts3ServerStopped(target, time, message) {
+            ++msgid;
+            AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_ServerError", time, "Server Shutdown: "+message));
+        }
+
         function Ts3ClientConnected(target, time, link, name) {
             ++msgid;
             AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_ClientConnected", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"'+name+'"</a> connected'));
@@ -244,8 +248,8 @@
         function Ts3ClientPoked(target, time, link, name, message) {
             CreateTabIfNotExist(target);
 
-            if ($(`.${target}`).childElementCount > Config.MAX_LINES) {
-                $(`.${target}`).firstElementChild.remove();
+            if ($(`.${target}`).get(0).childElementCount > Config.MAX_LINES) {
+                $(`.${target}`).get(0).firstElementChild.remove();
             }
 
             ++msgid;
