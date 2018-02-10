@@ -249,6 +249,7 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 }
 
 void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage) {
+	helper->serverStopped(serverConnectionHandlerID, shutdownMessage);
 }
 
 
