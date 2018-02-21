@@ -4,7 +4,7 @@ ConfigWidget::ConfigWidget(QString path, QWidget *parent)
 	: QWidget(parent)
 {
 	this->setWindowTitle("Better Chat Settings");
-	this->setFixedSize(300, 200);
+	this->setFixedSize(300, 250);
 	configPath = QString("%1LxBTSC/template/config.json").arg(path);
 	formLayout = new QFormLayout(this);
 	embeds = new QCheckBox("Enable embeds", this);
@@ -17,6 +17,10 @@ ConfigWidget::ConfigWidget(QString path, QWidget *parent)
 	maxlines->setMinimum(50);
 	maxlines->setMaximum(1000);
 	maxlines->setValue(500);
+	remotes = new QPlainTextEdit(this);
+	remotes->setMinimumHeight(70);
+	remotes->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+	remotes->setPlaceholderText("Separate multiple urls with '|'");
 
 	saveButton = new QPushButton("Save", this);
 	connect(saveButton, &QPushButton::clicked, this, &ConfigWidget::save);
@@ -28,6 +32,8 @@ ConfigWidget::ConfigWidget(QString path, QWidget *parent)
 	formLayout->addRow(favicons);
 	formLayout->addRow(emoticons);
 	formLayout->addRow(new QLabel("Max lines in tab:", this), maxlines);
+	formLayout->addRow(new QLabel("Remote emote definitions:"));
+	formLayout->addRow(remotes);
 	formLayout->addItem(new QSpacerItem(0, 50));
 	formLayout->addRow(horizontal);
 }
@@ -49,6 +55,13 @@ void ConfigWidget::open()
 		favicons->setChecked(jsonObj.value("FAVICONS_ENABLED").toBool());
 		emoticons->setChecked(jsonObj.value("EMOTICONS_ENABLED").toBool());
 		maxlines->setValue(jsonObj.value("MAX_LINES").toInt());
+		QJsonArray remotejson = jsonObj.value("REMOTE_EMOTES").toArray();
+		QStringList list;
+		foreach(const QJsonValue &v, remotejson) 
+		{
+			list.append(v.toString());
+		}
+		remotes->setPlainText(list.join('|'));
 	}
 	this->show();
 }
@@ -59,6 +72,14 @@ void ConfigWidget::save()
 	jsonObj.insert("FAVICONS_ENABLED", favicons->isChecked());
 	jsonObj.insert("EMOTICONS_ENABLED", emoticons->isChecked());
 	jsonObj.insert("MAX_LINES", maxlines->value());
+	if (remotes->toPlainText().length() > 1)
+	{
+		jsonObj.insert("REMOTE_EMOTES", QJsonArray::fromStringList(remotes->toPlainText().split('|')));
+	}
+	else
+	{
+		jsonObj.insert("REMOTE_EMOTES", QJsonArray());
+	}
 	QJsonDocument doc(jsonObj);
 	QFile file(configPath);
 	if (file.open(QIODevice::WriteOnly))

@@ -9,6 +9,8 @@
 #include <qfile.h>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QPlainTextEdit>
+#include <QJsonArray>
 
 class ConfigWidget : public QWidget
 {
@@ -31,6 +33,7 @@ private:
 	QCheckBox* favicons;
 	QCheckBox* emoticons;
 	QSpinBox* maxlines;
+	QPlainTextEdit* remotes;
 	QPushButton* saveButton;
 	QString configPath;
 	QJsonObject jsonObj;

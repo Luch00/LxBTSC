@@ -32,6 +32,9 @@ var Emotes = {
     },
     load: function () {
         return $.getJSON(this.emoteset_json).then(function(setlist) {
+            if (Config.REMOTE_EMOTES.length != 0) {
+                $.merge(setlist, Config.REMOTE_EMOTES);
+            }
             setlist.forEach(function(set, index, array) {
                 Emotes.getSet(set).then(function() {
                     if (index === array.length -1) {
@@ -42,7 +45,14 @@ var Emotes = {
         });
     },
     getSet: function(set) {
-        return $.getJSON("Emotes/" + set).then(function(data) {
+        var setPath;
+        if (set.startsWith("http")) {
+            setPath = set;
+        }
+        else {
+            setPath = "Emotes/" + set;
+        }
+        return $.getJSON(setPath).then(function(data) {
             Emotes.parseJson(data);
         });
     },
