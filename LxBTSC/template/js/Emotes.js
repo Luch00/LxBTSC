@@ -3,14 +3,12 @@ var Emotes = {
     emoteKeyList: [],
     emoteset_json: "emotesets.json",
     emote_list_element: {},
+    retryID: 0,
     addEmote: function (key, value) {
-        if (!this.emoteList.hasOwnProperty(key)) {
-            //console.log("ADDED: " + key);
-            this.emoteList[key] = value;
-            return true;
+        if (this.emoteList.hasOwnProperty(key)) {
+            this.emoteList[key].element.remove();
         }
-        //console.log("NOT ADDED: " + key);
-        return false;
+        this.emoteList[key] = value;
     },
     emoticonize: function (string) {
         var html = string.html();
@@ -21,26 +19,24 @@ var Emotes = {
         string.html(html);
     },
     makeKeyList: function () {
+        console.log("makeKeyList");
         this.emoteKeyList = Object.keys(this.emoteList).sort(function(a, b) {
             return b.length - a.length;
         });
     },
     clear: function () {
+        window.clearTimeout(Emotes.retryID);
         Emotes.emoteList = {};
         Emotes.emoteKeyList = [];
         Emotes.emote_list_element.empty();
     },
     load: function () {
-        return $.getJSON(this.emoteset_json).then(function(setlist) {
-            if (Config.REMOTE_EMOTES.length != 0) {
-                $.merge(setlist, Config.REMOTE_EMOTES);
-            }
-            setlist.forEach(function(set, index, array) {
-                Emotes.getSet(set).then(function() {
-                    if (index === array.length -1) {
-                        Emotes.makeKeyList();
-                    }
-                });
+        $.getJSON(this.emoteset_json, function (setlist) {
+            setlist.forEach(function(set) {
+                Emotes.getSet(set);
+            });
+            Config.REMOTE_EMOTES.forEach(function(set) {
+                Emotes.getSet(set);
             });
         });
     },
@@ -52,8 +48,32 @@ var Emotes = {
         else {
             setPath = "Emotes/" + set;
         }
-        return $.getJSON(setPath).then(function(data) {
-            Emotes.parseJson(data);
+        $.ajax({
+            url: setPath,
+            async: true,
+            dataType: "json",
+            retryCount: 0,
+            retryLimit: 15,
+            retryTimeout: 60000,
+            timeout: 4000,
+            errorNotified: false,
+            created: Date.now(),
+            error: function (xhr, textStatus, errorThrown) {
+                this.retryCount++;
+                if (this.retryCount <= this.retryLimit && Date.now() - this.created < this.retryTimeout) {
+                    if (!this.errorNotified) {
+                        this.errorNotified = true;
+                        $.notify("Emote: " + errorThrown + ", retrying..");
+                    }
+                    var retry = this;
+                    Emotes.retryID = window.setTimeout(function() { 
+                        $.ajax(retry);
+                    }, 4000);
+                }
+            },
+            success: function (data, textStatus, xhr) {
+                Emotes.parseJson(data);
+            }
         });
     },
     parseJson: function(json) {
@@ -68,18 +88,19 @@ var Emotes = {
         set_element.append(emote_container);
         json.emoticons.forEach(function(emote) {
             var e = { name: `${json.pathbase}${emote.name}${json.pathappend}` }
-            if (Emotes.addEmote(emote.code, e)) {
-                var emote_img = $('<img >', {
-                    class: 'emote',
-                    src: e.name,
-                    alt: emote.code,
-                    'data-key': emote.code
-                }).click(function(e) {
-                    emoteClicked($(this).data('key'), e.shiftKey);
-                });
-                emote_container.append(emote_img);
-            }
+            var emote_img = $('<img >', {
+                class: 'emote',
+                src: e.name,
+                alt: emote.code,
+                'data-key': emote.code
+            }).click(function(e) {
+                emoteClicked($(this).data('key'), e.shiftKey);
+            });
+            emote_container.append(emote_img);
+            e.element = emote_img;
+            Emotes.addEmote(emote.code, e);
         });
+        Emotes.makeKeyList();
         this.emote_list_element.append(set_element);
     }
 }
