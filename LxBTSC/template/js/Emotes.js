@@ -7,6 +7,7 @@ var Emotes = {
     addEmote: function (key, value) {
         if (this.emoteList.hasOwnProperty(key)) {
             this.emoteList[key].element.remove();
+            $('.emote-container:empty').parent().remove();
         }
         this.emoteList[key] = value;
     },

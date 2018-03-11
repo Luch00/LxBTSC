@@ -197,3 +197,19 @@ img.Outgoing {
         background-position: 28px 0;
     }
 }
+
+.tooltipper {
+    position: relative;
+    display: inline;
+    background-color: black;
+    color: #FFF;
+    font-size: 0.7em;
+    position: absolute;
+    z-index: 999;
+    padding: 4px;
+    border-radius: 3px;
+}
+
+.tooltipper:empty {
+    visibility: hidden;
+}
