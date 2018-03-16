@@ -199,8 +199,6 @@ img.Outgoing {
 }
 
 .tooltipper {
-    position: relative;
-    display: inline;
     background-color: black;
     color: #FFF;
     font-size: 0.7em;
@@ -208,6 +206,8 @@ img.Outgoing {
     z-index: 999;
     padding: 4px;
     border-radius: 3px;
+    width: 120px;
+    text-align: center;
 }
 
 .tooltipper:empty {

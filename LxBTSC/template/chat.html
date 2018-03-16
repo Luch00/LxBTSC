@@ -62,13 +62,6 @@
             Emotes.emote_list_element = $('#emote-list');
             LoadEmotes();
             $('#main').resize(stayDown);
-
-            $(document).on('mouseenter', '.emote', function() {
-                $('.tooltipper').text($(this).attr('alt'));
-            });
-            $(document).on('mouseleave', '.emote', function() {
-                $('.tooltipper').text("");
-            });
         };
 
         window.onscroll = function(ev) {
@@ -79,6 +72,34 @@
                 IsBottom = false;
             }
         };
+
+        function showTooltip(elem) {
+            var bodyRect = document.body.getBoundingClientRect();
+            var elemRect = elem.getBoundingClientRect();
+            var wheight = $(window).height();
+            var wwidth = $(window).width();
+            var hOffset;
+            var vOffset = -60;
+            if (elemRect.top/wheight > 0.7) {
+                hOffset = elemRect.top - elemRect.bottom;
+                hOffset = -20;
+            }
+            else {
+                hOffset = elemRect.bottom - elemRect.top;
+            }
+            if (elemRect.left/wwidth < 0.15) {
+                vOffset = 0;
+            }
+            else if (elemRect.left/wwidth > 0.75) {
+                vOffset = -120;
+            }
+            $('.tooltipper').css({top: elemRect.top - bodyRect.top, left: (elemRect.left-bodyRect.left)+ (elemRect.width/2.5), 'margin-left': vOffset, 'margin-top': hOffset});
+            $('.tooltipper').text($(elem).attr('alt'));
+        }
+
+        function hideTooltip() {
+            $('.tooltipper').text("");
+        }
 
         function AddServer(serverId) {
             if (!$(`.tab-${serverId}-server`).length) {

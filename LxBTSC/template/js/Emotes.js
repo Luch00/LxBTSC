@@ -15,7 +15,7 @@ var Emotes = {
         var html = string.html();
         this.emoteKeyList.forEach(function(key) {
             html = html.replace(new RegExp(escapeRegExp(key)+'(?![^<]*?(?:</a>|">))', 'g'), 
-                '<img class="emote" src="'+Emotes.emoteList[key].name+'" alt="'+key+'">');
+                '<img class="emote" src="'+Emotes.emoteList[key].name+'" alt="'+key+'" onmouseenter="showTooltip(this)" onmouseleave="hideTooltip()">');
         });
         string.html(html);
     },
@@ -94,7 +94,10 @@ var Emotes = {
                 src: e.name,
                 alt: emote.code,
                 'data-key': emote.code
-            }).click(function(e) {
+            })
+            .on('mouseenter', function() { showTooltip($(this)[0]); })
+            .on('mouseleave', function() { hideTooltip(); })
+            .click(function(e) {
                 emoteClicked($(this).data('key'), e.shiftKey);
             });
             emote_container.append(emote_img);
