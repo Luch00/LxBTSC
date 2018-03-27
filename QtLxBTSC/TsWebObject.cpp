@@ -14,8 +14,3 @@ void TsWebObject::emoteClicked(QString e)
 	emit emoteSignal(e);
 }
 
-void TsWebObject::cancelTransfer(int download_id)
-{
-	emit transferCancelled(download_id);
-}
-

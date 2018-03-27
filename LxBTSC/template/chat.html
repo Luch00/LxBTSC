@@ -12,16 +12,18 @@
         <script type='text/javascript' src='js/notify.js'></script>
         <script type='text/javascript' src='js/xbbcode.js'></script>
         <script type='text/javascript' src='js/config.js'></script>
-        <script type='text/javascript' src='js/Embed.js'></script>
-        <script type='text/javascript' src='js/Emotes.js'></script>
-        <script type='text/javascript' src='js/Favicons.js'></script>
+        <script type='text/javascript' src='js/tabs.js'></script>
+        <script type='text/javascript' src='js/messages.js'></script>
+        <script type='text/javascript' src='js/embed.js'></script>
+        <script type='text/javascript' src='js/emotes.js'></script>
+        <script type='text/javascript' src='js/favicons.js'></script>
         <script type='text/javascript' src='js/twttr.js'></script>
 
         <script type='text/javascript'>
             var main;
             var IsBottom = true;
-            var msgid = 0;
             var QtObject;
+            var tooltip;
             var stayDown = function() {
                 if (IsBottom) {
                     window.scroll(0, document.body.scrollHeight);
@@ -32,10 +34,10 @@
                 QtObject = channel.objects.wObject;
                 
                 QtObject.toggleEmoteMenu.connect(ToggleEmoteMenu);
-                QtObject.textMessageReceived.connect(AddLine);
-                QtObject.printConsoleMessage.connect(AddConsoleLine);
-                QtObject.tabChanged.connect(ShowTarget);
-                QtObject.addServer.connect(AddServer);
+                QtObject.textMessageReceived.connect(AddTextMessage);
+                QtObject.printConsoleMessage.connect(AddConsoleMessage);
+                QtObject.tabChanged.connect(ShowTab);
+                QtObject.addServer.connect(AddServerTabs);
                 QtObject.loadEmotes.connect(LoadEmotes);
                 QtObject.configChanged.connect(ConfigChanged);
 
@@ -50,291 +52,87 @@
 
                 QtObject.clientPoked.connect(Ts3ClientPoked);
 
-                QtObject.downloadStarted.connect(Ts3fileDownloadStarted);
-                QtObject.downloadStartFailed.connect(Ts3fileDownloadStartFailed)
-                QtObject.downloadFinished.connect(Ts3fileDownloadFinished);
-                QtObject.downloadCancelled.connect(Ts3fileDownloadCancelled);
                 QtObject.downloadFailed.connect(Ts3fileDownloadFailed);
             });
-            
-        window.onload = function() {
-            main = $('#main');
-            Emotes.emote_list_element = $('#emote-list');
-            LoadEmotes();
-            $('#main').resize(stayDown);
-        };
+            window.onload = function() {
+                main = $('#main');
+                tooltip = $('.tooltipper');
+                Emotes.emote_list_element = $('#emote-list');
+                LoadEmotes();
+                $('#main').resize(stayDown);
+            };
+            window.onscroll = function(ev) {
+                if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight) {
+                    IsBottom = true;
+                }
+                else {
+                    IsBottom = false;
+                }
+            };
 
-        window.onscroll = function(ev) {
-            if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight) {
-                IsBottom = true;
-            }
-            else {
-                IsBottom = false;
-            }
-        };
-
-        function showTooltip(elem) {
-            var bodyRect = document.body.getBoundingClientRect();
-            var elemRect = elem.getBoundingClientRect();
-            var wheight = $(window).height();
-            var wwidth = $(window).width();
-            var hOffset;
-            var vOffset = -60;
-            if (elemRect.top/wheight > 0.7) {
-                hOffset = elemRect.top - elemRect.bottom;
-                hOffset = -20;
-            }
-            else {
-                hOffset = elemRect.bottom - elemRect.top;
-            }
-            if (elemRect.left/wwidth < 0.15) {
-                vOffset = 0;
-            }
-            else if (elemRect.left/wwidth > 0.75) {
-                vOffset = -120;
-            }
-            $('.tooltipper').css({top: elemRect.top - bodyRect.top, left: (elemRect.left-bodyRect.left)+ (elemRect.width/2.5), 'margin-left': vOffset, 'margin-top': hOffset});
-            $('.tooltipper').text($(elem).attr('alt'));
-        }
-
-        function hideTooltip() {
-            $('.tooltipper').text("");
-        }
-
-        function AddServer(serverId) {
-            if (!$(`.tab-${serverId}-server`).length) {
-                main.append(`<div class='tab-${serverId}-server'></div><div class='tab-${serverId}-channel'></div>`);
-            }
-            ShowTarget(`tab-${serverId}-server`);
-        }
-
-        function ParseBBCode(line, message_id) {
-            var result = XBBCODE.process({
-                text: line,
-                id: message_id
-            });
-            //console.error("err", result.error);
-            //console.dir(result.errorQueue);
-            return result.html.replace(/(?:\r\n|\r|\n)/g, '<br>');
-        }
-
-        function AddLine(target, direction, time, name, userlink, line) {
-            CreateTabIfNotExist(target);
-
-            if ($(`.${target}`).get(0).childElementCount > Config.MAX_LINES) {
-                $(`.${target}`).get(0).firstElementChild.remove();
-            }
-            ++msgid;
-            var parsed = $('<span/>').html(ParseBBCode(line, msgid));
-
-            if (Config.EMOTICONS_ENABLED) {
-                Emotes.emoticonize(parsed);
-            }
-            if (Config.FAVICONS_ENABLED) {
-                GetFavicons(parsed);
-            }
-            
-            var p = $('<p/>', {
-                id: msgid,
-                class: 'TextMessage_Normal'
-            }).html(
-                `<span class='Body'>
-                 <img class='${direction}'>
-                 <span class='TextMessage_Time'><${time}> </span>
-                 <span class='TextMessage_UserLink'><a href='${userlink}' class='TextMessage_UserLink' oncontextmenu='Ts3LinkClicked(event)'>"${name}"</a></span>: 
-                 <span class='TextMessage_Text'>${parsed.get(0).outerHTML}</span>
-                 </span>`
-            ).appendTo($(`.${target}`));
-            
-            if (Config.EMBED_ENABLED) {
-                Embed(msgid, parsed);
+            function showTooltip(elem) {
+                var bodyRect = document.body.getBoundingClientRect();
+                var elemRect = elem.getBoundingClientRect();
+                var wheight = $(window).height();
+                var wwidth = $(window).width();
+                var hOffset;
+                var vOffset = -60;
+                if (elemRect.top/wheight > 0.7) {
+                    hOffset = elemRect.top - elemRect.bottom;
+                    hOffset = -20;
+                }
+                else {
+                    hOffset = elemRect.bottom - elemRect.top;
+                }
+                if (elemRect.left/wwidth < 0.15) {
+                    vOffset = 0;
+                }
+                else if (elemRect.left/wwidth > 0.75) {
+                    vOffset = -120;
+                }
+                tooltip.css({top: elemRect.top - bodyRect.top, left: (elemRect.left-bodyRect.left)+ (elemRect.width/2.5), 'margin-left': vOffset, 'margin-top': hOffset});
+                tooltip.text($(elem).attr('alt'));
             }
 
-            if (IsBottom) {
-                window.scroll(0, document.body.scrollHeight);
-            }
-        }
-
-        function AddStatusLine(target, line) {
-            CreateTabIfNotExist(target);
-            if ($(`.${target}`).get(0).childElementCount > Config.MAX_LINES) {
-                $(`.${target}`).get(0).firstElementChild.remove();
-            }
-            
-            $(`.${target}`).append(line);
-
-            if (IsBottom) {
-                window.scroll(0, document.body.scrollHeight);
-            }
-        }
-
-        function AddConsoleLine(target, message) {
-            CreateTabIfNotExist(target);
-
-            ++msgid;
-            $(`.${target}`).append('<p class="TextMessage_Console">'+ParseBBCode(message, msgid)+'</p>');
-            
-            if (IsBottom) {
-                window.scroll(0, document.body.scrollHeight);
-            }
-        }
-
-        function FormatStatusLine(msgid, type, time, text) {
-            return `<p id='${msgid}' class='${type}'>
-                    <img class='Incoming'>
-                    <span class='TextMessage_Time'><${time}> </span>
-                    <span class='TextMessage_Text'>${text}</span>
-                    </p>`;
-        }
-
-        function ShowTarget(target) {
-            console.log("show: " + target);
-            CreateTabIfNotExist(target);
-
-            $('[class^="tab"]').hide();
-            $(`.${target}`).show();
-            window.scroll(0, document.body.scrollHeight);
-        }
-
-        function CreateTabIfNotExist(target) {
-            if (!$(`.${target}`).length) {
-                main.append(`<div class='${target}' style='display: none;'></div>`);
-            }
-        }
-
-        function escapeRegExp(str) {
-            return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-        }
-
-        function ToggleEmoteMenu() {
-            $("#popup").toggleClass('menu-visible');
-        }
-
-        function emoteClicked(key, shift) {
-            QtObject.emoteClicked(key);
-            if(!shift) {
-                ToggleEmoteMenu();
-            }
-        }
-
-        function LoadEmotes() {
-            Emotes.clear();
-            Emotes.load();
-        }
-
-        function ConfigChanged() {
-            loadConfig();
-            LoadEmotes();
-        }
-
-        function Ts3LinkClicked(event) {
-            if (event.which == 3) {
-                event.preventDefault();
-                $(event.currentTarget)[0].click();
-            }
-        }
-
-        function Ts3ServerWelcome(target, time, message) {
-            ++msgid;
-            AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_Welcome", time, ParseBBCode(message, msgid)));
-        }
-
-        function Ts3ServerConnected(target, time, servername) {
-            var text;
-            if (servername.length > 0) {
-                text = 'Connected to Server: <b><a href="channelid://0" class="TextMessage_ServerLink" oncontextmenu="Ts3LinkClicked(event)">'+servername+'</a></b>';
-            }
-            else {
-                text = "Connected";
-            }
-            ++msgid;
-            AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_Connected", time, text))
-        }
-
-        function Ts3ServerDisconnected(target, time) {
-            ++msgid;
-            AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_Disconnected", time, "Disconnected"));
-        }
-
-        function Ts3ServerStopped(target, time, message) {
-            ++msgid;
-            AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_ServerError", time, "Server Shutdown: "+message));
-        }
-
-        function Ts3ClientConnected(target, time, link, name) {
-            ++msgid;
-            AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_ClientConnected", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"'+name+'"</a> connected'));
-        }
-
-        function Ts3ClientDisconnected(target, time, link, name, message) {
-            ++msgid;
-            AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_ClientDisconnected", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"'+name+'"</a> disconnected ('+message+')'));
-        }
-
-        function Ts3ClientTimeout(target, time, link, name) {
-            ++msgid;
-            AddStatusLine(target, FormatStatusLine(msgid, "TextMessage_ClientDropped", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"'+name+'"</a> timed out'));
-        }
-
-        function Ts3ClientPoked(target, time, link, name, message) {
-            CreateTabIfNotExist(target);
-
-            if ($(`.${target}`).get(0).childElementCount > Config.MAX_LINES) {
-                $(`.${target}`).get(0).firstElementChild.remove();
+            function hideTooltip() {
+                tooltip.text("");
             }
 
-            ++msgid;
-            var parsed = ParseBBCode(message, msgid);
-            var p = $('<p/>', {
-                id: msgid,
-                class: 'TextMessage_Poke'
-            }).html(
-                `<span class='Body'>
-                 <img class='Incoming'>
-                 <span class='TextMessage_Time'><${time}> </span>
-                 <span class='TextMessage_UserLink'><a href='${link}' class='TextMessage_UserLink' oncontextmenu='Ts3LinkClicked(event)'>"${name}"</a></span>
-                 <span class='TextMessage_Text'>pokes you: ${parsed}</span>
-                 </span>`
-            ).appendTo($(`.${target}`));
-
-            if (IsBottom) {
-                window.scroll(0, document.body.scrollHeight);
+            function escapeRegExp(str) {
+                return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
             }
-        }
 
-        function Ts3fileDownloadStarted(message_id, download_id) {
-            if (!$(`#${message_id} > #download_${download_id}`).length) {
-                var download = $('<div/>', { id: "download_"+download_id, class: "download" }).html(`Downloading: <span class="progress"></span><a href="_#" class="download-cancel" onclick="Ts3fileDownloadCancel(${download_id})">Cancel</a>`);
-                $('#'+message_id).append(download);
+            function ToggleEmoteMenu() {
+                $("#popup").toggleClass('menu-visible');
             }
-            else {
-                $(`#${message_id} > #download_${download_id}`).html(`Downloading: <span class="progress"></span><a href="#_" class="download-cancel" onclick="Ts3fileDownloadCancel(${download_id})">Cancel</a>`);
+
+            function emoteClicked(key, shift) {
+                QtObject.emoteClicked(key);
+                if(!shift) {
+                    ToggleEmoteMenu();
+                }
             }
-            console.log("Started: " +download_id);
-        }
 
-        function Ts3fileDownloadCancel(id) {
-            QtObject.cancelTransfer(id);
-        }
+            function LoadEmotes() {
+                Emotes.clear();
+                Emotes.load();
+            }
 
-        function Ts3fileDownloadStartFailed(message_id) {
-            var download = $('<div/>', { id: "download_FAIL", class: "download" }).html('Downloading: <span class="download-failed">Failed</span>');
-            $('#'+message_id).append(download);
-        }
+            function ConfigChanged() {
+                loadConfig();
+                LoadEmotes();
+            }
 
-        function Ts3fileDownloadFinished(download_id) {
-            $('#download_'+download_id).html('Downloading: <span class="download-finished">Complete</span>');
-            console.log("Finished: " +download_id);
-        }
+            function Ts3LinkClicked(event) {
+                if (event.which == 3) {
+                    event.preventDefault();
+                    $(event.currentTarget)[0].click();
+                }
+            }
 
-        function Ts3fileDownloadCancelled(download_id) {
-            $('#download_'+download_id).html('Downloading: <span class="download-cancelled">Cancelled</span>');
-            console.log("Cancelled: " +download_id);
-        }
-
-        function Ts3fileDownloadFailed(download_id) {
-            $('#download_'+download_id).html('Downloading: <span class="download-failed">Failed</span>');
-        }
+            function Ts3fileDownloadFailed(download_id) {
+                $.notify("Download failed to start");
+            }
         </script>
     </head>
     <body id='main'>

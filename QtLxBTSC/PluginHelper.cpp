@@ -1,9 +1,7 @@
 #include "PluginHelper.h"
 #include "utils.h"
 #include <QThread>
-#include <QUrlQuery>
 #include <QRegularExpression>
-//#include <QMessageBox>
 
 PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 	: QObject(parent)
@@ -12,15 +10,18 @@ PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 	pathToPlugin = QString(pluginPath);
 	utils::checkEmoteSets(pathToPlugin);
 	config = new ConfigWidget(pathToPlugin);
+	transfers = new FileTransferListWidget();
+	onConfigChanged();
 	chat = new ChatWidget(pathToPlugin);
 	waitForLoad();
-	initPwDialog();
-	connect(chat, &ChatWidget::fileUrlClicked, this, &PluginHelper::onFileUrlClicked);
+	connect(chat, &ChatWidget::fileUrlClicked, transfers, &FileTransferListWidget::onFileUrlClicked);
 	connect(chat, &ChatWidget::clientUrlClicked, this, &PluginHelper::onClientUrlClicked);
 	connect(chat, &ChatWidget::channelUrlClicked, this, &PluginHelper::onChannelUrlClicked);
 	connect(chat, &ChatWidget::linkHovered, this, &PluginHelper::onLinkHovered);
-	connect(chat->webObject(), &TsWebObject::transferCancelled, this, &PluginHelper::onTransferCancelled);
+	connect(transfers, &FileTransferListWidget::transferComplete, this, &PluginHelper::onTransferCompleted);
+	connect(transfers, &FileTransferListWidget::transferFailed, this, &PluginHelper::onTransferFailure);
 	connect(config, &ConfigWidget::configChanged, chat->webObject(), &TsWebObject::configChanged);
+	connect(config, &ConfigWidget::configChanged, this, &PluginHelper::onConfigChanged);
 	g = connect(qApp, &QApplication::applicationStateChanged, this, &PluginHelper::onAppStateChanged);
 	chat->setStyleSheet("border: 1px solid gray");
 }
@@ -28,9 +29,9 @@ PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 PluginHelper::~PluginHelper()
 {
 	disconnect();
-	delete pwDialog;
 	delete chat;
 	delete config;
+	delete transfers;
 }
 
 // Disconnect used signals
@@ -87,7 +88,7 @@ void PluginHelper::onTabChange(int i)
 			tabName = QString("tab-%1-private-%2").arg(servers[currentServerID].safe_uid()).arg(id);
 		}
 		currentTabName = tabName;
-		chat->webObject()->tabChanged(tabName);
+		emit chat->webObject()->tabChanged(tabName);
 	}
 }
 
@@ -115,7 +116,7 @@ void PluginHelper::recheckSelectedTab()
 				tabName = QString("tab-%1-private-%2").arg(servers[currentServerID].safe_uid()).arg(id);
 			}
 			currentTabName = tabName;
-			chat->webObject()->tabChanged(tabName);
+			emit chat->webObject()->tabChanged(tabName);
 		}
 	}
 }
@@ -155,118 +156,14 @@ void PluginHelper::onChannelUrlClicked(const QUrl& url)
 	}
 }
 
-// called when webview tries to navigate to url with ts3file protocol
-void PluginHelper::onFileUrlClicked(const QUrl &url)
+void PluginHelper::onTransferCompleted(QString filename) const
 {
-	if (url.hasQuery())
-	{
-		QUrlQuery query;
-		query.setQuery(url.query());
-
-		QString filename = query.queryItemValue("filename", QUrl::FullyDecoded);
-		QString size = query.queryItemValue("size", QUrl::FullyDecoded);
-
-		QString server_uid = query.queryItemValue("serverUID", QUrl::FullyDecoded); 
-
-		uint64 schi = NULL;
-		for each(const Server & server in servers)
-		{
-			if (server.uid() == server_uid)
-			{
-				schi = server.server_connection_handler_id();
-			}
-		}
-
-		if (schi == NULL)
-		{
-			// failed to get serverconnectionhandlerid -> cancel 
-			return;
-		}
-
-		File file(filename, size, schi);
-		if (filetransfers.values().contains(file))
-		{
-			// this file is already being transferred -> cancel
-			return;
-		}
-
-		// CHECK FOR PASSWORD REQUIREMENT
-		QString channel_id = query.queryItemValue("channel", QUrl::FullyDecoded);
-		int has_password = 0;
-		if (ts3Functions.getChannelVariableAsInt(schi, channel_id.toULongLong(), CHANNEL_FLAG_PASSWORD, &has_password) != ERROR_ok)
-		{
-			// failed to get channel information -> cancel
-			return;
-		}
-
-		QString password = query.queryItemValue("password", QUrl::FullyDecoded); //"";
-		if (has_password == 1 && password.isEmpty())
-		{
-			pwDialog->setProperty("url", url);
-			pwDialog->show();
-			return;
-		}
-
-		QString is_dir = query.queryItemValue("isDir", QUrl::FullyDecoded);
-		QString file_path = query.queryItemValue("path", QUrl::FullyDecoded);
-
-		QString message_id = query.queryItemValue("message_id", QUrl::FullyDecoded);
-
-		QString full_path;
-		if (file_path == "/")
-		{
-			full_path = QString("/%1").arg(filename);
-		}
-		else
-		{
-			full_path = QString("%1/%2").arg(file_path, filename);
-		}
-		std::string std_filepath = full_path.toStdString();
-
-		QString download_path = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::DownloadLocation);
-		std::string std_download_path = download_path.toStdString();
-		std::string std_password = password.toStdString();
-
-		anyID res;
-		if (ts3Functions.requestFile(schi, channel_id.toULongLong(), std_password.c_str(), std_filepath.c_str(), 1, 0, std_download_path.c_str(), &res, nullptr) == ERROR_ok)
-		{
-			filetransfers.insert(res, file);
-			emit chat->webObject()->downloadStarted(message_id, res);
-		}
-		else
-		{
-			emit chat->webObject()->downloadStartFailed(message_id);
-		}
-	}
+	QMetaObject::invokeMethod(mainwindow, "onShowFileTransferTrayMessage", Q_ARG(QString, filename));
 }
 
-// user clicked cancel on transfer
-void PluginHelper::onTransferCancelled(int id) const
+void PluginHelper::onTransferFailure() const
 {
-	if (filetransfers.contains(id))
-	{
-		File f = filetransfers.value(id);
-		ts3Functions.haltTransfer(f.serverConnectionHandlerId(), id, 1, nullptr);
-	}
-}
-
-// called when 'ok' is pressed in password dialog
-void PluginHelper::onPwDialogAccepted(const QString pw)
-{
-	QVariant url = pwDialog->property("url");
-	onFileUrlClicked(QUrl(url.toString() + "&password=" + pw.toHtmlEscaped()));
-}
-
-// set up the dialog for file transfer passwords
-void PluginHelper::initPwDialog()
-{
-	pwDialog = new QInputDialog(chat);
-	pwDialog->setInputMode(QInputDialog::TextInput);
-	pwDialog->setLabelText("Password");
-	pwDialog->setTextEchoMode(QLineEdit::Password);
-	connect(pwDialog, &QInputDialog::textValueSelected, this, &PluginHelper::onPwDialogAccepted);
-	pwDialog->setModal(true);
-	pwDialog->setProperty("url", "");
+	QMetaObject::invokeMethod(chat->webObject(), "downloadFailed");
 }
 
 // called when emote is clicked in html emote menu
@@ -516,29 +413,7 @@ void PluginHelper::clientTimeout(uint64 serverConnectionHandlerID, anyID clientI
 // called when file transfer ends in some way
 void PluginHelper::transferStatusChanged(anyID transferID, unsigned status)
 {
-	if (filetransfers.contains(transferID))
-	{
-		File file = filetransfers.take(transferID);
-		switch (status)
-		{
-		case ERROR_file_transfer_complete:
-			QMetaObject::invokeMethod(chat->webObject(), "downloadFinished", Q_ARG(int, transferID));
-			QMetaObject::invokeMethod(mainwindow, "onShowFileTransferTrayMessage", Q_ARG(QString, file.filename()));
-			break;
-		case ERROR_file_transfer_canceled:
-			QMetaObject::invokeMethod(chat->webObject(), "downloadCancelled", Q_ARG(int, transferID));
-			break;
-		case ERROR_file_transfer_interrupted:
-			QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
-			break;
-		case ERROR_file_transfer_reset:
-			QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
-			break;
-		default:
-			QMetaObject::invokeMethod(chat->webObject(), "downloadFailed", Q_ARG(int, transferID));
-			break;
-		}
-	}
+	transfers->transferStatusChanged(transferID, status);
 }
 
 void PluginHelper::clientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, QString displayName)
@@ -600,7 +475,18 @@ QMap<unsigned short, Client> PluginHelper::getAllClientNicks(uint64 serverConnec
 
 void PluginHelper::openConfig()
 {
-	config->open();
+	config->show();
+}
+
+void PluginHelper::openTransfers()
+{
+	transfers->show();
+}
+
+void PluginHelper::onConfigChanged()
+{
+	QString dir = config->getConfigAsString("DOWNLOAD_DIR");
+	transfers->setDownloadDirectory(dir);
 }
 
 void PluginHelper::serverStopped(uint64 serverConnectionHandlerID, QString message)

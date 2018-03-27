@@ -36,7 +36,6 @@ var XBBCODE = (function() {
     // Set up private variables
     // -----------------------------------------------------------------------------
 
-    var message_id = 0;
 
     var me = {},
         urlPattern = /^(?:https?|ts3file|client|channelid|file|c):(?:\/{1,3}|\\{1})[-a-zA-Z0-9:;,@#%&()~_?\+=\/\\\.]*$/,
@@ -500,9 +499,6 @@ var XBBCODE = (function() {
                 if ( !urlPattern.test( encodeURI(myUrl) ) ) {
                     myUrl = "_#";
                 }
-                else if (myUrl.startsWith("ts3file://")) {
-                    myUrl = myUrl + "&message_id=" + me.message_id;
-                }
                 //channelid and clientid context menu
                 if (myUrl.startsWith("c")) {
                     return '<a href="' + encodeURI(myUrl) + '" oncontextmenu="Ts3LinkClicked(event)">';
@@ -690,7 +686,6 @@ var XBBCODE = (function() {
 
     function parse(config) {
         var output = config.text;
-        me.message_id = config.id;        
         output = output.replace(bbRegExp, replaceFunct);
         return output;
     }

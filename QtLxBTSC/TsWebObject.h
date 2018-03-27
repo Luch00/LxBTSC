@@ -10,7 +10,6 @@ public:
 	TsWebObject(QObject *parent);
 	~TsWebObject();
 	Q_INVOKABLE void emoteClicked(QString e);
-	Q_INVOKABLE void cancelTransfer(int download_id);
 	
 signals:
 	void addServer(QString key);
@@ -19,7 +18,6 @@ signals:
 	void printConsoleMessage(QString target, QString message);
 	void toggleEmoteMenu();
 	void emoteSignal(QString e);
-	void transferCancelled(int download_id);
 	void loadEmotes();
 	void configChanged();
 
@@ -34,9 +32,5 @@ signals:
 
 	void clientPoked(QString target, QString time, QString clientLink, QString clientName, QString message);
 
-	void downloadStarted(QString message_id, int download_id);
-	void downloadStartFailed(QString message_id);
-	void downloadFinished(int download_id);
-	void downloadCancelled(int download_id);
-	void downloadFailed(int download_id);
+	void downloadFailed();
 };

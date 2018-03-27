@@ -9,7 +9,8 @@ function loadConfig() {
         Config.EMBED_ENABLED = true;
         Config.FAVICONS_ENABLED = false;
         Config.EMOTICONS_ENABLED = true;
-        Config.REMOTE_EMOTES = []
+        Config.DOWNLOAD_DIR = "";
+        Config.REMOTE_EMOTES = [];
     });
 }
 

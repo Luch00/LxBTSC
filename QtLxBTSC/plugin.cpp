@@ -235,6 +235,7 @@ static struct PluginMenuItem* createMenuItem(enum PluginMenuType type, int id, c
 void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 	BEGIN_CREATE_MENUS(1);  /* IMPORTANT: Number of menu items must be correct! */
 	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL,  1,  "Settings",  "");
+	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 2, "Transfers", "");
 	END_CREATE_MENUS;  /* Includes an assert checking if the number of menu items matched */
 
 	*menuIcon = NULL;
@@ -245,6 +246,10 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 	if (menuItemID == 1)
 	{
 		helper->openConfig();
+	}
+	if (menuItemID == 2)
+	{
+		helper->openTransfers();
 	}
 }
 

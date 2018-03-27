@@ -200,7 +200,7 @@ img.Outgoing {
 
 .tooltipper {
     background-color: black;
-    color: #FFF;
+    color:  #FFF;
     font-size: 0.7em;
     position: absolute;
     z-index: 999;
@@ -211,5 +211,9 @@ img.Outgoing {
 }
 
 .tooltipper:empty {
-    visibility: hidden;
+    display: none;
+}
+
+.chattab {
+    display: none;
 }

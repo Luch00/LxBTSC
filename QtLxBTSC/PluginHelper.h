@@ -3,15 +3,14 @@
 #include "globals.h"
 #include <QObject>
 #include "ChatWidget.h"
-#include <QInputDialog>
 #include <QMainWindow>
 #include <QPlainTextEdit>
 #include <QApplication>
 #include <QToolButton>
 #include <QMetaMethod>
-#include "file.h"
 #include "server.h"
 #include "ConfigWidget.h"
+#include "FileTransferListWidget.h"
 
 class PluginHelper : public QObject
 {
@@ -36,25 +35,24 @@ public:
 	void reload() const;
 	void reloadEmotes() const;
 	void openConfig();
+	void openTransfers();
 
 	void serverStopped(uint64 serverConnectionHandlerID, QString message);
 
-	//void onDebugMessage(QString message);
-
 private slots:
 	void onAppStateChanged(Qt::ApplicationState state);
-	void onPwDialogAccepted(const QString pw);
 	void onEmoticonAppend(QString e) const;
 	void onEmoticonButtonClicked(bool c) const;
 	void onTabChange(int i);
 	void onTabClose(int i);
-	void onFileUrlClicked(const QUrl &url);
-	void onTransferCancelled(int id) const;
+	void onTransferCompleted(QString filename) const;
+	void onTransferFailure() const;
 	void onClientUrlClicked(const QUrl &url);
 	void onChannelUrlClicked(const QUrl &url);
 	void onLinkHovered(const QUrl &url);
 	void onPrintConsoleMessageToCurrentTab(QString message);
 	void onPrintConsoleMessage(uint64 serverConnectionHandlerID, QString message, int targetMode);
+	void onConfigChanged();
 
 private:
 	QMainWindow* mainwindow;
@@ -67,11 +65,10 @@ private:
 	QMetaObject::Connection g;
 
 	ChatWidget* chat;
-	QInputDialog* pwDialog;
 	ConfigWidget* config;
+	FileTransferListWidget* transfers;
 
 	uint64 currentServerID;
-	QMap<anyID, File> filetransfers;
 	QMap<uint64, Server> servers;
 	QString pathToPlugin;
 	bool first = true;
@@ -79,7 +76,6 @@ private:
 	QString currentTabName;
 
 	void initUi();
-	void initPwDialog();
 	void waitForLoad() const;
 	void disconnect() const;
 	QString getMessageTarget(uint64 serverConnectionHandlerID, anyID targetMode, anyID clientID);

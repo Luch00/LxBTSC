@@ -1,33 +1,33 @@
 var Emotes = {
-    emoteList: {},
+    emoteList: new Map(),
     emoteKeyList: [],
     emoteset_json: "emotesets.json",
     emote_list_element: {},
     retryID: 0,
     addEmote: function (key, value) {
-        if (this.emoteList.hasOwnProperty(key)) {
-            this.emoteList[key].element.remove();
+        if (this.emoteList.has(key)) {
+            this.emoteList.get(key).element.remove();
             $('.emote-container:empty').parent().remove();
         }
-        this.emoteList[key] = value;
+        this.emoteList.set(key, value);
     },
     emoticonize: function (string) {
         var html = string.html();
         this.emoteKeyList.forEach(function(key) {
             html = html.replace(new RegExp(escapeRegExp(key)+'(?![^<]*?(?:</a>|">))', 'g'), 
-                '<img class="emote" src="'+Emotes.emoteList[key].name+'" alt="'+key+'" onmouseenter="showTooltip(this)" onmouseleave="hideTooltip()">');
+                '<img class="emote" src="'+Emotes.emoteList.get(key).name+'" alt="'+key+'" onmouseenter="showTooltip(this)" onmouseleave="hideTooltip()">');
         });
         string.html(html);
     },
     makeKeyList: function () {
         console.log("makeKeyList");
-        this.emoteKeyList = Object.keys(this.emoteList).sort(function(a, b) {
+        this.emoteKeyList = Array.from(this.emoteList.keys()).sort(function(a, b) {
             return b.length - a.length;
         });
     },
     clear: function () {
         window.clearTimeout(Emotes.retryID);
-        Emotes.emoteList = {};
+        Emotes.emoteList.clear();
         Emotes.emoteKeyList = [];
         Emotes.emote_list_element.empty();
     },
