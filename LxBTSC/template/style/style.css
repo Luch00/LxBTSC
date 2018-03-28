@@ -217,3 +217,7 @@ img.Outgoing {
 .chattab {
     display: none;
 }
+
+.no-scroll {
+    overflow: hidden;
+}

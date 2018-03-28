@@ -104,6 +104,7 @@
 
             function ToggleEmoteMenu() {
                 $("#popup").toggleClass('menu-visible');
+                main.toggleClass('no-scroll');
             }
 
             function emoteClicked(key, shift) {
@@ -130,7 +131,7 @@
                 }
             }
 
-            function Ts3fileDownloadFailed(download_id) {
+            function Ts3fileDownloadFailed() {
                 $.notify("Download failed to start");
             }
         </script>
