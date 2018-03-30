@@ -25,10 +25,12 @@ public:
 	~FileTransferListWidget();
 
 	void transferStatusChanged(anyID transferID, unsigned status);
-	void setDownloadDirectory(QString dir);
+	void setDownloadDirectory(QString dir) const;
 
 signals:
-	void transferComplete(QString filename);
+	void showTransferCompletePop(QString filename);
+	void transferComplete(unsigned short transferId);
+	void transferCancelled(unsigned short transferId);
 	void transferFailed();
 
 public slots :
@@ -36,10 +38,10 @@ public slots :
 	void onFileUrlClicked(const QUrl &url);
 
 private slots:
-	void onPwDialogAccepted(const QString pw);
+	void onPwDialogAccepted(const QString &pw);
 	void onOwDialogAccepted();
 	void onTransferCancelled(int id) const;
-	void onClear();
+	void onClear() const;
 
 private:
 	QListWidget* list;

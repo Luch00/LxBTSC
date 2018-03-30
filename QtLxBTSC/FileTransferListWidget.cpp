@@ -25,12 +25,12 @@ FileTransferListWidget::~FileTransferListWidget()
 {
 }
 
-void FileTransferListWidget::setDownloadDirectory(QString dir)
+void FileTransferListWidget::setDownloadDirectory(QString dir) const
 {
 	directory->setText(dir);
 }
 
-void FileTransferListWidget::onClear()
+void FileTransferListWidget::onClear() const
 {
 	QList<QListWidgetItem*> toDelete;
 	for (int i = 0; i < list->count(); ++i)
@@ -52,7 +52,9 @@ void FileTransferListWidget::addTransferItem(anyID transferId, QString filename)
 {
 	FileTransferItemWidget* item = new FileTransferItemWidget(filename, transferId);
 	filetransfers[transferId].setListWidget(item);
-	connect(item, &FileTransferItemWidget::transferCancel, this, &FileTransferListWidget::onTransferCancelled);
+	connect(item, &FileTransferItemWidget::cancelTransfer, this, &FileTransferListWidget::onTransferCancelled);
+	connect(this, &FileTransferListWidget::transferComplete, item, &FileTransferItemWidget::onTransferComplete);
+	connect(this, &FileTransferListWidget::transferCancelled, item, &FileTransferItemWidget::onTransferFailed);
 	QListWidgetItem* listitem = new QListWidgetItem(list);
 	listitem->setSizeHint(item->minimumSizeHint());
 	list->addItem(listitem);
@@ -60,7 +62,7 @@ void FileTransferListWidget::addTransferItem(anyID transferId, QString filename)
 }
 
 // called when 'ok' is pressed in password dialog
-void FileTransferListWidget::onPwDialogAccepted(const QString pw)
+void FileTransferListWidget::onPwDialogAccepted(const QString &pw)
 {
 	temp.setPassword(pw);
 	startDownload();
@@ -193,7 +195,7 @@ void FileTransferListWidget::checkForPassword()
 		return;
 	}
 
-	if (has_password == 1/* && password.isEmpty()*/)
+	if (has_password == 1)
 	{
 		pwDialog->show();
 		return;
@@ -244,23 +246,24 @@ void FileTransferListWidget::transferStatusChanged(anyID transferID, unsigned st
 		File file = filetransfers.take(transferID);
 		switch (status)
 		{
-		case ERROR_file_transfer_complete:
-		{
-			QMetaObject::invokeMethod(file.listWidget(), "setDone", Qt::QueuedConnection);
-			emit transferComplete(file.filename());
-			break;
-		}
-		case ERROR_file_transfer_canceled:
-			break;
-		case ERROR_file_transfer_interrupted:
-			emit transferFailed();
-			break;
-		case ERROR_file_transfer_reset:
-			emit transferFailed();
-			break;
-		default:
-			emit transferFailed();
-			break;
+			case ERROR_file_transfer_complete:
+			{
+					//QMetaObject::invokeMethod(file.listWidget(), "setDone", Qt::QueuedConnection);
+					emit transferComplete(transferID);
+					emit showTransferCompletePop(file.filename());
+					break;
+			}
+			case ERROR_file_transfer_canceled:
+			{
+				emit transferCancelled(transferID);
+				break;
+			}
+			default:
+			{
+				emit transferCancelled(transferID);
+				emit transferFailed();
+				break;
+			}
 		}
 	}
 }

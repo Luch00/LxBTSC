@@ -97,10 +97,11 @@ void ConfigWidget::save()
 	{
 		jsonObj.insert("REMOTE_EMOTES", QJsonArray());
 	}
-	QJsonDocument doc(jsonObj);
+	
 	QFile file(configPath);
 	if (file.open(QIODevice::WriteOnly))
 	{
+		QJsonDocument doc(jsonObj);
 		file.write(doc.toJson());
 		file.close();
 		this->close();

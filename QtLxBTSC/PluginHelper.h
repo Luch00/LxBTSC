@@ -34,8 +34,8 @@ public:
 	void recheckSelectedTab();
 	void reload() const;
 	void reloadEmotes() const;
-	void openConfig();
-	void openTransfers();
+	void openConfig() const;
+	void openTransfers() const;
 
 	void serverStopped(uint64 serverConnectionHandlerID, QString message);
 
@@ -52,7 +52,7 @@ private slots:
 	void onLinkHovered(const QUrl &url);
 	void onPrintConsoleMessageToCurrentTab(QString message);
 	void onPrintConsoleMessage(uint64 serverConnectionHandlerID, QString message, int targetMode);
-	void onConfigChanged();
+	void onConfigChanged() const;
 
 private:
 	QMainWindow* mainwindow;

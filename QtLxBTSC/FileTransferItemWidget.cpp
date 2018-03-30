@@ -24,16 +24,7 @@ FileTransferItemWidget::~FileTransferItemWidget()
 {
 }
 
-void FileTransferItemWidget::setDone()
-{	
-	isDone = true;
-	button->setDisabled(true);
-	bar->setFormat("Done");
-	bar->setMaximum(100);
-	bar->setValue(100);
-}
-
-/*void FileTransferItemWidget::onTransferComplete(unsigned short transferID)
+void FileTransferItemWidget::onTransferComplete(unsigned short transferID)
 {
 	if (transferID == this->transferID && isDone == false)
 	{
@@ -43,20 +34,28 @@ void FileTransferItemWidget::setDone()
 		bar->setMaximum(100);
 		bar->setValue(100);
 	}
-}*/
+}
+
+void FileTransferItemWidget::onTransferFailed(unsigned short transferID)
+{
+	if (transferID == this->transferID && isDone == false)
+	{
+		isDone = true;
+		button->setDisabled(true);
+		bar->setFormat("Cancelled");
+		bar->setStyleSheet("QProgressBar::chunk {background-color: #E90707;}");
+		bar->setMaximum(100);
+		bar->setValue(100);
+	}
+}
+
 
 void FileTransferItemWidget::cancelClicked()
 {
-	isDone = true;
-	button->setDisabled(true);
-	bar->setFormat("Cancelled");
-	bar->setStyleSheet("QProgressBar::chunk {background-color: #E90707;}");
-	bar->setMaximum(100);
-	bar->setValue(100);
-	emit transferCancel(transferID);
+	emit cancelTransfer(transferID);
 }
 
-bool FileTransferItemWidget::done()
+bool FileTransferItemWidget::done() const
 {
 	return isDone;
 }

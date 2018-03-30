@@ -14,7 +14,7 @@ public:
 	FileTransferItemWidget(QString name, unsigned short transferID, QWidget *parent = 0);
 	~FileTransferItemWidget();
 
-	bool done();
+	bool done() const;
 
 private:
 	QProgressBar* bar;
@@ -23,12 +23,12 @@ private:
 	bool isDone = false;
 
 public slots:
-	void setDone();
 	void cancelClicked();
-	//void onTransferComplete(unsigned short transferId);
+	void onTransferComplete(unsigned short transferId);
+	void onTransferFailed(unsigned short transferId);
 
 signals:
-	void transferCancel(unsigned short);
+	void cancelTransfer(unsigned short);
 
 
 };

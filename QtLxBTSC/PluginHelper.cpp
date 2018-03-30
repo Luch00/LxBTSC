@@ -18,7 +18,7 @@ PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 	connect(chat, &ChatWidget::clientUrlClicked, this, &PluginHelper::onClientUrlClicked);
 	connect(chat, &ChatWidget::channelUrlClicked, this, &PluginHelper::onChannelUrlClicked);
 	connect(chat, &ChatWidget::linkHovered, this, &PluginHelper::onLinkHovered);
-	connect(transfers, &FileTransferListWidget::transferComplete, this, &PluginHelper::onTransferCompleted);
+	connect(transfers, &FileTransferListWidget::showTransferCompletePop, this, &PluginHelper::onTransferCompleted);
 	connect(transfers, &FileTransferListWidget::transferFailed, this, &PluginHelper::onTransferFailure);
 	connect(config, &ConfigWidget::configChanged, chat->webObject(), &TsWebObject::configChanged);
 	connect(config, &ConfigWidget::configChanged, this, &PluginHelper::onConfigChanged);
@@ -130,7 +130,7 @@ void PluginHelper::onLinkHovered(const QUrl &url)
 
 void PluginHelper::onClientUrlClicked(const QUrl &url)
 {
-	QRegularExpression re("client://0\\.0\\.0\\.(\\d+)\\/([\\S]+)~(.+)");
+	const static QRegularExpression re("client://0\\.0\\.0\\.(\\d+)\\/([\\S]+)~(.+)");
 	QRegularExpressionMatch match = re.match(url.toString(QUrl::PrettyDecoded));
 	if (match.hasMatch())
 	{
@@ -145,7 +145,7 @@ void PluginHelper::onClientUrlClicked(const QUrl &url)
 
 void PluginHelper::onChannelUrlClicked(const QUrl& url)
 {
-	QRegularExpression re("channelid://0\\.0\\.0\\.(\\d+)");
+	const static QRegularExpression re("channelid://0\\.0\\.0\\.(\\d+)");
 	QRegularExpressionMatch match = re.match(url.toString(QUrl::PrettyDecoded));
 	if (match.hasMatch())
 	{
@@ -473,17 +473,17 @@ QMap<unsigned short, Client> PluginHelper::getAllClientNicks(uint64 serverConnec
 	return map;
 }
 
-void PluginHelper::openConfig()
+void PluginHelper::openConfig() const
 {
 	config->show();
 }
 
-void PluginHelper::openTransfers()
+void PluginHelper::openTransfers() const
 {
 	transfers->show();
 }
 
-void PluginHelper::onConfigChanged()
+void PluginHelper::onConfigChanged() const
 {
 	QString dir = config->getConfigAsString("DOWNLOAD_DIR");
 	transfers->setDownloadDirectory(dir);
