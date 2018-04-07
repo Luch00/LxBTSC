@@ -153,9 +153,16 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 	{
 		helper->clientConnected(serverConnectionHandlerID, clientID);
 	}
-	if (newChannelID == 0)
+	else if (newChannelID == 0)
 	{
 		helper->clientDisconnected(serverConnectionHandlerID, clientID, moveMessage);
+	}
+	else if (visibility == ENTER_VISIBILITY)
+	{
+		//
+		//QString derk = QString("ENTERED: %1").arg(clientID);
+		//ts3Functions.printMessageToCurrentTab(derk.toStdString().c_str());
+		helper->clientEnteredView(serverConnectionHandlerID, clientID);
 	}
 }
 
@@ -281,8 +288,14 @@ void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* s
 //void ts3plugin_onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clientID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
 //}
 
-//void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility) {
-//}
+void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility) {
+	if (visibility == ENTER_VISIBILITY)
+	{
+		//QString derk = QString("CLIENT MOVE THING: %1").arg(clientID);
+		//ts3Functions.printMessageToCurrentTab(derk.toStdString().c_str());
+		helper->clientEnteredView(serverConnectionHandlerID, clientID);
+	}
+}
 
 //void ts3plugin_onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID moverID, const char* moverName, const char* moverUniqueIdentifier, const char* moveMessage) {
 //}

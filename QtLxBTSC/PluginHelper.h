@@ -8,9 +8,9 @@
 #include <QApplication>
 #include <QToolButton>
 #include <QMetaMethod>
-#include "server.h"
 #include "ConfigWidget.h"
 #include "FileTransferListWidget.h"
+#include "TsServer.h"
 
 class PluginHelper : public QObject
 {
@@ -26,8 +26,10 @@ public:
 	void serverDisconnected(uint serverConnectionHandlerID);
 	void clientConnected(uint64 serverConnectionHandlerID, anyID clientID);
 	void clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message);
+	void clientEnteredView(uint64 serverConnectionHandlerID, anyID clientID) const;
+	//void clientEnteredViewBySubscription(uint64 serverConnectionHandlerID, anyID clientID);
 	void clientTimeout(uint64 serverConnectionHandlerID, anyID clientID);
-	void clientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, QString displayName);
+	void clientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, QString displayName) const;
 	void poked(uint64 serverConnectionHandlerID, anyID pokerID, QString pokerName, QString pokerUniqueID, QString pokeMessage);
 	void transferStatusChanged(anyID transferID, unsigned int status);
 	void toggleNormalChat() const;
@@ -69,7 +71,7 @@ private:
 	FileTransferListWidget* transfers;
 
 	uint64 currentServerID;
-	QMap<uint64, Server> servers;
+	QMap<unsigned long long, TsServer*> servers;
 	QString pathToPlugin;
 	bool first = true;
 	Qt::ApplicationState currentState;
@@ -81,8 +83,8 @@ private:
 	QString getMessageTarget(uint64 serverConnectionHandlerID, anyID targetMode, anyID clientID);
 	QMainWindow* findMainWindow() const;
 	static QWidget* findWidget(QString name, QWidget* parent);
-	static Client getClient(uint64 serverConnectionHandlerID, anyID id);
-	static QMap<unsigned short, Client> getAllClientNicks(uint64 serverConnectionHandlerID);
+	static TsClient* getClient(uint64 serverConnectionHandlerID, anyID id);
+	static QMap<unsigned short, TsClient*> getAllClientNicks(uint64 serverConnectionHandlerID);
 	void dynamicConnect(const QString &signalName, const QString &slotName);
-	QString time();
+	static QString time();
 };

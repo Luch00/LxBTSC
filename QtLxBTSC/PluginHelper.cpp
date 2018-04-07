@@ -32,6 +32,7 @@ PluginHelper::~PluginHelper()
 	delete chat;
 	delete config;
 	delete transfers;
+	qDeleteAll(servers);
 }
 
 // Disconnect used signals
@@ -70,22 +71,28 @@ void PluginHelper::onAppStateChanged(Qt::ApplicationState state)
 // Receive chat tab changed signal
 void PluginHelper::onTabChange(int i)
 {
-	//QMessageBox::information(0, "debug", QString("tabchange_trigger: %1 %2").arg(currentServerID).arg(i), QMessageBox::Ok);
 	if (i >= 0)
 	{
+		TsServer* s = servers.value(ts3Functions.getCurrentServerConnectionHandlerID());
+		if (s == nullptr)
+			return;
+
 		QString tabName;
 		if (i == 0)
 		{
-			tabName = QString("tab-%1-server").arg(servers[currentServerID].safe_uid());
+			tabName = QString("tab-%1-server").arg(s->safeUniqueId());
 		}
 		else if (i == 1)
 		{
-			tabName = QString("tab-%1-channel").arg(servers[currentServerID].safe_uid());
+			tabName = QString("tab-%1-channel").arg(s->safeUniqueId());
 		}
 		else
 		{
-			const QString id = servers[currentServerID].get_client_by_nickname(chatTabWidget->tabText(i)).safe_uid();
-			tabName = QString("tab-%1-private-%2").arg(servers[currentServerID].safe_uid()).arg(id);
+			TsClient* c = s->getClientByName(chatTabWidget->tabText(i));
+			if (c == nullptr)
+				return;
+
+			tabName = QString("tab-%1-private-%2").arg(s->safeUniqueId()).arg(c->safeUniqueId());
 		}
 		currentTabName = tabName;
 		emit chat->webObject()->tabChanged(tabName);
@@ -101,19 +108,26 @@ void PluginHelper::recheckSelectedTab()
 
 		if (i >= 0)
 		{
+			TsServer* s = servers.value(ts3Functions.getCurrentServerConnectionHandlerID());
+			if (s == nullptr)
+				return;
+
 			QString tabName;
 			if (i == 0)
 			{
-				tabName = QString("tab-%1-server").arg(servers[currentServerID].safe_uid());
+				tabName = QString("tab-%1-server").arg(s->safeUniqueId());
 			}
 			else if (i == 1)
 			{
-				tabName = QString("tab-%1-channel").arg(servers[currentServerID].safe_uid());
+				tabName = QString("tab-%1-channel").arg(s->safeUniqueId());
 			}
 			else
 			{
-				const QString id = servers[currentServerID].get_client_by_nickname(chatTabWidget->tabText(i)).safe_uid();
-				tabName = QString("tab-%1-private-%2").arg(servers[currentServerID].safe_uid()).arg(id);
+				TsClient* c = s->getClientByName(chatTabWidget->tabText(i));
+				if (c == nullptr)
+					return;
+
+				tabName = QString("tab-%1-private-%2").arg(s->safeUniqueId()).arg(c->safeUniqueId());
 			}
 			currentTabName = tabName;
 			emit chat->webObject()->tabChanged(tabName);
@@ -210,7 +224,7 @@ void PluginHelper::onTabClose(int i)
 {
 	if (i > 1)
 	{
-		const QString tabName = QString("tab-%1-server").arg(servers[currentServerID].safe_uid());
+		const QString tabName = QString("tab-%1-server").arg(servers[currentServerID]->safeUniqueId());
 		chat->webObject()->tabChanged(tabName);
 		chatTabWidget->setCurrentIndex(0);
 	}
@@ -274,7 +288,7 @@ void PluginHelper::onPrintConsoleMessageToCurrentTab(QString message)
 {
 	if (currentTabName.isNull())
 	{
-		currentTabName = QString("tab-%1-server").arg(servers[currentServerID].safe_uid());
+		currentTabName = QString("tab-%1-server").arg(servers.value(ts3Functions.getCurrentServerConnectionHandlerID())->safeUniqueId());
 	}
 	chat->webObject()->printConsoleMessage(currentTabName, message);
 }
@@ -318,13 +332,18 @@ void PluginHelper::currentServerChanged(uint64 serverConnectionHandlerID)
 
 void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID fromID, anyID toID, anyID targetMode, QString senderUniqueID, QString fromName, QString message, bool outgoing)
 {
-	QString userlink = QString("client://%1/%2~%3").arg(QString::number(fromID), senderUniqueID, fromName.toHtmlEscaped());
+	TsClient* c = servers.value(serverConnectionHandlerID)->getClient(fromID);
+	if (c == nullptr)
+	{
+		c = new TsClient(fromName, senderUniqueID, fromID);
+		servers.value(serverConnectionHandlerID)->addClient(fromID, c);
+	}
 	emit chat->webObject()->textMessageReceived(
 		getMessageTarget(serverConnectionHandlerID, targetMode, outgoing ? toID : fromID),
 		outgoing ? "Outgoing" : "Incoming",
 		QTime::currentTime().toString("hh:mm:ss"),
 		fromName,
-		userlink,
+		c->clientLink(),
 		message
 	);
 }
@@ -332,15 +351,23 @@ void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID f
 // string used to identify tabs
 QString PluginHelper::getMessageTarget(uint64 serverConnectionHandlerID, anyID targetMode, anyID clientID)
 {
+	TsServer * s = servers.value(serverConnectionHandlerID);
+	if (s == nullptr)
+		return "tab-MISSING-DEFAULT";
+
 	if (targetMode == 3)
 	{
-		return QString("tab-%1-server").arg(servers[serverConnectionHandlerID].safe_uid());
+		return QString("tab-%1-server").arg(s->safeUniqueId());
 	}
 	if (targetMode == 2)
 	{
-		return QString("tab-%1-channel").arg(servers[serverConnectionHandlerID].safe_uid());
+		return QString("tab-%1-channel").arg(s->safeUniqueId());
 	}
-	return QString("tab-%1-private-%2").arg(servers[serverConnectionHandlerID].safe_uid()).arg(servers[serverConnectionHandlerID].get_client(clientID).safe_uid());
+	TsClient* c = s->getClient(clientID);
+	if (c == nullptr)
+		return "tab-MISSING-DEFAULT";
+
+	return QString("tab-%1-private-%2").arg(s->safeUniqueId()).arg(c->safeUniqueId());
 }
 
 // get current time as string
@@ -360,9 +387,18 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 	char *res;
 	if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_UNIQUE_IDENTIFIER, &res) == ERROR_ok)
 	{
-		const Server server(serverConnectionHandlerID, res, getAllClientNicks(serverConnectionHandlerID));
-		emit chat->webObject()->addServer(server.safe_uid());
+		//TsServer* server = new TsServer(serverConnectionHandlerID, res);
+		TsServer* server = new TsServer(serverConnectionHandlerID, res, getAllClientNicks(serverConnectionHandlerID));
+		emit chat->webObject()->addServer(server->safeUniqueId());
 		bool reconnected = servers.values().contains(server);
+		if (reconnected)
+		{
+			for each (TsServer* old in servers.values())
+			{
+				if (old == server)
+					delete old;
+			}
+		}
 		
 		servers.insert(serverConnectionHandlerID, server);
 		free(res);
@@ -393,21 +429,28 @@ void PluginHelper::serverDisconnected(uint serverConnectionHandlerID)
 
 void PluginHelper::clientConnected(uint64 serverConnectionHandlerID, anyID clientID)
 {
-	const Client client = getClient(serverConnectionHandlerID, clientID);
-	servers[serverConnectionHandlerID].add_client(clientID, client);
-	emit chat->webObject()->clientConnected(getMessageTarget(serverConnectionHandlerID, 3, clientID), time(), client.link(), client.nickname());
+	TsClient* client = getClient(serverConnectionHandlerID, clientID);
+	servers.value(serverConnectionHandlerID)->addClient(clientID, client);
+	emit chat->webObject()->clientConnected(getMessageTarget(serverConnectionHandlerID, 3, clientID), time(), client->clientLink(), client->name());
 }
 
 void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message)
 {
-	const Client &client = servers[serverConnectionHandlerID].get_client(clientID);
-	emit chat->webObject()->clientDisconnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), client.link(), client.nickname(), message);
+	//QString wtf = QString::number(clientID);
+	//ts3Functions.printMessageToCurrentTab(wtf.toStdString().c_str());
+	TsClient* client = servers.value(serverConnectionHandlerID)->getClient(clientID);
+	if (client == nullptr)
+	{
+		//ts3Functions.printMessageToCurrentTab("CRASH HERE");
+		return;
+	}
+	emit chat->webObject()->clientDisconnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), client->clientLink(), client->name(), message);
 }
 
 void PluginHelper::clientTimeout(uint64 serverConnectionHandlerID, anyID clientID)
 {
-	const Client &client = servers[serverConnectionHandlerID].get_client(clientID);
-	emit chat->webObject()->clientTimeout(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), client.link(), client.nickname());
+	TsClient* client = servers.value(serverConnectionHandlerID)->getClient(clientID);
+	emit chat->webObject()->clientTimeout(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), client->clientLink(), client->name());
 }
 
 // called when file transfer ends in some way
@@ -416,17 +459,27 @@ void PluginHelper::transferStatusChanged(anyID transferID, unsigned status)
 	transfers->transferStatusChanged(transferID, status);
 }
 
-void PluginHelper::clientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, QString displayName)
+void PluginHelper::clientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, QString displayName) const
 {
-	Client c = servers[serverConnectionHandlerID].get_client(clientID);
-	c.set_nickname(displayName);
-	servers[serverConnectionHandlerID].add_client(clientID, c);
+	TsClient* c = servers.value(serverConnectionHandlerID)->getClient(clientID);
+	c->setName(displayName);
 }
 
 void PluginHelper::poked(uint64 serverConnectionHandlerID, anyID pokerID, QString pokerName, QString pokerUniqueID, QString pokeMessage)
 {
-	QString userlink = QString("client://%1/%2~%3").arg(QString::number(pokerID), pokerUniqueID, pokerName.toHtmlEscaped());
-	emit chat->webObject()->clientPoked(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), userlink, pokerName, pokeMessage);
+	TsClient* c = servers.value(serverConnectionHandlerID)->getClient(pokerID);
+	if (c == nullptr)
+	{
+		c = new TsClient(pokerName, pokerUniqueID, pokerID);
+		servers.value(serverConnectionHandlerID)->addClient(pokerID, c);
+	}
+	emit chat->webObject()->clientPoked(
+		getMessageTarget(serverConnectionHandlerID, 3, 0), 
+		time(), 
+		c->clientLink(), 
+		pokerName, 
+		pokeMessage
+	);
 }
 
 void PluginHelper::reload() const
@@ -441,7 +494,7 @@ void PluginHelper::reloadEmotes() const
 }
 
 // Get the nickname and unique id of a client
-Client PluginHelper::getClient(uint64 serverConnectionHandlerID, anyID id)
+TsClient* PluginHelper::getClient(uint64 serverConnectionHandlerID, anyID id)
 {
 	char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
 	if (ts3Functions.getClientDisplayName(serverConnectionHandlerID, id, res, TS3_MAX_SIZE_CLIENT_NICKNAME) == ERROR_ok)
@@ -454,13 +507,13 @@ Client PluginHelper::getClient(uint64 serverConnectionHandlerID, anyID id)
 		uniqueid = uid;
 		free(uid);
 	}
-	return Client(res, uniqueid, id);
+	return new TsClient(res, uniqueid, id);
 }
 
-// cache all connected clients
-QMap<unsigned short, Client> PluginHelper::getAllClientNicks(uint64 serverConnectionHandlerID)
+// cache all connected visible clients
+QMap<unsigned short, TsClient*> PluginHelper::getAllClientNicks(uint64 serverConnectionHandlerID)
 {
-	QMap<unsigned short, Client> map;
+	QMap<unsigned short, TsClient*> map;
 	anyID *list;
 	if (ts3Functions.getClientList(serverConnectionHandlerID, &list) == ERROR_ok)
 	{
@@ -493,6 +546,25 @@ void PluginHelper::serverStopped(uint64 serverConnectionHandlerID, QString messa
 {
 	emit chat->webObject()->serverStopped(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), message);
 }
+
+// called when client enters view by joining the same channel or by this client subscribing to a channel
+void PluginHelper::clientEnteredView(uint64 serverConnectionHandlerID, anyID clientID) const
+{
+	TsServer* s = servers.value(serverConnectionHandlerID);
+	// return if server 
+	if (s == nullptr)
+		return;
+	/*TsClient* c = getClient(serverConnectionHandlerID, clientID);
+	if (c == nullptr)
+	{
+		ts3Functions.printMessageToCurrentTab("WTF");
+	}
+	ts3Functions.printMessageToCurrentTab(c->name().toStdString().c_str());*/
+	s->addClient(clientID, getClient(serverConnectionHandlerID, clientID));
+	//servers.value(serverConnectionHandlerID)->addClient(clientID, getClient(serverConnectionHandlerID, clientID));
+}
+
+
 
 
 

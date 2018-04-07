@@ -34,7 +34,6 @@ signals:
 	void transferFailed();
 
 public slots :
-	void addTransferItem(anyID transferId, QString filename);
 	void onFileUrlClicked(const QUrl &url);
 
 private slots:
@@ -55,4 +54,5 @@ private:
 	void initOverwriteDialog();
 	void checkForPassword();
 	void startDownload();
+	void addTransferItem(anyID transferId, QString filename);
 };
