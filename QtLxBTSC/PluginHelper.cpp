@@ -32,7 +32,7 @@ PluginHelper::~PluginHelper()
 	delete chat;
 	delete config;
 	delete transfers;
-	qDeleteAll(servers);
+	servers.clear();
 }
 
 // Disconnect used signals
@@ -73,7 +73,7 @@ void PluginHelper::onTabChange(int i)
 {
 	if (i >= 0)
 	{
-		TsServer* s = servers.value(ts3Functions.getCurrentServerConnectionHandlerID());
+		auto s = servers.value(ts3Functions.getCurrentServerConnectionHandlerID());
 		if (s == nullptr)
 			return;
 
@@ -88,7 +88,7 @@ void PluginHelper::onTabChange(int i)
 		}
 		else
 		{
-			TsClient* c = s->getClientByName(chatTabWidget->tabText(i));
+			auto c = s->getClientByName(chatTabWidget->tabText(i));
 			if (c == nullptr)
 				return;
 
@@ -108,7 +108,7 @@ void PluginHelper::recheckSelectedTab()
 
 		if (i >= 0)
 		{
-			TsServer* s = servers.value(ts3Functions.getCurrentServerConnectionHandlerID());
+			auto s = servers.value(ts3Functions.getCurrentServerConnectionHandlerID());
 			if (s == nullptr)
 				return;
 
@@ -123,7 +123,7 @@ void PluginHelper::recheckSelectedTab()
 			}
 			else
 			{
-				TsClient* c = s->getClientByName(chatTabWidget->tabText(i));
+				auto c = s->getClientByName(chatTabWidget->tabText(i));
 				if (c == nullptr)
 					return;
 
@@ -332,11 +332,12 @@ void PluginHelper::currentServerChanged(uint64 serverConnectionHandlerID)
 
 void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID fromID, anyID toID, anyID targetMode, QString senderUniqueID, QString fromName, QString message, bool outgoing)
 {
-	TsClient* c = servers.value(serverConnectionHandlerID)->getClient(fromID);
+	auto c = servers.value(serverConnectionHandlerID)->getClient(fromID);
 	if (c == nullptr)
 	{
-		c = new TsClient(fromName, senderUniqueID, fromID);
-		servers.value(serverConnectionHandlerID)->addClient(fromID, c);
+		QSharedPointer<TsClient> client(new TsClient(fromName, senderUniqueID, fromID));
+		c = client;
+		servers.value(serverConnectionHandlerID)->addClient(fromID, client);
 	}
 	emit chat->webObject()->textMessageReceived(
 		getMessageTarget(serverConnectionHandlerID, targetMode, outgoing ? toID : fromID),
@@ -351,7 +352,7 @@ void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID f
 // string used to identify tabs
 QString PluginHelper::getMessageTarget(uint64 serverConnectionHandlerID, anyID targetMode, anyID clientID)
 {
-	TsServer * s = servers.value(serverConnectionHandlerID);
+	auto s = servers.value(serverConnectionHandlerID);
 	if (s == nullptr)
 		return "tab-MISSING-DEFAULT";
 
@@ -363,7 +364,7 @@ QString PluginHelper::getMessageTarget(uint64 serverConnectionHandlerID, anyID t
 	{
 		return QString("tab-%1-channel").arg(s->safeUniqueId());
 	}
-	TsClient* c = s->getClient(clientID);
+	auto c = s->getClient(clientID);
 	if (c == nullptr)
 		return "tab-MISSING-DEFAULT";
 
@@ -387,18 +388,9 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 	char *res;
 	if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_UNIQUE_IDENTIFIER, &res) == ERROR_ok)
 	{
-		//TsServer* server = new TsServer(serverConnectionHandlerID, res);
-		TsServer* server = new TsServer(serverConnectionHandlerID, res, getAllClientNicks(serverConnectionHandlerID));
+		QSharedPointer<TsServer> server(new TsServer(serverConnectionHandlerID, res, getAllClientNicks(serverConnectionHandlerID)));
 		emit chat->webObject()->addServer(server->safeUniqueId());
 		bool reconnected = servers.values().contains(server);
-		if (reconnected)
-		{
-			for each (TsServer* old in servers.values())
-			{
-				if (old == server)
-					delete old;
-			}
-		}
 		
 		servers.insert(serverConnectionHandlerID, server);
 		free(res);
@@ -429,14 +421,14 @@ void PluginHelper::serverDisconnected(uint serverConnectionHandlerID)
 
 void PluginHelper::clientConnected(uint64 serverConnectionHandlerID, anyID clientID)
 {
-	TsClient* client = getClient(serverConnectionHandlerID, clientID);
+	auto client = getClient(serverConnectionHandlerID, clientID);
 	servers.value(serverConnectionHandlerID)->addClient(clientID, client);
 	emit chat->webObject()->clientConnected(getMessageTarget(serverConnectionHandlerID, 3, clientID), time(), client->clientLink(), client->name());
 }
 
 void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message)
 {
-	TsClient* client = servers.value(serverConnectionHandlerID)->getClient(clientID);
+	auto client = servers.value(serverConnectionHandlerID)->getClient(clientID);
 	if (client == nullptr)
 	{
 		return;
@@ -446,7 +438,7 @@ void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID cl
 
 void PluginHelper::clientTimeout(uint64 serverConnectionHandlerID, anyID clientID)
 {
-	TsClient* client = servers.value(serverConnectionHandlerID)->getClient(clientID);
+	auto client = servers.value(serverConnectionHandlerID)->getClient(clientID);
 	emit chat->webObject()->clientTimeout(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), client->clientLink(), client->name());
 }
 
@@ -458,17 +450,18 @@ void PluginHelper::transferStatusChanged(anyID transferID, unsigned status)
 
 void PluginHelper::clientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, QString displayName) const
 {
-	TsClient* c = servers.value(serverConnectionHandlerID)->getClient(clientID);
+	auto c = servers.value(serverConnectionHandlerID)->getClient(clientID);
 	c->setName(displayName);
 }
 
 void PluginHelper::poked(uint64 serverConnectionHandlerID, anyID pokerID, QString pokerName, QString pokerUniqueID, QString pokeMessage)
 {
-	TsClient* c = servers.value(serverConnectionHandlerID)->getClient(pokerID);
+	auto c = servers.value(serverConnectionHandlerID)->getClient(pokerID);
 	if (c == nullptr)
 	{
-		c = new TsClient(pokerName, pokerUniqueID, pokerID);
-		servers.value(serverConnectionHandlerID)->addClient(pokerID, c);
+		QSharedPointer <TsClient> client(new TsClient(pokerName, pokerUniqueID, pokerID));
+		c = client;
+		servers.value(serverConnectionHandlerID)->addClient(pokerID, client);
 	}
 	emit chat->webObject()->clientPoked(
 		getMessageTarget(serverConnectionHandlerID, 3, 0), 
@@ -491,7 +484,7 @@ void PluginHelper::reloadEmotes() const
 }
 
 // Get the nickname and unique id of a client
-TsClient* PluginHelper::getClient(uint64 serverConnectionHandlerID, anyID id)
+QSharedPointer<TsClient> PluginHelper::getClient(uint64 serverConnectionHandlerID, anyID id)
 {
 	char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
 	if (ts3Functions.getClientDisplayName(serverConnectionHandlerID, id, res, TS3_MAX_SIZE_CLIENT_NICKNAME) == ERROR_ok)
@@ -504,13 +497,13 @@ TsClient* PluginHelper::getClient(uint64 serverConnectionHandlerID, anyID id)
 		uniqueid = uid;
 		free(uid);
 	}
-	return new TsClient(res, uniqueid, id);
+	return QSharedPointer<TsClient>(new TsClient(res, uniqueid, id));
 }
 
 // cache all connected visible clients
-QMap<unsigned short, TsClient*> PluginHelper::getAllClientNicks(uint64 serverConnectionHandlerID)
+QMap<unsigned short, QSharedPointer<TsClient>> PluginHelper::getAllClientNicks(uint64 serverConnectionHandlerID)
 {
-	QMap<unsigned short, TsClient*> map;
+	QMap<unsigned short, QSharedPointer<TsClient>> map;
 	anyID *list;
 	if (ts3Functions.getClientList(serverConnectionHandlerID, &list) == ERROR_ok)
 	{
@@ -547,18 +540,11 @@ void PluginHelper::serverStopped(uint64 serverConnectionHandlerID, QString messa
 // called when client enters view by joining the same channel or by this client subscribing to a channel
 void PluginHelper::clientEnteredView(uint64 serverConnectionHandlerID, anyID clientID) const
 {
-	TsServer* s = servers.value(serverConnectionHandlerID);
-	// return if server 
+	auto s = servers.value(serverConnectionHandlerID);
 	if (s == nullptr)
 		return;
-	/*TsClient* c = getClient(serverConnectionHandlerID, clientID);
-	if (c == nullptr)
-	{
-		ts3Functions.printMessageToCurrentTab("WTF");
-	}
-	ts3Functions.printMessageToCurrentTab(c->name().toStdString().c_str());*/
+
 	s->addClient(clientID, getClient(serverConnectionHandlerID, clientID));
-	//servers.value(serverConnectionHandlerID)->addClient(clientID, getClient(serverConnectionHandlerID, clientID));
 }
 
 

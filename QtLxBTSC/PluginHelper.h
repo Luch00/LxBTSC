@@ -71,7 +71,7 @@ private:
 	FileTransferListWidget* transfers;
 
 	//uint64 currentServerID;
-	QMap<unsigned long long, TsServer*> servers;
+	QMap<unsigned long long, QSharedPointer<TsServer>> servers;
 	QString pathToPlugin;
 	bool first = true;
 	Qt::ApplicationState currentState;
@@ -83,8 +83,8 @@ private:
 	QString getMessageTarget(uint64 serverConnectionHandlerID, anyID targetMode, anyID clientID);
 	QMainWindow* findMainWindow() const;
 	static QWidget* findWidget(QString name, QWidget* parent);
-	static TsClient* getClient(uint64 serverConnectionHandlerID, anyID id);
-	static QMap<unsigned short, TsClient*> getAllClientNicks(uint64 serverConnectionHandlerID);
+	static QSharedPointer<TsClient> getClient(uint64 serverConnectionHandlerID, anyID id);
+	static QMap<unsigned short, QSharedPointer<TsClient>> getAllClientNicks(uint64 serverConnectionHandlerID);
 	void dynamicConnect(const QString &signalName, const QString &slotName);
 	static QString time();
 };

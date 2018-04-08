@@ -4,7 +4,7 @@ TsServer::TsServer(QObject *parent)	: QObject(parent), serverId_(99999), uniqueI
 {
 }
 
-TsServer::TsServer(unsigned long long serverId, QString uniqueId, QMap<unsigned short, TsClient*> clients, QObject *parent) : QObject(parent), serverId_(serverId), uniqueId_(uniqueId), clients_(clients)
+TsServer::TsServer(unsigned long long serverId, QString uniqueId, QMap<unsigned short, QSharedPointer<TsClient>> clients, QObject *parent) : QObject(parent), serverId_(serverId), uniqueId_(uniqueId), clients_(clients)
 {
 	QString s = uniqueId_;
 	safeUniqueId_ = s.replace(QRegExp("[+/=]"), "00");
@@ -18,7 +18,7 @@ TsServer::TsServer(unsigned long long serverId, QString uniqueId, QObject *paren
 
 TsServer::~TsServer()
 {
-	qDeleteAll(clients_);
+	clients_.clear();
 }
 
 QString TsServer::uniqueId() const
@@ -31,35 +31,34 @@ QString TsServer::safeUniqueId() const
 	return safeUniqueId_;
 }
 
-void TsServer::addClients(QMap<unsigned short, TsClient*> newClients)
+void TsServer::addClients(QMap<unsigned short, QSharedPointer<TsClient>> newClients)
 {
 	clients_ = newClients;
 }
 
-void TsServer::addClient(unsigned short clientId, TsClient* client)
+void TsServer::addClient(unsigned short clientId, QSharedPointer<TsClient> client)
 {
 	if (clients_.contains(clientId))
 	{
-		TsClient* old = clients_.take(clientId);
-		delete old;
+		QSharedPointer<TsClient> old = clients_.take(clientId);
 	}
 	clients_.insert(clientId, client);
 }
 
-TsClient* TsServer::getClient(unsigned short clientId) const
+QSharedPointer<TsClient> TsServer::getClient(unsigned short clientId) const
 {
 	return clients_.value(clientId);
 }
 
-TsClient* TsServer::getClientByName(QString name) const
+QSharedPointer<TsClient> TsServer::getClientByName(QString name) const
 {
-	for each (TsClient* client in clients_)
+	for each (QSharedPointer<TsClient> client in clients_)
 	{
 		if (client->name() == name)
 		{
 			return client;
 		}
 	}
-	return nullptr;
+	return QSharedPointer<TsClient>(new TsClient());
 }
 
