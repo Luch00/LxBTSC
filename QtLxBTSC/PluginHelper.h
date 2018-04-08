@@ -70,7 +70,7 @@ private:
 	ConfigWidget* config;
 	FileTransferListWidget* transfers;
 
-	uint64 currentServerID;
+	//uint64 currentServerID;
 	QMap<unsigned long long, TsServer*> servers;
 	QString pathToPlugin;
 	bool first = true;

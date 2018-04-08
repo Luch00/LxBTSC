@@ -102,8 +102,8 @@ void PluginHelper::onTabChange(int i)
 // After server tab change check what chat tab is selected
 void PluginHelper::recheckSelectedTab()
 {
-	if (currentServerID != NULL)
-	{
+	//if (currentServerID != NULL)
+	//{
 		const int i = chatTabWidget->currentIndex();
 
 		if (i >= 0)
@@ -132,7 +132,7 @@ void PluginHelper::recheckSelectedTab()
 			currentTabName = tabName;
 			emit chat->webObject()->tabChanged(tabName);
 		}
-	}
+	//}
 }
 
 void PluginHelper::onLinkHovered(const QUrl &url)
@@ -224,7 +224,7 @@ void PluginHelper::onTabClose(int i)
 {
 	if (i > 1)
 	{
-		const QString tabName = QString("tab-%1-server").arg(servers[currentServerID]->safeUniqueId());
+		const QString tabName = QString("tab-%1-server").arg(servers[ts3Functions.getCurrentServerConnectionHandlerID()]->safeUniqueId());
 		chat->webObject()->tabChanged(tabName);
 		chatTabWidget->setCurrentIndex(0);
 	}
@@ -322,7 +322,7 @@ QWidget* PluginHelper::findWidget(QString name, QWidget* parent)
 // server tab changed
 void PluginHelper::currentServerChanged(uint64 serverConnectionHandlerID)
 {
-	currentServerID = serverConnectionHandlerID;
+	//currentServerID = serverConnectionHandlerID;
 
 	if (first == false)
 	{
@@ -436,12 +436,9 @@ void PluginHelper::clientConnected(uint64 serverConnectionHandlerID, anyID clien
 
 void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message)
 {
-	//QString wtf = QString::number(clientID);
-	//ts3Functions.printMessageToCurrentTab(wtf.toStdString().c_str());
 	TsClient* client = servers.value(serverConnectionHandlerID)->getClient(clientID);
 	if (client == nullptr)
 	{
-		//ts3Functions.printMessageToCurrentTab("CRASH HERE");
 		return;
 	}
 	emit chat->webObject()->clientDisconnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), client->clientLink(), client->name(), message);
