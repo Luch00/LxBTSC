@@ -12,8 +12,10 @@ function Embed(message_id, message_text) {
                 console.log('Found image link:' + url.href);
                 let embed = $('<a/>', { 
                     href: encodeURI(url.href),
+                    'data-featherlight': url.href,
                     html: $('<img/>', { src: encodeURI(url.href) })
                 });
+                embed.featherlight();
                 embeds.push(EmbedBlock(embed));
                 return;
             }

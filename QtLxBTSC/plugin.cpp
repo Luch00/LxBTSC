@@ -159,9 +159,6 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 	}
 	else if (visibility == ENTER_VISIBILITY)
 	{
-		//
-		//QString derk = QString("ENTERED: %1").arg(clientID);
-		//ts3Functions.printMessageToCurrentTab(derk.toStdString().c_str());
 		helper->clientEnteredView(serverConnectionHandlerID, clientID);
 	}
 }
@@ -291,8 +288,6 @@ void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* s
 void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility) {
 	if (visibility == ENTER_VISIBILITY)
 	{
-		//QString derk = QString("CLIENT MOVE THING: %1").arg(clientID);
-		//ts3Functions.printMessageToCurrentTab(derk.toStdString().c_str());
 		helper->clientEnteredView(serverConnectionHandlerID, clientID);
 	}
 }

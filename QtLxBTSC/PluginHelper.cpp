@@ -102,37 +102,34 @@ void PluginHelper::onTabChange(int i)
 // After server tab change check what chat tab is selected
 void PluginHelper::recheckSelectedTab()
 {
-	//if (currentServerID != NULL)
-	//{
-		const int i = chatTabWidget->currentIndex();
+	const int i = chatTabWidget->currentIndex();
 
-		if (i >= 0)
+	if (i >= 0)
+	{
+		auto s = servers.value(ts3Functions.getCurrentServerConnectionHandlerID());
+		if (s == nullptr)
+			return;
+
+		QString tabName;
+		if (i == 0)
 		{
-			auto s = servers.value(ts3Functions.getCurrentServerConnectionHandlerID());
-			if (s == nullptr)
+			tabName = QString("tab-%1-server").arg(s->safeUniqueId());
+		}
+		else if (i == 1)
+		{
+			tabName = QString("tab-%1-channel").arg(s->safeUniqueId());
+		}
+		else
+		{
+			auto c = s->getClientByName(chatTabWidget->tabText(i));
+			if (c == nullptr)
 				return;
 
-			QString tabName;
-			if (i == 0)
-			{
-				tabName = QString("tab-%1-server").arg(s->safeUniqueId());
-			}
-			else if (i == 1)
-			{
-				tabName = QString("tab-%1-channel").arg(s->safeUniqueId());
-			}
-			else
-			{
-				auto c = s->getClientByName(chatTabWidget->tabText(i));
-				if (c == nullptr)
-					return;
-
-				tabName = QString("tab-%1-private-%2").arg(s->safeUniqueId()).arg(c->safeUniqueId());
-			}
-			currentTabName = tabName;
-			emit chat->webObject()->tabChanged(tabName);
+			tabName = QString("tab-%1-private-%2").arg(s->safeUniqueId()).arg(c->safeUniqueId());
 		}
-	//}
+		currentTabName = tabName;
+		emit chat->webObject()->tabChanged(tabName);
+	}
 }
 
 void PluginHelper::onLinkHovered(const QUrl &url)
@@ -322,8 +319,6 @@ QWidget* PluginHelper::findWidget(QString name, QWidget* parent)
 // server tab changed
 void PluginHelper::currentServerChanged(uint64 serverConnectionHandlerID)
 {
-	//currentServerID = serverConnectionHandlerID;
-
 	if (first == false)
 	{
 		recheckSelectedTab();
@@ -546,8 +541,3 @@ void PluginHelper::clientEnteredView(uint64 serverConnectionHandlerID, anyID cli
 
 	s->addClient(clientID, getClient(serverConnectionHandlerID, clientID));
 }
-
-
-
-
-

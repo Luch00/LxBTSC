@@ -5,6 +5,7 @@
         <meta name='viewport' content='width=device-width, initial-scale=1.0'>
         <link rel='stylesheet' type='text/css' href='style/style.css'/>
         <link rel='stylesheet' type='text/css' href='style/xbbcode.css'/>
+        <link rel='stylesheet' type='text/css' href='style/featherlight.min.css'/>
 
         <script type='text/javascript' src='js/jquery-3.2.1.min.js'></script>
         <script type='text/javascript' src='js/qwebchannel.js'></script>
@@ -18,7 +19,7 @@
         <script type='text/javascript' src='js/emotes.js'></script>
         <script type='text/javascript' src='js/favicons.js'></script>
         <script type='text/javascript' src='js/twttr.js'></script>
-
+        <script type='text/javascript' src='js/featherlight.min.js'></script>
         <script type='text/javascript'>
             var main;
             var IsBottom = true;
@@ -29,6 +30,7 @@
                     window.scroll(0, document.body.scrollHeight);
                 }
             };
+            //$.featherlight.autoBind = false;
 
             new QWebChannel(qt.webChannelTransport, function(channel) {
                 QtObject = channel.objects.wObject;
