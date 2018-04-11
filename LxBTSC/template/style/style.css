@@ -45,7 +45,7 @@ p {
     color: #C9070A;
     font-weight: bold;
 }
-img {
+a > img {
     max-width: 100%;
     max-height: 250px;
 }
@@ -200,7 +200,7 @@ img.Outgoing {
 
 .tooltipper {
     background-color: black;
-    color:  #FFF;
+    color: #FFF;
     font-size: 0.7em;
     position: absolute;
     z-index: 999;
