@@ -11,26 +11,24 @@ class TsServer : public QObject
 
 public:
 	TsServer(QObject *parent = 0);
-	TsServer(unsigned long long serverId, QString uniqueId, QMap<unsigned short, QSharedPointer<TsClient>> clients, QObject *parent = 0);
-	TsServer(unsigned long long serverId, QString uniqueId, QObject *parent = 0);
+	TsServer(unsigned long long serverId, QString uniqueId, unsigned short myId, QMap<unsigned short, QSharedPointer<TsClient>> clients, QObject *parent = 0);
 	~TsServer();
 
 	QString uniqueId() const;
 	QString safeUniqueId() const;
-
+	bool connected() const;
+	unsigned short myId() const;
+	void setDisconnected();
 	void addClients(QMap<unsigned short, QSharedPointer<TsClient>> newClients);
 	void addClient(unsigned short clientId, QSharedPointer<TsClient>);
 	QSharedPointer<TsClient> getClient(unsigned short clientId) const;
 	QSharedPointer<TsClient> getClientByName(QString name) const;
 
-	bool operator==(const TsServer* server) const
-	{
-		return this->uniqueId_ == server->uniqueId();
-	}
-
 private:
 	unsigned long long serverId_;
 	const QString uniqueId_;
 	QString safeUniqueId_;
+	bool connected_ = true;
+	unsigned short myId_;
 	QMap<unsigned short, QSharedPointer<TsClient>> clients_;
 };

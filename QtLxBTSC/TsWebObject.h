@@ -25,6 +25,7 @@ signals:
 	void serverConnected(QString target, QString time, QString serverName);
 	void serverDisconnected(QString target, QString time);
 	void serverStopped(QString target, QString time, QString message);
+	//void serverConnectionLost(QString target, QString time);
 
 	void clientConnected(QString target, QString time, QString clientLink, QString clientName);
 	void clientDisconnected(QString target, QString time, QString clientLink, QString clientName, QString disconnectMessage);

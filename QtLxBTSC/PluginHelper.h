@@ -87,4 +87,5 @@ private:
 	static QMap<unsigned short, QSharedPointer<TsClient>> getAllClientNicks(uint64 serverConnectionHandlerID);
 	void dynamicConnect(const QString &signalName, const QString &slotName);
 	static QString time();
+	anyID getOwnClientId(uint64 serverConnectionHandlerID) const;
 };

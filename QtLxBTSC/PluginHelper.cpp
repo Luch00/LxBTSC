@@ -383,35 +383,38 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 	char *res;
 	if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_UNIQUE_IDENTIFIER, &res) == ERROR_ok)
 	{
-		QSharedPointer<TsServer> server(new TsServer(serverConnectionHandlerID, res, getAllClientNicks(serverConnectionHandlerID)));
+		auto myid = getOwnClientId(serverConnectionHandlerID);
+		QSharedPointer<TsServer> server(new TsServer(serverConnectionHandlerID, res, myid, getAllClientNicks(serverConnectionHandlerID)));
 		emit chat->webObject()->addServer(server->safeUniqueId());
-		bool reconnected = servers.values().contains(server);
 		
 		servers.insert(serverConnectionHandlerID, server);
 		free(res);
 
-		if (!reconnected)
+		char *msg;
+		if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_WELCOMEMESSAGE, &msg) == ERROR_ok)
 		{
-			char *msg;
-			if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_WELCOMEMESSAGE, &msg) == ERROR_ok)
-			{
-				emit chat->webObject()->serverWelcomeMessage(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), msg);
-				free(msg);
-			}
-			if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &msg) == ERROR_ok)
-			{
-				emit chat->webObject()->serverConnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), msg);
-				free(msg);
-				return;
-			}
+			emit chat->webObject()->serverWelcomeMessage(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), msg);
+			free(msg);
+		}
+		if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &msg) == ERROR_ok)
+		{
+			emit chat->webObject()->serverConnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), msg);
+			free(msg);
 		}
 	}
-	emit chat->webObject()->serverConnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), "");
 }
 
 void PluginHelper::serverDisconnected(uint serverConnectionHandlerID)
 {
-	emit chat->webObject()->serverDisconnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time());
+	if (servers.contains(serverConnectionHandlerID))
+	{
+		// don't spam "disconnected" in case connection was lost
+		if (servers.value(serverConnectionHandlerID)->connected())
+		{
+			servers.value(serverConnectionHandlerID)->setDisconnected();
+			emit chat->webObject()->serverDisconnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time());
+		}
+	}
 }
 
 void PluginHelper::clientConnected(uint64 serverConnectionHandlerID, anyID clientID)
@@ -423,17 +426,21 @@ void PluginHelper::clientConnected(uint64 serverConnectionHandlerID, anyID clien
 
 void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message)
 {
+	// don't print own disconnects
+	if (clientID == servers.value(serverConnectionHandlerID)->myId())
+		return;
+	
 	auto client = servers.value(serverConnectionHandlerID)->getClient(clientID);
 	if (client == nullptr)
-	{
 		return;
-	}
+
 	emit chat->webObject()->clientDisconnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), client->clientLink(), client->name(), message);
 }
 
 void PluginHelper::clientTimeout(uint64 serverConnectionHandlerID, anyID clientID)
 {
-	auto client = servers.value(serverConnectionHandlerID)->getClient(clientID);
+	auto server = servers.value(serverConnectionHandlerID);
+	auto client = server->getClient(clientID);
 	emit chat->webObject()->clientTimeout(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), client->clientLink(), client->name());
 }
 
@@ -540,4 +547,14 @@ void PluginHelper::clientEnteredView(uint64 serverConnectionHandlerID, anyID cli
 		return;
 
 	s->addClient(clientID, getClient(serverConnectionHandlerID, clientID));
+}
+
+anyID PluginHelper::getOwnClientId(uint64 serverConnectionHandlerID) const
+{
+	anyID id;
+	if (ts3Functions.getClientID(serverConnectionHandlerID, &id) != ERROR_ok)
+	{
+		return 0;
+	}
+	return id;
 }
