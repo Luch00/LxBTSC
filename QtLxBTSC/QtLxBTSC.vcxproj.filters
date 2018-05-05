@@ -52,9 +52,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_TsWebObject.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_PluginHelper.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
@@ -112,9 +109,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="plugin.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="file.h">

@@ -1,7 +1,7 @@
 var Config = {};
 
 function loadConfig() {
-    $.getJSON("config.json", function(data) {
+    $.getJSON("config/", function(data) {
         Config = data;
     })
     .fail(function() {

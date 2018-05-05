@@ -40,9 +40,7 @@ function ParseBBCode(line) {
     let result = XBBCODE.process({
         text: line
     });
-    //console.error("err", result.error);
-    //console.dir(result.errorQueue);
-    return result.html.replace(/(?:\r\n|\r|\n)/g, '<br>');
+    return result.html;
 }
 
 function AddTextMessage(target, direction, time, name, userlink, line) {
@@ -131,6 +129,11 @@ function Ts3ServerDisconnected(target, time) {
 function Ts3ServerStopped(target, time, message) {
     ++msgid;
     AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_ServerError", time, "Server Shutdown: "+message));
+}
+
+function Ts3ServerConnectionLost(target, time) {
+    ++msgid;
+    AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_Disconnected", time, "Connection to server lost"))
 }
 
 function Ts3ClientConnected(target, time, link, name) {

@@ -18,7 +18,7 @@
         <script type='text/javascript' src='js/embed.js'></script>
         <script type='text/javascript' src='js/emotes.js'></script>
         <script type='text/javascript' src='js/favicons.js'></script>
-        <script type='text/javascript' src='js/twttr.js'></script>
+        <script type='text/javascript' src='js/anchorme.min.js'></script>
         <script type='text/javascript' src='js/featherlight.min.js'></script>
         <script type='text/javascript'>
             var main;
@@ -47,6 +47,7 @@
                 QtObject.serverConnected.connect(Ts3ServerConnected);
                 QtObject.serverDisconnected.connect(Ts3ServerDisconnected);
                 QtObject.serverStopped.connect(Ts3ServerStopped);
+                //QtObject.serverConnectionLost.connect(Ts3ServerConnectionLost);
 
                 QtObject.clientConnected.connect(Ts3ClientConnected);
                 QtObject.clientDisconnected.connect(Ts3ClientDisconnected);

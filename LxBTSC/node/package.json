@@ -1,0 +1,13 @@
+{
+  "name": "chat",
+  "version": "1.0.0",
+  "description": "node backend for better chat plugin",
+  "main": "chat.js",
+  "author": "Luch",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.3",
+    "meta-extractor": "^1.4.0",
+    "request": "^2.85.0"
+  }
+}

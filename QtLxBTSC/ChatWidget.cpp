@@ -37,7 +37,7 @@ void ChatWidget::setupUi()
 	menu = new QMenu(view);
 	copyAction = new QAction("Copy", this);
 	copyUrlAction = new QAction("Copy Link", this);
-
+	
 	connect(copyAction, &QAction::triggered, this, &ChatWidget::onCopyActivated);
 	connect(copyUrlAction, &QAction::triggered, this, &ChatWidget::onCopyUrlActivated);
 	connect(view, &QWebEngineView::customContextMenuRequested, this, &ChatWidget::onShowContextMenu);
@@ -121,7 +121,7 @@ void ChatWidget::onFullScreenRequested(QWebEngineFullScreenRequest request)
 void ChatWidget::createPage()
 {
 	page = new TsWebEnginePage(view);
-	page->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+	//page->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
 	page->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
 	page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 	page->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
@@ -131,7 +131,8 @@ void ChatWidget::createPage()
 	connect(page, &TsWebEnginePage::fileUrlClicked, this, &ChatWidget::onFileUrlClicked);
 	connect(page, &TsWebEnginePage::clientUrlClicked, this, &ChatWidget::onClientUrlClicked);
 	connect(page, &TsWebEnginePage::channelUrlClicked, this, &ChatWidget::onChannelUrlClicked);
-	page->setUrl(QUrl(pathToPage));
+	//page->setUrl(QUrl(pathToPage));
+	page->setUrl(QUrl("http://127.0.0.1:8786"));
 	channel = new QWebChannel(page);
 
 	page->setWebChannel(channel);

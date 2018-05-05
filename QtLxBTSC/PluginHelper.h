@@ -8,6 +8,7 @@
 #include <QApplication>
 #include <QToolButton>
 #include <QMetaMethod>
+#include <QProcess>
 #include "ConfigWidget.h"
 #include "FileTransferListWidget.h"
 #include "TsServer.h"
@@ -55,6 +56,7 @@ private slots:
 	void onPrintConsoleMessageToCurrentTab(QString message);
 	void onPrintConsoleMessage(uint64 serverConnectionHandlerID, QString message, int targetMode);
 	void onConfigChanged() const;
+	void onNodeProcessStarted();
 
 private:
 	QMainWindow* mainwindow;
@@ -65,6 +67,8 @@ private:
 	QMetaObject::Connection d;
 	QMetaObject::Connection e;
 	QMetaObject::Connection g;
+
+	QProcess* nodeProcess;
 
 	ChatWidget* chat;
 	ConfigWidget* config;
@@ -88,4 +92,5 @@ private:
 	void dynamicConnect(const QString &signalName, const QString &slotName);
 	static QString time();
 	anyID getOwnClientId(uint64 serverConnectionHandlerID) const;
+	void startNode();
 };

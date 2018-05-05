@@ -1,5 +1,4 @@
 #include "PluginHelper.h"
-#include "utils.h"
 #include <QThread>
 #include <QRegularExpression>
 
@@ -8,26 +7,13 @@ PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 {
 	//QMessageBox::information(0, "debug", QString(""), QMessageBox::Ok);
 	pathToPlugin = QString(pluginPath);
-	utils::checkEmoteSets(pathToPlugin);
-	config = new ConfigWidget(pathToPlugin);
-	transfers = new FileTransferListWidget();
-	onConfigChanged();
-	chat = new ChatWidget(pathToPlugin);
-	waitForLoad();
-	connect(chat, &ChatWidget::fileUrlClicked, transfers, &FileTransferListWidget::onFileUrlClicked);
-	connect(chat, &ChatWidget::clientUrlClicked, this, &PluginHelper::onClientUrlClicked);
-	connect(chat, &ChatWidget::channelUrlClicked, this, &PluginHelper::onChannelUrlClicked);
-	connect(chat, &ChatWidget::linkHovered, this, &PluginHelper::onLinkHovered);
-	connect(transfers, &FileTransferListWidget::showTransferCompletePop, this, &PluginHelper::onTransferCompleted);
-	connect(transfers, &FileTransferListWidget::transferFailed, this, &PluginHelper::onTransferFailure);
-	connect(config, &ConfigWidget::configChanged, chat->webObject(), &TsWebObject::configChanged);
-	connect(config, &ConfigWidget::configChanged, this, &PluginHelper::onConfigChanged);
-	g = connect(qApp, &QApplication::applicationStateChanged, this, &PluginHelper::onAppStateChanged);
-	chat->setStyleSheet("border: 1px solid gray");
+	startNode();
 }
 
 PluginHelper::~PluginHelper()
 {
+	nodeProcess->close();
+	delete nodeProcess;
 	disconnect();
 	delete chat;
 	delete config;
@@ -43,6 +29,43 @@ void PluginHelper::disconnect() const
 	QObject::disconnect(e);
 	QObject::disconnect(g);
 }
+
+void PluginHelper::startNode()
+{
+	QString nodePath = QString("%1LxBTSC/node/node.exe").arg(pathToPlugin);
+	QString argPath = QString("%1LxBTSC/node/chat.js").arg(pathToPlugin);
+	QString workingDir = QString("%1LxBTSC/node").arg(pathToPlugin);
+
+	nodeProcess = new QProcess(this);
+	connect(nodeProcess, &QProcess::readyReadStandardOutput, this, &PluginHelper::onNodeProcessStarted);
+	nodeProcess->setWorkingDirectory(workingDir);
+	
+	nodeProcess->start(nodePath, QStringList() << argPath);
+}
+
+void PluginHelper::onNodeProcessStarted()
+{
+	QString s = nodeProcess->readAllStandardOutput();
+	if (s.startsWith("started:"))
+	{
+		config = new ConfigWidget(pathToPlugin);
+		transfers = new FileTransferListWidget();
+		onConfigChanged();
+		chat = new ChatWidget(pathToPlugin);
+		waitForLoad();
+		connect(chat, &ChatWidget::fileUrlClicked, transfers, &FileTransferListWidget::onFileUrlClicked);
+		connect(chat, &ChatWidget::clientUrlClicked, this, &PluginHelper::onClientUrlClicked);
+		connect(chat, &ChatWidget::channelUrlClicked, this, &PluginHelper::onChannelUrlClicked);
+		connect(chat, &ChatWidget::linkHovered, this, &PluginHelper::onLinkHovered);
+		connect(transfers, &FileTransferListWidget::showTransferCompletePop, this, &PluginHelper::onTransferCompleted);
+		connect(transfers, &FileTransferListWidget::transferFailed, this, &PluginHelper::onTransferFailure);
+		connect(config, &ConfigWidget::configChanged, chat->webObject(), &TsWebObject::configChanged);
+		connect(config, &ConfigWidget::configChanged, this, &PluginHelper::onConfigChanged);
+		g = connect(qApp, &QApplication::applicationStateChanged, this, &PluginHelper::onAppStateChanged);
+		chat->setStyleSheet("border: 1px solid gray");
+	}
+}
+
 
 // delay ts a bit until webview  is loaded
 void PluginHelper::waitForLoad() const
@@ -481,7 +504,6 @@ void PluginHelper::reload() const
 
 void PluginHelper::reloadEmotes() const
 {
-	utils::checkEmoteSets(pathToPlugin);
 	emit chat->webObject()->loadEmotes();
 }
 
