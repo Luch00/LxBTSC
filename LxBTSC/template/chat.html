@@ -30,7 +30,6 @@
                     window.scroll(0, document.body.scrollHeight);
                 }
             };
-            //$.featherlight.autoBind = false;
 
             new QWebChannel(qt.webChannelTransport, function(channel) {
                 QtObject = channel.objects.wObject;
@@ -62,7 +61,7 @@
                 tooltip = $('.tooltipper');
                 Emotes.emote_list_element = $('#emote-list');
                 LoadEmotes();
-                $('#main').resize(stayDown);
+                main.resize(stayDown);
             };
             window.onscroll = function(ev) {
                 if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight) {

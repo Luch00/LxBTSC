@@ -19,12 +19,8 @@ app.get('/emotes/local-list', (req, res) => {
     const emotePath = path.join(templatePath, 'Emotes')
     fs.readdirSync(emotePath).forEach((file) => {
         if (file.endsWith('.json')) {
-            //files.push(file)
             console.log(file);
             files.push(JSON.parse(fs.readFileSync(path.join(emotePath, file), 'utf8')))
-            /*fs.readFile(path.join(emotePath, file), 'utf8', function(err, data) {
-                files.push(JSON.parse(data))
-            })*/
         }
     })
     console.log(files);
@@ -34,7 +30,6 @@ app.get('/emotes/local-list', (req, res) => {
 app.get('/emotes/local/:file', (req, res) => res.sendFile(req.params.file, { root: path.join(templatePath, 'Emotes') }))
 
 app.get('/emotes/remote/:url', function (req, res) {
-    //console.log(req.params.url)
     request(req.params.url, function(error, response, body) {
         res.send(body)
     })
@@ -45,16 +40,13 @@ app.get('/base64image/:url', function(req, res) {
     request(req.params.url, { encoding: null }, function(error, response, body) {
         if (!error && response.statusCode == 200) {
             data = "data:" + response.headers["content-type"] + ";base64," + new Buffer.from(body).toString('base64')
-            //console.log(data)
             res.send(data)
         }
     })
 })
 
 app.get('/extract/:url', function (req, res) {
-    //console.log('extracting: ' + req.params.url)
     extract({ uri: req.params.url, limit: 5242880 }, (err, ext) => {
-        //console.log(err)
         res.send(ext)
     })
 })

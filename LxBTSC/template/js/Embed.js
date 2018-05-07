@@ -1,7 +1,7 @@
 'use strict'
-var imagesMime = [ "image/gif", "image/jpeg", "image/png", "image/svg+xml", "image/webp" ];
+var imageMime = [ "image/gif", "image/jpeg", "image/png", "image/svg+xml", "image/webp" ];
 var audioMime = [ "audio/wave", "audio/wav", "audio/x-wav", "audio/x-pn-wav", "audio/webm", "audio/ogg", "audio/flac"];
-var videoMime = [ "video/webm", "video/ogg" ];
+var videoMime = [ "video/webm", "video/ogg", "application/ogg" ];
 
 function Embed(message_id, message_text) {
     $('a', message_text).each(function(index, element){
@@ -13,17 +13,17 @@ function Embed(message_id, message_text) {
                 // embed single file
                 if (json.file) {
                     // image
-                    if (imagesMime.indexOf(json.file.mime) > -1) {
-                        addEmbed(ImageFile(json), message_id);
+                    if (imageMime.indexOf(json.file.mime) > -1) {
+                        addEmbed(ImageFile(url.href), message_id);
                         return;
                     }
                     // audio
                     if (audioMime.indexOf(json.file.mime) > -1) {
-                        addEmbed(AudioFile(json), message_id);
+                        addEmbed(AudioFile(url.href), message_id);
                     }
                     // video
                     if (videoMime.indexOf(json.file.mime) > -1) {
-                        addEmbed(VideoFile(json), message_id);
+                        addEmbed(VideoFile(url.href), message_id);
                     }
                     return;
                 }
@@ -71,6 +71,12 @@ function Embed(message_id, message_text) {
                     return;
                 }
 
+                // not webm
+                /*if (json.ogSiteName == "ニコニコ動画") {
+                    addEmbed(Nicovideo(json), message_id);
+                    return;
+                }*/
+
                 // generic embed
                 if (json.ogTitle) {
                     addEmbed(Generic(json), message_id);
@@ -80,7 +86,7 @@ function Embed(message_id, message_text) {
     });
 }
 
-function ImageFile(json) {
+function ImageFile(url) {
     let embed = $('<div/>', {
         class: "generic-file-embed"
     });
@@ -88,10 +94,9 @@ function ImageFile(json) {
     img.className = "embed-image";
 
     let a = $('<a/>', {
-        href: url.href,
+        href: url,
         "data-featherlight": "image",
         html: img
-        /*html: $('<img/>', { class: "embed-image", src: encodeURI(url.href) })*/
     });
     /*i.onload = function() {
         console.log("success");
@@ -100,27 +105,27 @@ function ImageFile(json) {
         console.log("image load failed");
         embed.parent().remove();
     };
-    img.src = encodeURI(url.href);
+    img.src = encodeURI(url);
 
-    img.featherlight();
-    embed.append(img);
+    a.featherlight();
+    embed.append(a);
     return EmbedBlock(embed);
 }
 
-function AudioFile(json) {
+function AudioFile(url) {
     let embed = $('<div/>', {
         class: "generic-file-embed"
     });
     let audio = $('<audio/>', {
         controls: true,
         preload: "metadata",
-        src: encodeURI(url.href)
+        src: encodeURI(url)
     });
     embed.append(audio);
     return EmbedBlock(embed);
 }
 
-function VideoFile(json) {
+function VideoFile(url) {
     let embed = $('<div/>', {
         class: "generic-file-embed"
     });
@@ -131,7 +136,7 @@ function VideoFile(json) {
         loop: true,
         allowfullscreen: true,
         preload: "metadata",
-        src: encodeURI(url.href)
+        src: encodeURI(url)
     });
     embed.append(video);
     return EmbedBlock(embed);
@@ -243,11 +248,22 @@ function Yandere(json) {
     });
 }
 
+function Nicovideo(json) {
+    let embed = $('<iframe/>', {
+        frameborder: "0",
+        width: "400",
+        height: "225",
+        allowfullscreen: true,
+        src: json.twitterPlayer
+    });
+    return EmbedBlock(embed);
+}
+
 function Generic(json) {
     let embed = $('<div/>', {
         class: "generic-og-embed"
     });
-    embed.append('<span><a href="'+ ((json.ogUrl) ? json.ogUrl : url.href) +'" class="embed-og-title">'+json.ogTitle+'</a></span>');
+    embed.append('<div><a href="'+ ((json.ogUrl) ? json.ogUrl : url.href) +'" class="embed-og-title">'+json.ogTitle+'</a></div>');
     if (json.ogDescription) {
         embed.append('<div class="embed-og-description">'+json.ogDescription+'</div>');
     }
@@ -274,7 +290,7 @@ function Generic(json) {
         a.featherlight();
         embed.append(a);
     }
-    addEmbed(EmbedBlock(embed), message_id);
+    return EmbedBlock(embed);
 }
 
 function addEmbed(embed, message_id) {
