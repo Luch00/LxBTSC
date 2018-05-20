@@ -67,7 +67,7 @@ void ConfigWidget::readConfig()
 		embeds->setChecked(jsonObj.value("EMBED_ENABLED").toBool());
 		favicons->setChecked(jsonObj.value("FAVICONS_ENABLED").toBool());
 		emoticons->setChecked(jsonObj.value("EMOTICONS_ENABLED").toBool());
-		emoticons->setChecked(jsonObj.value("AVATARS_ENABLED").toBool());
+		avatar->setChecked(jsonObj.value("AVATARS_ENABLED").toBool());
 		maxlines->setValue(jsonObj.value("MAX_LINES").toInt());
 		downloadDir->setText(jsonObj.value("DOWNLOAD_DIR").toString());
 		QJsonArray remotejson = jsonObj.value("REMOTE_EMOTES").toArray();
