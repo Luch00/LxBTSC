@@ -1,17 +1,20 @@
 var Config = {};
 
 function loadConfig() {
-    $.getJSON("config.json", function(data) {
-        Config = data;
-    })
-    .fail(function() {
-        Config.MAX_LINES = 500;
-        Config.EMBED_ENABLED = true;
-        Config.FAVICONS_ENABLED = false;
-        Config.EMOTICONS_ENABLED = true;
-        Config.DOWNLOAD_DIR = "";
-        Config.REMOTE_EMOTES = [];
+    return new Promise((resolve, reject) => {
+        $.getJSON("config.json", function(data) {
+            Config = data;
+            resolve();
+        })
+        .fail(function() {
+            Config.MAX_LINES = 500;
+            Config.EMBED_ENABLED = true;
+            Config.FAVICONS_ENABLED = false;
+            Config.EMOTICONS_ENABLED = true;
+            Config.AVATARS_ENABLED = false;
+            Config.DOWNLOAD_DIR = "";
+            Config.REMOTE_EMOTES = [];
+            resolve();
+        });
     });
 }
-
-loadConfig();

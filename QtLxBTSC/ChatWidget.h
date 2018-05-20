@@ -27,15 +27,15 @@ class ChatWidget : public QFrame
 	Q_OBJECT
 
 public:
-	ChatWidget(QString path, QWidget *parent = Q_NULLPTR);
+	ChatWidget(QString path, TsWebObject* webObject, QWidget *parent = Q_NULLPTR);
 	~ChatWidget();
 	void createPage();
 	void reload() const;
 
-	TsWebObject* ChatWidget::webObject() const
+	/*TsWebObject* ChatWidget::webObject() const
 	{
 		return wObject;
-	}
+	}*/
 
 	bool ChatWidget::loaded() const
 	{

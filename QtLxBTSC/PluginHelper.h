@@ -11,6 +11,7 @@
 #include "ConfigWidget.h"
 #include "FileTransferListWidget.h"
 #include "TsServer.h"
+#include "WebClient.h"
 
 class PluginHelper : public QObject
 {
@@ -69,6 +70,8 @@ private:
 	ChatWidget* chat;
 	ConfigWidget* config;
 	FileTransferListWidget* transfers;
+	WebClient* client;
+	TsWebObject* wObject;
 
 	//uint64 currentServerID;
 	QMap<unsigned long long, QSharedPointer<TsServer>> servers;
@@ -80,7 +83,9 @@ private:
 	void initUi();
 	void waitForLoad() const;
 	void disconnect() const;
-	QString getMessageTarget(uint64 serverConnectionHandlerID, anyID targetMode, anyID clientID);
+	//QString getMessageTarget(uint64 serverConnectionHandlerID, anyID targetMode, anyID clientID);
+	QString getServerId(uint64 serverConnectionHandlerID);
+	//QSharedPointer<TsClient> getOrCreateClient(uint64 serverConnectionHandlerID, anyID clientID, QString fromName, QString senderUniqueID);
 	QMainWindow* findMainWindow() const;
 	static QWidget* findWidget(QString name, QWidget* parent);
 	static QSharedPointer<TsClient> getClient(uint64 serverConnectionHandlerID, anyID id);

@@ -32,50 +32,20 @@ var Emotes = {
         Emotes.emote_list_element.empty();
     },
     load: function () {
-        $.getJSON(this.emoteset_json, function (setlist) {
+        $.getJSON(this.emoteset_json, function(setlist) {
+            console.log(setlist);
             setlist.forEach(function(set) {
-                Emotes.getSet(set);
+                $.getJSON("Emotes/" + set).then(function(json) {
+                    Emotes.parseJson(json);
+                });
             });
-            Config.REMOTE_EMOTES.forEach(function(set) {
-                Emotes.getSet(set);
-            });
+        });
+        Config.REMOTE_EMOTES.forEach(function(set) {
+            QtObject.requestEmoteJson(set);
         });
     },
-    getSet: function(set) {
-        var setPath;
-        if (set.startsWith("http")) {
-            setPath = set;
-        }
-        else {
-            setPath = "Emotes/" + set;
-        }
-        $.ajax({
-            url: setPath,
-            async: true,
-            dataType: "json",
-            retryCount: 0,
-            retryLimit: 15,
-            retryTimeout: 60000,
-            timeout: 4000,
-            errorNotified: false,
-            created: Date.now(),
-            error: function (xhr, textStatus, errorThrown) {
-                this.retryCount++;
-                if (this.retryCount <= this.retryLimit && Date.now() - this.created < this.retryTimeout) {
-                    if (!this.errorNotified) {
-                        this.errorNotified = true;
-                        $.notify("Emote: " + errorThrown + ", retrying..");
-                    }
-                    var retry = this;
-                    Emotes.retryID = window.setTimeout(function() { 
-                        $.ajax(retry);
-                    }, 4000);
-                }
-            },
-            success: function (data, textStatus, xhr) {
-                Emotes.parseJson(data);
-            }
-        });
+    addRemoteEmote: function (jsonString) {
+        Emotes.parseJson(JSON.parse(jsonString));
     },
     parseJson: function(json) {
         var set_element = $('<div>', {

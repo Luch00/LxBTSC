@@ -9,11 +9,12 @@
 //#include <QMessageBox>
 
 
-ChatWidget::ChatWidget(QString path, QWidget *parent)
+ChatWidget::ChatWidget(QString path, TsWebObject* webObject, QWidget *parent)
 	: QFrame(parent)
 {
 	setupUi();
 	pathToPage = QString("file:///%1LxBTSC/template/chat.html").arg(path);
+	wObject = webObject;
 	createPage();
 	view->setPage(page);
 }
@@ -131,12 +132,12 @@ void ChatWidget::createPage()
 	connect(page, &TsWebEnginePage::fileUrlClicked, this, &ChatWidget::onFileUrlClicked);
 	connect(page, &TsWebEnginePage::clientUrlClicked, this, &ChatWidget::onClientUrlClicked);
 	connect(page, &TsWebEnginePage::channelUrlClicked, this, &ChatWidget::onChannelUrlClicked);
-	page->setUrl(QUrl(pathToPage));
+	//page->setUrl(QUrl(pathToPage));
 	channel = new QWebChannel(page);
-
 	page->setWebChannel(channel);
-	wObject = new TsWebObject(channel);
+	//wObject = new TsWebObject(channel);
 	channel->registerObject("wObject", wObject);
+	page->load(QUrl(pathToPage));
 }
 
 

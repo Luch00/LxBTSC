@@ -4,7 +4,7 @@ ConfigWidget::ConfigWidget(QString path, QWidget *parent)
 	: QWidget(parent)
 {
 	this->setWindowTitle("Better Chat Settings");
-	this->setFixedSize(300, 310);
+	this->setFixedSize(300, 330);
 	configPath = QString("%1LxBTSC/template/config.json").arg(path);
 	formLayout = new QFormLayout(this);
 	embeds = new QCheckBox("Enable embeds", this);
@@ -13,6 +13,8 @@ ConfigWidget::ConfigWidget(QString path, QWidget *parent)
 	favicons->setChecked(false);
 	emoticons = new QCheckBox("Enable emotes", this);
 	emoticons->setChecked(true);
+	avatar = new QCheckBox("Avatars in chat", this);
+	avatar->setChecked(false);
 	maxlines = new QSpinBox(this);
 	maxlines->setMinimum(50);
 	maxlines->setMaximum(1000);
@@ -37,6 +39,7 @@ ConfigWidget::ConfigWidget(QString path, QWidget *parent)
 	formLayout->addRow(embeds);
 	formLayout->addRow(favicons);
 	formLayout->addRow(emoticons);
+	formLayout->addRow(avatar);
 	formLayout->addRow(new QLabel("Max lines in tab:", this), maxlines);
 	formLayout->addRow(new QLabel("Download directory:"));
 	formLayout->addRow(downloadDir);
@@ -64,6 +67,7 @@ void ConfigWidget::readConfig()
 		embeds->setChecked(jsonObj.value("EMBED_ENABLED").toBool());
 		favicons->setChecked(jsonObj.value("FAVICONS_ENABLED").toBool());
 		emoticons->setChecked(jsonObj.value("EMOTICONS_ENABLED").toBool());
+		emoticons->setChecked(jsonObj.value("AVATARS_ENABLED").toBool());
 		maxlines->setValue(jsonObj.value("MAX_LINES").toInt());
 		downloadDir->setText(jsonObj.value("DOWNLOAD_DIR").toString());
 		QJsonArray remotejson = jsonObj.value("REMOTE_EMOTES").toArray();
@@ -87,6 +91,7 @@ void ConfigWidget::save()
 	jsonObj.insert("EMBED_ENABLED", embeds->isChecked());
 	jsonObj.insert("FAVICONS_ENABLED", favicons->isChecked());
 	jsonObj.insert("EMOTICONS_ENABLED", emoticons->isChecked());
+	jsonObj.insert("AVATARS_ENABLED", avatar->isChecked());
 	jsonObj.insert("MAX_LINES", maxlines->value());
 	jsonObj.insert("DOWNLOAD_DIR", downloadDir->text());
 	if (remotes->toPlainText().length() > 1)

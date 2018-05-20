@@ -10,11 +10,13 @@ public:
 	TsWebObject(QObject *parent);
 	~TsWebObject();
 	Q_INVOKABLE void emoteClicked(QString e);
+	Q_INVOKABLE void requestEmbedData(QString url, qulonglong messageId);
+	Q_INVOKABLE void requestEmoteJson(QString url);
 	
 signals:
 	void addServer(QString key);
-	void tabChanged(QString key);
-	void textMessageReceived(QString target, QString direction, QString time, QString name, QString userlink, QString message);
+	void tabChanged(QString key, int mode, QString client);
+	void textMessageReceived(QString target, QString direction, QString time, QString name, QString userlink, QString message, int mode, QString senderClient, QString receiverClient);
 	void printConsoleMessage(QString target, QString message);
 	void toggleEmoteMenu();
 	void emoteSignal(QString e);
@@ -34,4 +36,13 @@ signals:
 	void clientPoked(QString target, QString time, QString clientLink, QString clientName, QString message);
 
 	void downloadFailed();
+
+	void getEmbedData(QString url, qulonglong messageId);
+	void getEmoteJson(QString url);
+
+
+	void htmlData(QString data, QString url, qulonglong messageId);
+	void fileData(QString dataType, QString url, qulonglong messageId);
+	void emoteJson(QString json);
+	void webError(QString errorMessage);
 };

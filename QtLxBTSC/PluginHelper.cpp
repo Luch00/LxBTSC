@@ -12,7 +12,17 @@ PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 	config = new ConfigWidget(pathToPlugin);
 	transfers = new FileTransferListWidget();
 	onConfigChanged();
-	chat = new ChatWidget(pathToPlugin);
+
+	wObject = new TsWebObject(this);
+	client = new WebClient();
+	connect(client, &WebClient::htmlData, wObject, &TsWebObject::htmlData);
+	connect(client, &WebClient::fileData, wObject, &TsWebObject::fileData);
+	connect(client, &WebClient::emoteJson, wObject, &TsWebObject::emoteJson);
+	connect(client, &WebClient::webError, wObject, &TsWebObject::webError);
+	connect(wObject, &TsWebObject::getEmbedData, client, &WebClient::onEmbedData);
+	connect(wObject, &TsWebObject::getEmoteJson, client, &WebClient::onEmoteData);
+
+	chat = new ChatWidget(pathToPlugin, wObject);
 	waitForLoad();
 	connect(chat, &ChatWidget::fileUrlClicked, transfers, &FileTransferListWidget::onFileUrlClicked);
 	connect(chat, &ChatWidget::clientUrlClicked, this, &PluginHelper::onClientUrlClicked);
@@ -20,8 +30,9 @@ PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 	connect(chat, &ChatWidget::linkHovered, this, &PluginHelper::onLinkHovered);
 	connect(transfers, &FileTransferListWidget::showTransferCompletePop, this, &PluginHelper::onTransferCompleted);
 	connect(transfers, &FileTransferListWidget::transferFailed, this, &PluginHelper::onTransferFailure);
-	connect(config, &ConfigWidget::configChanged, chat->webObject(), &TsWebObject::configChanged);
+	connect(config, &ConfigWidget::configChanged, wObject, &TsWebObject::configChanged);
 	connect(config, &ConfigWidget::configChanged, this, &PluginHelper::onConfigChanged);
+
 	g = connect(qApp, &QApplication::applicationStateChanged, this, &PluginHelper::onAppStateChanged);
 	chat->setStyleSheet("border: 1px solid gray");
 }
@@ -32,6 +43,7 @@ PluginHelper::~PluginHelper()
 	delete chat;
 	delete config;
 	delete transfers;
+	delete client;
 	servers.clear();
 }
 
@@ -81,10 +93,12 @@ void PluginHelper::onTabChange(int i)
 		if (i == 0)
 		{
 			tabName = QString("tab-%1-server").arg(s->safeUniqueId());
+			emit wObject->tabChanged(s->safeUniqueId(), 3, "");
 		}
 		else if (i == 1)
 		{
 			tabName = QString("tab-%1-channel").arg(s->safeUniqueId());
+			emit wObject->tabChanged(s->safeUniqueId(), 2, "");
 		}
 		else
 		{
@@ -93,9 +107,10 @@ void PluginHelper::onTabChange(int i)
 				return;
 
 			tabName = QString("tab-%1-private-%2").arg(s->safeUniqueId()).arg(c->safeUniqueId());
+			emit wObject->tabChanged(s->safeUniqueId(), 1, c->safeUniqueId());
 		}
 		currentTabName = tabName;
-		emit chat->webObject()->tabChanged(tabName);
+		//emit wObject->tabChanged(tabName);
 	}
 }
 
@@ -114,10 +129,12 @@ void PluginHelper::recheckSelectedTab()
 		if (i == 0)
 		{
 			tabName = QString("tab-%1-server").arg(s->safeUniqueId());
+			emit wObject->tabChanged(s->safeUniqueId(), 3, "");
 		}
 		else if (i == 1)
 		{
 			tabName = QString("tab-%1-channel").arg(s->safeUniqueId());
+			emit wObject->tabChanged(s->safeUniqueId(), 2, "");
 		}
 		else
 		{
@@ -126,9 +143,10 @@ void PluginHelper::recheckSelectedTab()
 				return;
 
 			tabName = QString("tab-%1-private-%2").arg(s->safeUniqueId()).arg(c->safeUniqueId());
+			emit wObject->tabChanged(s->safeUniqueId(), 1, c->safeUniqueId());
 		}
 		currentTabName = tabName;
-		emit chat->webObject()->tabChanged(tabName);
+		//emit wObject->tabChanged(tabName);
 	}
 }
 
@@ -174,7 +192,7 @@ void PluginHelper::onTransferCompleted(QString filename) const
 
 void PluginHelper::onTransferFailure() const
 {
-	QMetaObject::invokeMethod(chat->webObject(), "downloadFailed");
+	QMetaObject::invokeMethod(wObject, "downloadFailed");
 }
 
 // called when emote is clicked in html emote menu
@@ -197,7 +215,7 @@ void PluginHelper::onEmoticonButtonClicked(bool c) const
 	}
 	else
 	{
-		emit chat->webObject()->toggleEmoteMenu();
+		emit wObject->toggleEmoteMenu();
 	}
 }
 
@@ -222,7 +240,7 @@ void PluginHelper::onTabClose(int i)
 	if (i > 1)
 	{
 		const QString tabName = QString("tab-%1-server").arg(servers[ts3Functions.getCurrentServerConnectionHandlerID()]->safeUniqueId());
-		chat->webObject()->tabChanged(tabName);
+		emit wObject->tabChanged(tabName, 3, "");
 		chatTabWidget->setCurrentIndex(0);
 	}
 }
@@ -246,7 +264,7 @@ void PluginHelper::initUi()
 	chatTabWidget->setMovable(false);
 
 	chatLineEdit = qobject_cast<QTextEdit*>(findWidget("ChatLineEdit", parent));
-	connect(chat->webObject(), &TsWebObject::emoteSignal, this, &PluginHelper::onEmoticonAppend);
+	connect(wObject, &TsWebObject::emoteSignal, this, &PluginHelper::onEmoticonAppend);
 
 	emoticonButton = qobject_cast<QToolButton*>(findWidget("EmoticonButton", parent));
 	emoticonButton->disconnect();
@@ -278,7 +296,7 @@ void PluginHelper::dynamicConnect(const QString& signalName, const QString& slot
 
 void PluginHelper::onPrintConsoleMessage(uint64 serverConnectionHandlerID, QString message, int targetMode)
 {
-	chat->webObject()->printConsoleMessage(getMessageTarget(serverConnectionHandlerID, targetMode, 0), message);
+	emit wObject->printConsoleMessage(getServerId(serverConnectionHandlerID), message);
 }
 
 void PluginHelper::onPrintConsoleMessageToCurrentTab(QString message)
@@ -287,7 +305,7 @@ void PluginHelper::onPrintConsoleMessageToCurrentTab(QString message)
 	{
 		currentTabName = QString("tab-%1-server").arg(servers.value(ts3Functions.getCurrentServerConnectionHandlerID())->safeUniqueId());
 	}
-	chat->webObject()->printConsoleMessage(currentTabName, message);
+	emit wObject->printConsoleMessage(currentTabName, message);
 }
 
 // find mainwindow widget
@@ -334,36 +352,27 @@ void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID f
 		c = client;
 		servers.value(serverConnectionHandlerID)->addClient(fromID, client);
 	}
-	emit chat->webObject()->textMessageReceived(
-		getMessageTarget(serverConnectionHandlerID, targetMode, outgoing ? toID : fromID),
+	auto r = servers.value(serverConnectionHandlerID)->getClient(toID);
+	// serverid, in or out, time, name, link, message, mode, senderid, targetid
+	emit wObject->textMessageReceived(
+		getServerId(serverConnectionHandlerID),
 		outgoing ? "Outgoing" : "Incoming",
 		QTime::currentTime().toString("hh:mm:ss"),
 		fromName,
 		c->clientLink(),
-		message
+		message,
+		targetMode,
+		c->safeUniqueId(),
+		r != nullptr ? r->safeUniqueId() : "MISSING-DEFAULT"
 	);
 }
 
-// string used to identify tabs
-QString PluginHelper::getMessageTarget(uint64 serverConnectionHandlerID, anyID targetMode, anyID clientID)
+QString PluginHelper::getServerId(uint64 serverConnectionHandlerID)
 {
 	auto s = servers.value(serverConnectionHandlerID);
 	if (s == nullptr)
-		return "tab-MISSING-DEFAULT";
-
-	if (targetMode == 3)
-	{
-		return QString("tab-%1-server").arg(s->safeUniqueId());
-	}
-	if (targetMode == 2)
-	{
-		return QString("tab-%1-channel").arg(s->safeUniqueId());
-	}
-	auto c = s->getClient(clientID);
-	if (c == nullptr)
-		return "tab-MISSING-DEFAULT";
-
-	return QString("tab-%1-private-%2").arg(s->safeUniqueId()).arg(c->safeUniqueId());
+		return "MISSING-DEFAULT";
+	return s->safeUniqueId();
 }
 
 // get current time as string
@@ -385,7 +394,7 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 	{
 		auto myid = getOwnClientId(serverConnectionHandlerID);
 		QSharedPointer<TsServer> server(new TsServer(serverConnectionHandlerID, res, myid, getAllClientNicks(serverConnectionHandlerID)));
-		emit chat->webObject()->addServer(server->safeUniqueId());
+		emit wObject->addServer(server->safeUniqueId());
 		
 		servers.insert(serverConnectionHandlerID, server);
 		free(res);
@@ -393,12 +402,12 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 		char *msg;
 		if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_WELCOMEMESSAGE, &msg) == ERROR_ok)
 		{
-			emit chat->webObject()->serverWelcomeMessage(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), msg);
+			emit wObject->serverWelcomeMessage(getServerId(serverConnectionHandlerID), time(), msg);
 			free(msg);
 		}
 		if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &msg) == ERROR_ok)
 		{
-			emit chat->webObject()->serverConnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), msg);
+			emit wObject->serverConnected(getServerId(serverConnectionHandlerID), time(), msg);
 			free(msg);
 		}
 	}
@@ -412,7 +421,7 @@ void PluginHelper::serverDisconnected(uint serverConnectionHandlerID)
 		if (servers.value(serverConnectionHandlerID)->connected())
 		{
 			servers.value(serverConnectionHandlerID)->setDisconnected();
-			emit chat->webObject()->serverDisconnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time());
+			emit wObject->serverDisconnected(getServerId(serverConnectionHandlerID), time());
 		}
 	}
 }
@@ -421,7 +430,7 @@ void PluginHelper::clientConnected(uint64 serverConnectionHandlerID, anyID clien
 {
 	auto client = getClient(serverConnectionHandlerID, clientID);
 	servers.value(serverConnectionHandlerID)->addClient(clientID, client);
-	emit chat->webObject()->clientConnected(getMessageTarget(serverConnectionHandlerID, 3, clientID), time(), client->clientLink(), client->name());
+	emit wObject->clientConnected(getServerId(serverConnectionHandlerID), time(), client->clientLink(), client->name());
 }
 
 void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message)
@@ -434,14 +443,14 @@ void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID cl
 	if (client == nullptr)
 		return;
 
-	emit chat->webObject()->clientDisconnected(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), client->clientLink(), client->name(), message);
+	emit wObject->clientDisconnected(getServerId(serverConnectionHandlerID), time(), client->clientLink(), client->name(), message);
 }
 
 void PluginHelper::clientTimeout(uint64 serverConnectionHandlerID, anyID clientID)
 {
 	auto server = servers.value(serverConnectionHandlerID);
 	auto client = server->getClient(clientID);
-	emit chat->webObject()->clientTimeout(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), client->clientLink(), client->name());
+	emit wObject->clientTimeout(getServerId(serverConnectionHandlerID), time(), client->clientLink(), client->name());
 }
 
 // called when file transfer ends in some way
@@ -465,8 +474,8 @@ void PluginHelper::poked(uint64 serverConnectionHandlerID, anyID pokerID, QStrin
 		c = client;
 		servers.value(serverConnectionHandlerID)->addClient(pokerID, client);
 	}
-	emit chat->webObject()->clientPoked(
-		getMessageTarget(serverConnectionHandlerID, 3, 0), 
+	emit wObject->clientPoked(
+		getServerId(serverConnectionHandlerID),
 		time(), 
 		c->clientLink(), 
 		pokerName, 
@@ -482,7 +491,7 @@ void PluginHelper::reload() const
 void PluginHelper::reloadEmotes() const
 {
 	utils::checkEmoteSets(pathToPlugin);
-	emit chat->webObject()->loadEmotes();
+	emit wObject->loadEmotes();
 }
 
 // Get the nickname and unique id of a client
@@ -536,7 +545,7 @@ void PluginHelper::onConfigChanged() const
 
 void PluginHelper::serverStopped(uint64 serverConnectionHandlerID, QString message)
 {
-	emit chat->webObject()->serverStopped(getMessageTarget(serverConnectionHandlerID, 3, 0), time(), message);
+	emit wObject->serverStopped(getServerId(serverConnectionHandlerID), time(), message);
 }
 
 // called when client enters view by joining the same channel or by this client subscribing to a channel

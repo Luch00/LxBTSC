@@ -1,199 +1,336 @@
+'use strict'
+var imageMime = [ "image/gif", "image/jpeg", "image/png", "image/svg+xml", "image/webp" ];
+var audioMime = [ "audio/wave", "audio/wav", "audio/x-wav", "audio/x-pn-wav", "audio/webm", "audio/ogg", "audio/flac"];
+var videoMime = [ "video/webm", "video/ogg", "application/ogg" ];
+
 function Embed(message_id, message_text) {
-    'use strict'
-    let embeds = [];
-
-    $('a', message_text).each(function(index, element){
-        let url = element;
-        if (url.protocol.toLocaleLowerCase().startsWith("http")) {
-            
-            let path = url.pathname.toLocaleLowerCase();
-            // images
-            if (path.endsWith(".png") || path.endsWith(".jpg") || path.endsWith(".jpeg") || path.endsWith(".gif") || path.endsWith(".webp")) {
-                console.log('Found image link:' + url.href);
-                let embed = $('<a/>', { 
-                    href: encodeURI(url.href),
-                    'data-featherlight': url.href,
-                    html: $('<img/>', { src: encodeURI(url.href) })
-                });
-                embed.featherlight();
-                embeds.push(EmbedBlock(embed));
-                return;
-            }
-
-            // video
-            if (path.endsWith(".webm") || path.endsWith(".ogv")) {
-                console.log('Found video link:' + url.href);
-                let embed = $('<video/>', {
-                    width: "100%",
-                    height: "100%",
-                    controls: true,
-                    loop: true,
-                    allowfullscreen: true,
-                    preload: "metadata",
-                    src: encodeURI(url.href)
-                });
-                embeds.push(EmbedBlock(embed));
-                return;
-            }
-
-            // gifv to gif
-            if (path.endsWith(".gifv")) {
-                console.log('Found gifv link:' + url.href);
-                let embed = $('<a/>', { 
-                    href: encodeURI(url.href),
-                    html: $('<img/>', { src: encodeURI(url.href.slice(0, -1)) })
-                });
-                embeds.push(EmbedBlock(embed));
-                return;
-            }
-
-            // audio
-            if (path.endsWith(".opus") || path.endsWith(".ogg") || path.endsWith(".oga") || path.endsWith(".wav") || path.endsWith(".wma") || path.endsWith(".flac")) {
-                console.log('Found audio link:' + url.href)
-                let embed = $('<audio/>', {
-                    controls: true,
-                    preload: "metadata",
-                    src: encodeURI(url.href)
-                });
-                embeds.push(EmbedBlock(embed));
-                return;
-            }
-
-            // youtube
-            let match;
-             match = /http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([-_A-Za-z0-9]{10}[AEIMQUYcgkosw048]*)(&(amp;)?[\w\?=]*)?/i.exec(url.href);
-             if (match) {
-                console.log('Found youtube link:' + match[1]);
-                let embed = $('<iframe/>', {
-                    frameborder: "0",
-                    width: "400",
-                    height: "225",
-                    allowfullscreen: true,
-                    src: "https://www.youtube.com/embed/"+ match[1]
-                });
-                embeds.push(EmbedBlock(embed));
-                return;
-             }
-
-             // gfycat (simple)
-             match = /(?:gfycat\.com)\/(?:([A-Z][\w\-_]+)|(?:gifs\/detail\/([\w\-_]+)))/.exec(url.href);
-             if (match) {
-                 let id = match[1];
-                 if (match[2]) {
-                     id = match[2];
-                 }
-                console.log('Found gfycat link:' + id);
-                
-                let embed = $('<video/>', {
-                    width: "100%",
-                    height: "100%",
-                    controls: true,
-                    loop: true,
-                    allowfullscreen: true,
-                    preload: "metadata"
-                    //src: "https://giant.gfycat.com/" + id + ".webm"
-                });
-                // get the url
-                $.getJSON('https://gfycat.com/cajax/get/' + id).then(function(json) {
-                    let webmurl = json.gfyItem.webmUrl;
-                    embed.attr('src', webmurl);
-                });
-                embeds.push(EmbedBlock(embed));
-                return;
-             }
-
-             // tweet
-             match = /twitter\.com\/\w+\/status\/(\d+)/.exec(url.href);
-             if (match) {
-                 console.log("tweet found:"+match[1]);
-                 let embed = $('<div/>', {
-                     class: "tweet-container"
-                 });
-                 twttr.widgets.createTweet(match[1], $(embed)[0], { cards: 'hidden', width: '400'});
-                 embeds.push(EmbedBlock(embed));
-                 return;
-             }
-
-             // embed works but does not play
-             // most likely requires a newer version of chromium
-             // spotify track
-             //match = /open\.spotify.com\/track\/(\w+)/.exec(url.href);
-             //if (match) {
-             //    console.log("spotify found");
-
-             //    let embed = $('<iframe/>', {
-             //        width: "300",
-             //        height: "80",
-             //        frameborder: "0",
-             //        allowtransparency: "true",
-             //        src: "https://open.spotify.com/embed?uri=spotify:track:"+match[1]
-             //    });
-             //    embeds.push(EmbedBlock(embed));
-             //    return;
-             //}
-
-             // spotify album
-             //match = /open\.spotify\.com\/album\/(\w+)/.exec(url.href);
-             //if (match) {}
-
-             // spotify playlist
-             //match = /open\.spotify\.com\/user\/(\w+)\/playlist\/(\w+)/.exec(url.href);
-             //if (match) {}
-
-             // pastebin
-             match = /https?:\/\/pastebin.com\/([0-9a-zA-Z]+)/i.exec(url.href);
-             if (match) {
-                console.log('Found pastebin link:' + match[1]);
-                let embed = $('<iframe/>', {
-                    frameborder: "0",
-                    width: "100%",
-                    src: "https://pastebin.com/embed_iframe/" + match[1]
-                });
-                embeds.push(EmbedBlock(embed));
-                return;
-             }
-
-             // pornhub
-             match = /https?:\/\/(?:[a-z0-9]+[.])*pornhub[.]com\/view_video.php\?viewkey=([0-9a-z]+)/i.exec(url.href);
-             if (match) {
-                console.log('Found pornhub link:' + match[1]);
-                let embed = $('<iframe/>', {
-                    frameborder: "0",
-                    width: "400",
-                    height: "225",
-                    allowfullscreen: true,
-                    src: "https://pornhub.com/embed/" + match[1]
-                });
-                embeds.push(EmbedBlock(embed));
-                return;
-             }
+    $('a', message_text).each(function(index, element) {
+        //let url = element;
+        if (element.protocol.toLocaleLowerCase().startsWith("http")) {
+            QtObject.requestEmbedData(element.href, message_id);
         }
     });
-    if (embeds.length > 0) {
-        let embeds_div = $('<div/>', { class:'embeds'});
-        let close_a = $('<a/>', { class:'close-embeds', href:'#_', title:'close', text:'x' })
-        .click(function(e) {
-            $(this).parent().remove();
-        });
-        for (const element of embeds) {
-            embeds_div.append(element);
+}
+
+function ParseHtml(htmlString, url, message_id) {
+    let parser = new DOMParser();
+    let doc = parser.parseFromString(htmlString, 'text/html');
+    //console.log(doc);
+    let meta = doc.getElementsByTagName('meta');
+    let set = {};
+    let embedUrl = new URL(url);
+    set['title'] = doc.title;
+    set['host'] = embedUrl.hostname;
+    set['path'] = embedUrl.pathname;
+    set['url'] = url;
+    Array.prototype.forEach.call(meta, element => {
+        let name = element.getAttribute('property');
+        let content = element.getAttribute('content');
+        if (!name) {
+            name = element.getAttribute('name');
         }
-        embeds_div.append(close_a).insertAfter($('#'+message_id));
+        if (!name) {
+            name = element.getAttribute('itemprop');
+        }
+        if (!name) {
+            return;
+        }
+        set[fixName(name)] = content;
+    });
+    console.log(set);
+    EmbedHtml(set, message_id);
+}
+
+function EmbedFile(fileMIME, url, message_id) {
+    //console.log(fileMIME);
+    // embed single file
+    // image
+    if (imageMime.indexOf(fileMIME) > -1) {
+        addEmbed(ImageFile(url), message_id);
     }
+    // audio
+    if (audioMime.indexOf(fileMIME) > -1) {
+        addEmbed(AudioFile(url), message_id);
+    }
+    // video
+    if (videoMime.indexOf(fileMIME) > -1) {
+        addEmbed(VideoFile(url), message_id);
+    }
+}
+
+function EmbedHtml(json, message_id) {
+    //console.log(json);
+
+    if (json.ogSiteName == "YouTube") {
+        // embed youtube
+        addEmbed(Youtube(json), message_id);
+        return;
+    }
+
+    if (json.ogSiteName == "Gfycat") {
+        addEmbed(Gfycat(json), message_id);
+        return;
+    }
+
+    if (json.ogSiteName == "Twitter") {
+        addEmbed(Twitter(json), message_id);
+        return;
+    }
+
+    if (json.ogSiteName == "Pastebin") {
+        addEmbed(Pastebin(json), message_id);
+        return;
+    }
+
+    if (json.ogSiteName == "yande.re") {
+        addEmbed(Yandere(json), message_id);
+        return;
+    }
+
+    // embed works but does not play
+    // most likely requires a newer version of chromium
+    /*if (json.ogSiteName == "Spotify") {
+        addEmbed(Spotify(json), message_id);
+        return;
+    }*/
+
+    if (json.twitterSite == "@pornhub") {
+        addEmbed(Pornhub(json), message_id);
+        return;
+    }
+
+    // not webm
+    /*if (json.ogSiteName == "ニコニコ動画") {
+        addEmbed(Nicovideo(json), message_id);
+        return;
+    }*/
+
+    // generic embed
+    if (json.ogTitle) {
+        addEmbed(Generic(json), message_id);
+    }
+} 
+
+function ImageFile(url) {
+    let embed = $('<div/>', {
+        class: "generic-file-embed"
+    });
+    let img = new Image();
+    img.className = "embed-image";
+
+    let a = $('<a/>', {
+        href: url,
+        "data-featherlight": "image",
+        html: img
+    });
+    /*i.onload = function() {
+        console.log("success");
+    };*/
+    img.onerror = function() {
+        console.log("image load failed");
+        embed.parent().remove();
+    };
+    img.src = encodeURI(url);
+
+    a.featherlight();
+    embed.append(a);
+    return EmbedBlock(embed);
+}
+
+function AudioFile(url) {
+    let embed = $('<div/>', {
+        class: "generic-file-embed"
+    });
+    let audio = $('<audio/>', {
+        controls: true,
+        preload: "metadata",
+        src: encodeURI(url)
+    });
+    embed.append(audio);
+    return EmbedBlock(embed);
+}
+
+function VideoFile(url) {
+    let embed = $('<div/>', {
+        class: "generic-file-embed"
+    });
+    let video = $('<video/>', {
+        width: "100%",
+        height: "100%",
+        controls: true,
+        loop: true,
+        allowfullscreen: true,
+        preload: "metadata",
+        src: encodeURI(url)
+    });
+    embed.append(video);
+    return EmbedBlock(embed);
+}
+
+function Youtube(json) {
+    let embed = $('<iframe/>', {
+        frameborder: "0",
+        width: "400",
+        height: "225",
+        allowfullscreen: true,
+        src: json.twitterPlayer
+    });
+    return EmbedBlock(embed);
+}
+
+function Twitter(json) {
+    let name = json.ogTitle.split(' on Twitter', 1);
+    let username = json.path.substr(1).split('/', 1);
+    let tweet = $('<div/>', {
+        class: "tweet-container"
+    });
+    tweet.append('<img src="https://twitter.com/'+username+'/profile_image?size=mini" class="twitter-avatar">');
+    tweet.append('<span><a href="'+json.ogUrl+'" class="twitter-username">'+name+' (@'+username+')</a></span>');
+    tweet.append('<div class="twitter-description">'+anchorme(json.ogDescription.slice(1, -1))+'</div>');
+    if (json.ogImageUserGenerated == "true") {
+        let img = $('<a/>', {
+            class: "tweet-image",
+            href: json.ogImage,
+            "data-featherlight": "image",
+            html: $('<img/>', { class: "tweet-image", src: encodeURI(json.ogImage) })
+        });
+        img.featherlight();
+        tweet.append(img);
+    }
+    // videos don't work, not webm
+    /*if (json.ogType == "video") {
+        tweet.append('<div><video src="'+json.ogVideoUrl+'"</video></div>');
+    }*/
+    return EmbedBlock(tweet);
+}
+
+function Pastebin(json) {
+    let embed = $('<iframe/>', {
+        frameborder: "0",
+        width: "100%",
+        src: "https://pastebin.com/embed_iframe/" + json.path.substr(1)
+    });
+    return EmbedBlock(embed);
+}
+
+function Gfycat(json) {
+    let embed = $('<iframe/>', {
+        src: json.ogVideoIframe,
+        frameborder: '0',
+        scrolling: 'no',
+        allowfullscreen: true,
+        width: '400',
+        height: '225'
+    });
+    return EmbedBlock(embed);
+}
+
+function Spotify(json) {
+    let embed = $('<iframe/>', {
+        frameborder: "0",
+        src: json.twitterPlayer
+    });
+    return EmbedBlock(embed);
+}
+
+function Pornhub(json) {
+    let embed = $('<iframe/>', {
+        frameborder: "0",
+        width: "400",
+        height: "225",
+        allowfullscreen: true,
+        scrolling: "no",
+        src: json.ogVideoUrl
+    });
+    return EmbedBlock(embed);
+}
+
+function Yandere(json) {
+
+    let embed = $('<div/>', {
+        class: "generic-file-embed"
+    });
+    let img = new Image();
+    img.className = "embed-image";
+
+    let a = $('<a/>', {
+        href: json.ogImage,
+        "data-featherlight": "image",
+        html: img
+    });
+    /*i.onload = function() {
+        console.log("success");
+    };*/
+    img.onerror = function() {
+        console.log("image load failed");
+        embed.parent().remove();
+    };
+    img.src = encodeURI(json.ogImage);
+
+    a.featherlight();
+    embed.append(a);
+    return EmbedBlock(embed);
+}
+
+function Nicovideo(json) {
+    let embed = $('<iframe/>', {
+        frameborder: "0",
+        width: "400",
+        height: "225",
+        allowfullscreen: true,
+        src: json.twitterPlayer
+    });
+    return EmbedBlock(embed);
+}
+
+function Generic(json) {
+    let embed = $('<div/>', {
+        class: "generic-og-embed"
+    });
+    embed.append('<div><a href="'+ ((json.ogUrl) ? json.ogUrl : json.url) +'" class="embed-og-title">'+json.ogTitle+'</a></div>');
+    if (json.ogDescription) {
+        embed.append('<div class="embed-og-description">'+json.ogDescription+'</div>');
+    }
+    else if (json.Description) {
+        embed.append('<div class="embed-og-description">'+json.Description+'</div>');
+    }
+    
+    if (json.ogImage) {
+        let img = new Image();
+        img.className = "embed-og-image";
+        let a = $('<a/>', {
+            href: encodeURI(json.ogImage),
+            "data-featherlight": "image",
+            html: img
+        });
+        /*i.onload = function() {
+            console.log("success");
+        };*/
+        img.onerror = function() {
+            console.log("image load failed");
+            img.remove();
+        };
+        img.src = json.ogImage;
+        a.featherlight();
+        embed.append(a);
+    }
+    return EmbedBlock(embed);
+}
+
+function addEmbed(embed, message_id) {
+    embed.insertAfter($('#'+message_id));
 }
 
 function EmbedBlock(embed) {
-    'use strict'
-    let embed_container = $('<div/>').append($('<div/>', { class:'embed-container' }).append(embed));
+    let embed_container = $('<div/>', { class:'outer-container' }).append($('<div/>', { class:'embed-container' }).append(embed));
+    let close_a = $('<a/>', { class:'close-embeds', href:'#_', title:'close', text:'x' })
+    .click(function(e) {
+        $(this).parent().remove();
+    });
+    embed_container.append(close_a);
     return embed_container;
 }
 
-$.urlParam = function(url, name){
-    var results = new RegExp('[\?&]' + name + '=([^]*)').exec(url);
-    if (results==null){
-       return null;
-    }
-    else{
-       return results[1] || 0;
-    }
+function fixName(name) {
+    return name.replace(/(?::|_)(\w)/g, (matches, letter) => letter.toUpperCase());
 }

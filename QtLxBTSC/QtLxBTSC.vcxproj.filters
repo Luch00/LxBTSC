@@ -109,6 +109,15 @@
     <ClCompile Include="TsServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_WebClient.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_WebClient.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WebClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="plugin.h">
@@ -150,6 +159,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="TsServer.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="WebClient.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

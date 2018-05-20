@@ -36,6 +36,7 @@ private:
 	QCheckBox* embeds;
 	QCheckBox* favicons;
 	QCheckBox* emoticons;
+	QCheckBox* avatar;
 	QSpinBox* maxlines;
 	QPlainTextEdit* remotes;
 	QPushButton* saveButton;

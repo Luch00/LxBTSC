@@ -1,4 +1,5 @@
 #include "TsClient.h"
+#include "utils.h"
 
 TsClient::TsClient(QObject *parent)
 	: QObject(parent), uniqueId_("DEFAULT"), safeUniqueId_("DEFAULT"), clientId_(99999)
@@ -8,7 +9,7 @@ TsClient::TsClient(QObject *parent)
 TsClient::TsClient(QString name, QString uniqueId, unsigned short clientId, QObject *parent) : QObject(parent), name_(name), uniqueId_(uniqueId), clientId_(clientId)
 {
 	QString s = uniqueId;
-	safeUniqueId_ = s.replace(QRegExp("[+/=]"), "00");
+	safeUniqueId_ = utils::ts3WeirdBase16(s);//s.replace(QRegExp("[+/=]"), "00");
 	clientLink_ = link();
 }
 
