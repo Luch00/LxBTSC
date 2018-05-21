@@ -295,11 +295,11 @@ function Generic(json) {
         embed.append('<div class="embed-og-description">'+json.Description+'</div>');
     }
     
-    if (json.ogImage) {
+    if (json.twitterImage || json.ogImage) {
         let img = new Image();
         img.className = "embed-og-image";
         let a = $('<a/>', {
-            href: encodeURI(json.ogImage),
+            href: encodeURI(json.twitterImage || json.ogImage),
             "data-featherlight": "image",
             html: img
         });
