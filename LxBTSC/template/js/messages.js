@@ -15,7 +15,7 @@ const AvatarStyle_NormalTextTemplate = (msgid, direction, time, userlink, name, 
     <div id='${msgid}' class='avatar-style TextMessage_Normal'>
     <div class='Body'>
     <div class='avatar-container'>
-    <img class='avatar' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onerror='this.onerror=null;this.src="style/avatar1.png";'>
+    <img class='avatar' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onerror='this.onerror=null;this.src="style/avatar.png";'>
     </div>
     <div class='message-container'>
         <div class='message-header'>

@@ -4,11 +4,13 @@ ConfigWidget::ConfigWidget(QString path, QWidget *parent)
 	: QWidget(parent)
 {
 	this->setWindowTitle("Better Chat Settings");
-	this->setFixedSize(300, 330);
+	this->setFixedSize(300, 360);
 	configPath = QString("%1LxBTSC/template/config.json").arg(path);
 	formLayout = new QFormLayout(this);
 	embeds = new QCheckBox("Enable embeds", this);
 	embeds->setChecked(true);
+	generics = new QCheckBox("Disable generic embeds", this);
+	generics->setChecked(false);
 	favicons = new QCheckBox("Enable favicons for links", this);
 	favicons->setChecked(false);
 	emoticons = new QCheckBox("Enable emotes", this);
@@ -37,6 +39,7 @@ ConfigWidget::ConfigWidget(QString path, QWidget *parent)
 	horizontal->addSpacing(200);
 	horizontal->addWidget(saveButton);
 	formLayout->addRow(embeds);
+	formLayout->addRow(generics);
 	formLayout->addRow(favicons);
 	formLayout->addRow(emoticons);
 	formLayout->addRow(avatar);
@@ -65,6 +68,7 @@ void ConfigWidget::readConfig()
 		QJsonDocument document = QJsonDocument::fromJson(jsonText.toUtf8());
 		jsonObj = document.object();
 		embeds->setChecked(jsonObj.value("EMBED_ENABLED").toBool());
+		generics->setChecked(jsonObj.value("GENERICS_DISABLED").toBool());
 		favicons->setChecked(jsonObj.value("FAVICONS_ENABLED").toBool());
 		emoticons->setChecked(jsonObj.value("EMOTICONS_ENABLED").toBool());
 		avatar->setChecked(jsonObj.value("AVATARS_ENABLED").toBool());
@@ -89,6 +93,7 @@ void ConfigWidget::browseDirectory()
 void ConfigWidget::save()
 {
 	jsonObj.insert("EMBED_ENABLED", embeds->isChecked());
+	jsonObj.insert("GENERICS_DISABLED", generics->isChecked());
 	jsonObj.insert("FAVICONS_ENABLED", favicons->isChecked());
 	jsonObj.insert("EMOTICONS_ENABLED", emoticons->isChecked());
 	jsonObj.insert("AVATARS_ENABLED", avatar->isChecked());

@@ -106,7 +106,7 @@ function EmbedHtml(json, message_id) {
     }*/
 
     // generic embed
-    if (json.ogTitle) {
+    if (!Config.GENERICS_DISABLED && json.ogTitle) {
         addEmbed(Generic(json), message_id);
     }
 } 

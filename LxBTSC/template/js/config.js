@@ -9,6 +9,7 @@ function loadConfig() {
         .fail(function() {
             Config.MAX_LINES = 500;
             Config.EMBED_ENABLED = true;
+            Config.GENERICS_DISABLED = false;
             Config.FAVICONS_ENABLED = false;
             Config.EMOTICONS_ENABLED = true;
             Config.AVATARS_ENABLED = false;

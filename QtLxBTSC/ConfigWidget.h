@@ -34,6 +34,7 @@ private slots:
 private:
 	QFormLayout* formLayout;
 	QCheckBox* embeds;
+	QCheckBox* generics;
 	QCheckBox* favicons;
 	QCheckBox* emoticons;
 	QCheckBox* avatar;
