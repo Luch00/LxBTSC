@@ -410,6 +410,7 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 			emit wObject->serverConnected(getServerId(serverConnectionHandlerID), time(), msg);
 			free(msg);
 		}
+		recheckSelectedTab();
 	}
 }
 
