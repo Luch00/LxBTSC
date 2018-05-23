@@ -36,7 +36,8 @@ void WebClient::onEmbedData(QString url, qulonglong messageId)
 {
 	QNetworkRequest headRequest;
 	headRequest.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
-	headRequest.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.170 Safari/537.36 OPR/53.0.2907.57");
+	//headRequest.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.170 Safari/537.36 OPR/53.0.2907.57");
+	headRequest.setRawHeader("User-Agent", "Twitterbot/1.0");
 	headRequest.setUrl(QUrl(url));
 	QNetworkReply* headReply = networkManager.head(headRequest);
 	connect(headReply, &QNetworkReply::finished, [this, headReply, messageId]()

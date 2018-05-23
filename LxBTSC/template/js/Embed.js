@@ -287,12 +287,13 @@ function Generic(json) {
     let embed = $('<div/>', {
         class: "generic-og-embed"
     });
-    embed.append('<div><a href="'+ ((json.ogUrl) ? json.ogUrl : json.url) +'" class="embed-og-title">'+json.ogTitle+'</a></div>');
+    //embed.append(`<div><a href="${((json.ogUrl) ? json.ogUrl : json.url)}" class="embed-og-title">${json.ogTitle}</a></div>`);
+    embed.append($('<a/>', {class: 'embed-og-title', href: ((json.ogUrl) ? json.ogUrl : json.url), text: json.ogTitle}).wrap('<div>'));
     if (json.ogDescription) {
-        embed.append('<div class="embed-og-description">'+json.ogDescription+'</div>');
+        embed.append(`<div class="embed-og-description">${json.ogDescription}</div>`);
     }
     else if (json.Description) {
-        embed.append('<div class="embed-og-description">'+json.Description+'</div>');
+        embed.append(`<div class="embed-og-description">${json.Description}</div>`);
     }
     
     if (json.twitterImage || json.ogImage) {

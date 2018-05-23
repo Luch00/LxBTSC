@@ -122,7 +122,7 @@ void ChatWidget::onFullScreenRequested(QWebEngineFullScreenRequest request)
 void ChatWidget::createPage()
 {
 	page = new TsWebEnginePage(view);
-	page->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+	//page->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
 	page->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
 	page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 	page->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
