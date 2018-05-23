@@ -71,6 +71,7 @@ video {
 .outer-container {
     position: relative;
     display: inline-block;
+    margin-bottom: 4px;
 }
 
 .embed-container {
@@ -246,6 +247,10 @@ video {
 }
 
 .message-container {
+    margin-left: 48px;
+}
+
+.avatar-style-status {
     margin-left: 48px;
 }
 

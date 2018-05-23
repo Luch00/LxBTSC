@@ -30,14 +30,14 @@ const AvatarStyle_NormalTextTemplate = (msgid, direction, time, userlink, name, 
     </div>
 `;
 
-/*const AvatarStyle_StatusTextTemplate = (msgid, type, time, text) => `
-    <p id='${msgid}' class='message-containter ${type}'>
-    <span class='TextMessage_Text'>${text}</span>
+const StatusTextTemplate = (msgid, type, time, text) => Config.AVATARS_ENABLED ? 
+`
+    <p id='${msgid}' class='avatar-style-status ${type}'>
+    <span class='avatar-style TextMessage_Text'>${text}</span>
     <span class='avatar-style TextMessage_Time'>${time}</span>
     </p>
-`;*/
-
-const StatusTextTemplate = (msgid, type, time, text) => `
+`:
+`
     <p id='${msgid}' class='${type}'>
     <img class='Incoming'>
     <span class='TextMessage_Time'><${time}> </span>
@@ -45,7 +45,23 @@ const StatusTextTemplate = (msgid, type, time, text) => `
     </p>
 `;
 
-const PokeTextTemplate = (msgid, time, link, name, text) => `
+const PokeTextTemplate = (msgid, time, link, name, text) => Config.AVATARS_ENABLED ?
+`
+    <div id='${msgid}' class='TextMessage_Poke'>
+    <div class='Body'>
+    <div class='message-container'>
+        <div class='message-header'>
+        <span class='TextMessage_UserLink'><a href='${link}' class='TextMessage_UserLink' oncontextmenu='Ts3LinkClicked(event)'>${name}</a></span>
+        <span class='avatar-style TextMessage_Time'>${time}</span>
+        </div>
+        <div class='message-content'>
+        <span class='avatar-style TextMessage_Text'>pokes you: ${text}</span>
+        </div>
+    </div>
+    </div>
+    </div>
+`:
+`
     <p id='${msgid}' class="TextMessage_Poke">
     <span class='Body'>
     <img class='Incoming'>

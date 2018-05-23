@@ -2,7 +2,7 @@
 //let tabMap = new Map();
 let serverMap = new Map();
 
-function AddServerTabs(serverId) {
+function AddServerTabs(serverId, dontshow) {
     //console.log("AddServerTabs: "+serverId);
     if (!serverMap.has(serverId)) {
         let tabs = new Map();
@@ -12,7 +12,9 @@ function AddServerTabs(serverId) {
         serverMap.set(serverId, tabs);
         //console.log(serverMap);
         main.append(tabs.get(3), tabs.get(2));
-        ShowTab(serverId, 3, "");
+        if (!dontshow) {
+            ShowTab(serverId, 3, "");
+        }
     }
 }
 
@@ -21,7 +23,7 @@ function GetTab(server, mode, client) {
     let tabs = serverMap.get(server);
     if (!tabs) {
         //console.log("server not found");
-        AddServerTabs(server)
+        AddServerTabs(server, true);
         tabs = serverMap.get(server);
     }
     if (mode === 1) {
