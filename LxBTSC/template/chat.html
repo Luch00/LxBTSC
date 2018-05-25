@@ -21,10 +21,7 @@
         <script type='text/javascript' src='js/anchorme.min.js'></script>
         <script type='text/javascript' src='js/featherlight.min.js'></script>
         <script type='text/javascript'>
-            document.addEventListener('DOMContentLoaded', function () {
-                connectWebChannel();
-                console.log("first event");
-            });
+            var interval;
             var main;
             var IsBottom = true;
             var QtObject;
@@ -34,48 +31,56 @@
                     window.scroll(0, document.body.scrollHeight);
                 }
             };
-            
-            function connectWebChannel() {
-                new QWebChannel(qt.webChannelTransport, function(channel) {
-                    QtObject = channel.objects.wObject;
-                    
-                    QtObject.toggleEmoteMenu.connect(ToggleEmoteMenu);
-                    QtObject.textMessageReceived.connect(AddTextMessage);
-                    QtObject.printConsoleMessage.connect(AddConsoleMessage);
-                    QtObject.tabChanged.connect(ShowTab);
-                    QtObject.addServer.connect(AddServerTabs);
-                    QtObject.loadEmotes.connect(LoadEmotes);
-                    QtObject.configChanged.connect(ConfigChanged);
 
-                    QtObject.serverWelcomeMessage.connect(Ts3ServerWelcome);
-                    QtObject.serverConnected.connect(Ts3ServerConnected);
-                    QtObject.serverDisconnected.connect(Ts3ServerDisconnected);
-                    QtObject.serverStopped.connect(Ts3ServerStopped);
-                    //QtObject.serverConnectionLost.connect(Ts3ServerConnectionLost);
+            new QWebChannel(qt.webChannelTransport, function(channel) {
+                QtObject = channel.objects.wObject;
+                
+                QtObject.toggleEmoteMenu.connect(ToggleEmoteMenu);
+                QtObject.textMessageReceived.connect(AddTextMessage);
+                QtObject.printConsoleMessage.connect(AddConsoleMessage);
+                QtObject.tabChanged.connect(ShowTab);
+                QtObject.addServer.connect(AddServerTabs);
+                QtObject.loadEmotes.connect(LoadEmotes);
+                QtObject.configChanged.connect(ConfigChanged);
 
-                    QtObject.clientConnected.connect(Ts3ClientConnected);
-                    QtObject.clientDisconnected.connect(Ts3ClientDisconnected);
-                    QtObject.clientTimeout.connect(Ts3ClientTimeout);
+                QtObject.serverWelcomeMessage.connect(Ts3ServerWelcome);
+                QtObject.serverConnected.connect(Ts3ServerConnected);
+                QtObject.serverDisconnected.connect(Ts3ServerDisconnected);
+                QtObject.serverStopped.connect(Ts3ServerStopped);
+                //QtObject.serverConnectionLost.connect(Ts3ServerConnectionLost);
 
-                    QtObject.clientPoked.connect(Ts3ClientPoked);
+                QtObject.clientConnected.connect(Ts3ClientConnected);
+                QtObject.clientDisconnected.connect(Ts3ClientDisconnected);
+                QtObject.clientTimeout.connect(Ts3ClientTimeout);
 
-                    QtObject.downloadFailed.connect(Ts3fileDownloadFailed);
+                QtObject.clientPoked.connect(Ts3ClientPoked);
 
-                    QtObject.htmlData.connect(ParseHtml);
-                    QtObject.fileData.connect(EmbedFile);
-                    QtObject.emoteJson.connect(Emotes.addRemoteEmote);
-                    QtObject.webError.connect(Ts3Error)
-                });
+                QtObject.downloadFailed.connect(Ts3fileDownloadFailed);
+
+                QtObject.htmlData.connect(ParseHtml);
+                QtObject.fileData.connect(EmbedFile);
+                QtObject.emoteJson.connect(Emotes.addRemoteEmote);
+                QtObject.webError.connect(Ts3Error)
+            });
+
+            function waitForQt() {
+                // try to make sure qwebchannel exists before loading config
+                interval = setInterval(function() {
+                    if(QtObject) {
+                        clearInterval(interval);
+                        loadConfig()
+                        .then(function() {
+                            LoadEmotes();
+                        });
+                    }
+                }, 50);
             }
             
             window.onload = function() {
                 main = $('#main');
                 tooltip = $('.tooltipper');
                 Emotes.emote_list_element = $('#emote-list');
-                loadConfig()
-                .then(function() {
-                    LoadEmotes();
-                });
+                waitForQt();
                 main.resize(stayDown);
             };
             window.onscroll = function(ev) {

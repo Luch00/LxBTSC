@@ -23,6 +23,3 @@ void TsWebObject::requestEmoteJson(QString url)
 {
 	emit getEmoteJson(url);
 }
-
-
-

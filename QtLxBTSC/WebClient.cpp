@@ -31,7 +31,6 @@ void WebClient::onEmoteData(QString url)
 	});
 }
 
-
 void WebClient::onEmbedData(QString url, qulonglong messageId)
 {
 	QNetworkRequest headRequest;
@@ -100,5 +99,3 @@ void WebClient::onDownloadProgress(qint64 downloadedBytes, qint64 totalBytes)
 		reply->abort();
 	}	
 }
-
-
