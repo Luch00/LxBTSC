@@ -140,10 +140,10 @@ function Ts3ClientPoked(target, time, link, name, message) {
     }
 }
 
-function AddConsoleMessage(target, message) {
+function AddConsoleMessage(target, mode, client, message) {
     ++msgid;
 
-    let tab = GetTab(target, 3, "");
+    let tab = GetTab(target, mode, client);
     CheckMessageLimit(tab);
     tab.append('<p class="TextMessage_Console">'+ParseBBCode(message)+'</p>');
     

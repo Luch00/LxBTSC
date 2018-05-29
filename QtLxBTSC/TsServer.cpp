@@ -7,7 +7,7 @@ TsServer::TsServer(QObject *parent)	: QObject(parent), serverId_(99999), uniqueI
 TsServer::TsServer(unsigned long long serverId, QString uniqueId, unsigned short myId, QMap<unsigned short, QSharedPointer<TsClient>> clients, QObject *parent) : QObject(parent), serverId_(serverId), uniqueId_(uniqueId), myId_(myId), clients_(clients)
 {
 	QString s = uniqueId_;
-	safeUniqueId_ = QString(s.toLatin1().toBase64());//s.replace(QRegExp("[+/=]"), "00");
+	safeUniqueId_ = QString(s.toLatin1().toBase64());
 }
 
 TsServer::~TsServer()

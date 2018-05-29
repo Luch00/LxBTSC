@@ -9,7 +9,7 @@ TsClient::TsClient(QObject *parent)
 TsClient::TsClient(QString name, QString uniqueId, unsigned short clientId, QObject *parent) : QObject(parent), name_(name), uniqueId_(uniqueId), clientId_(clientId)
 {
 	QString s = uniqueId;
-	safeUniqueId_ = utils::ts3WeirdBase16(s);//s.replace(QRegExp("[+/=]"), "00");
+	safeUniqueId_ = utils::ts3WeirdBase16(s);
 	clientLink_ = link();
 }
 

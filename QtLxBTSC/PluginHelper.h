@@ -78,12 +78,10 @@ private:
 	QString pathToPlugin;
 	bool first = true;
 	Qt::ApplicationState currentState;
-	QString currentTabName;
 
 	void initUi();
 	void waitForLoad() const;
 	void disconnect() const;
-	//QString getMessageTarget(uint64 serverConnectionHandlerID, anyID targetMode, anyID clientID);
 	QString getServerId(uint64 serverConnectionHandlerID);
 	//QSharedPointer<TsClient> getOrCreateClient(uint64 serverConnectionHandlerID, anyID clientID, QString fromName, QString senderUniqueID);
 	QMainWindow* findMainWindow() const;
@@ -93,4 +91,5 @@ private:
 	void dynamicConnect(const QString &signalName, const QString &slotName);
 	static QString time();
 	anyID getOwnClientId(uint64 serverConnectionHandlerID) const;
+	std::tuple<int, QString, QString> tuple_test();
 };

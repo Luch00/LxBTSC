@@ -17,7 +17,7 @@ signals:
 	void addServer(QString key);
 	void tabChanged(QString key, int mode, QString client);
 	void textMessageReceived(QString target, QString direction, QString time, QString name, QString userlink, QString message, int mode, QString senderClient, QString receiverClient);
-	void printConsoleMessage(QString target, QString message);
+	void printConsoleMessage(QString target, int mode, QString client, QString message);
 	void toggleEmoteMenu();
 	void emoteSignal(QString e);
 	void loadEmotes();

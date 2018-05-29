@@ -89,15 +89,12 @@ void PluginHelper::onTabChange(int i)
 		if (s == nullptr)
 			return;
 
-		QString tabName;
 		if (i == 0)
 		{
-			tabName = QString("tab-%1-server").arg(s->safeUniqueId());
 			emit wObject->tabChanged(s->safeUniqueId(), 3, "");
 		}
 		else if (i == 1)
 		{
-			tabName = QString("tab-%1-channel").arg(s->safeUniqueId());
 			emit wObject->tabChanged(s->safeUniqueId(), 2, "");
 		}
 		else
@@ -106,16 +103,12 @@ void PluginHelper::onTabChange(int i)
 			if (c == nullptr)
 				return;
 
-			tabName = QString("tab-%1-private-%2").arg(s->safeUniqueId()).arg(c->safeUniqueId());
 			emit wObject->tabChanged(s->safeUniqueId(), 1, c->safeUniqueId());
 		}
-		currentTabName = tabName;
-		//emit wObject->tabChanged(tabName);
 	}
 }
 
-// After server tab change check what chat tab is selected
-void PluginHelper::recheckSelectedTab()
+std::tuple<int, QString, QString> PluginHelper::tuple_test()
 {
 	const int i = chatTabWidget->currentIndex();
 
@@ -123,17 +116,49 @@ void PluginHelper::recheckSelectedTab()
 	{
 		auto s = servers.value(ts3Functions.getCurrentServerConnectionHandlerID());
 		if (s == nullptr)
-			return;
+			return { 0, "", "" };
 
-		QString tabName;
 		if (i == 0)
 		{
-			tabName = QString("tab-%1-server").arg(s->safeUniqueId());
+			return { 3, s->safeUniqueId(), "" };
+		}
+		if (i == 1)
+		{
+			return { 2, s->safeUniqueId(), "" };
+		}
+		auto c = s->getClientByName(chatTabWidget->tabText(i));
+		if (c == nullptr)
+			return { 0, "", "" };
+
+		return { 1, s->safeUniqueId(), c->safeUniqueId() };
+	}
+	return { 0, "", "" };
+}
+
+// After server tab change check what chat tab is selected
+void PluginHelper::recheckSelectedTab()
+{
+	int mode;
+	QString server;
+	QString client;
+	std::tie(mode, server, client) = tuple_test();
+	if (mode > 0)
+		emit wObject->tabChanged(server, mode, client);
+
+	/*const int i = chatTabWidget->currentIndex();
+
+	if (i >= 0)
+	{
+		auto s = servers.value(ts3Functions.getCurrentServerConnectionHandlerID());
+		if (s == nullptr)
+			return;
+
+		if (i == 0)
+		{
 			emit wObject->tabChanged(s->safeUniqueId(), 3, "");
 		}
 		else if (i == 1)
 		{
-			tabName = QString("tab-%1-channel").arg(s->safeUniqueId());
 			emit wObject->tabChanged(s->safeUniqueId(), 2, "");
 		}
 		else
@@ -142,12 +167,9 @@ void PluginHelper::recheckSelectedTab()
 			if (c == nullptr)
 				return;
 
-			tabName = QString("tab-%1-private-%2").arg(s->safeUniqueId()).arg(c->safeUniqueId());
 			emit wObject->tabChanged(s->safeUniqueId(), 1, c->safeUniqueId());
 		}
-		currentTabName = tabName;
-		//emit wObject->tabChanged(tabName);
-	}
+	}*/
 }
 
 void PluginHelper::onLinkHovered(const QUrl &url)
@@ -239,8 +261,7 @@ void PluginHelper::onTabClose(int i)
 {
 	if (i > 1)
 	{
-		const QString tabName = QString("tab-%1-server").arg(servers[ts3Functions.getCurrentServerConnectionHandlerID()]->safeUniqueId());
-		emit wObject->tabChanged(tabName, 3, "");
+		emit wObject->tabChanged(servers[ts3Functions.getCurrentServerConnectionHandlerID()]->safeUniqueId(), 3, "");
 		chatTabWidget->setCurrentIndex(0);
 	}
 }
@@ -296,16 +317,19 @@ void PluginHelper::dynamicConnect(const QString& signalName, const QString& slot
 
 void PluginHelper::onPrintConsoleMessage(uint64 serverConnectionHandlerID, QString message, int targetMode)
 {
-	emit wObject->printConsoleMessage(getServerId(serverConnectionHandlerID), message);
+	emit wObject->printConsoleMessage(getServerId(serverConnectionHandlerID), targetMode, "", message);
 }
 
 void PluginHelper::onPrintConsoleMessageToCurrentTab(QString message)
 {
-	if (currentTabName.isNull())
-	{
-		currentTabName = QString("tab-%1-server").arg(servers.value(ts3Functions.getCurrentServerConnectionHandlerID())->safeUniqueId());
-	}
-	emit wObject->printConsoleMessage(currentTabName, message);
+	int mode;
+	QString server;
+	QString client;
+	std::tie(mode, server, client) = tuple_test();
+	if (mode > 0)
+		emit wObject->printConsoleMessage(server, mode, client, message);
+	else
+		emit wObject->printConsoleMessage(server, 3, "", message);
 }
 
 // find mainwindow widget
