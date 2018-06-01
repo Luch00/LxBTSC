@@ -224,13 +224,8 @@ video {
 .avatar {
     width: 40px;
     height: 40px;
-    border-radius: 5px;
-    border-style: solid;
-    border-color: #D3D3D3;
-    border-width: 1px;
     object-fit: cover;
     object-position: top;
-    background-color: #F5F5F5;
 }
 
 .TextMessage_UserLink.Outgoing {
@@ -244,6 +239,39 @@ video {
     margin-right: 8px;
     margin-bottom: 5px;
     -webkit-user-select: none;
+
+    border-radius: 5px;
+    border-style: solid;
+    border-color: #D3D3D3;
+    border-width: 1px;
+    background-color: #F5F5F5;
+}
+
+.static-avatar {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    object-position: top;
+}
+
+.play-gif:hover .still-image {
+    display: none;
+}
+
+.play-gif:hover .hidden-image {
+    display: block;
+}
+
+.hidden-image {
+    display: none;
+}
+
+.animate-avatar:hover > .avatar-container > .static-avatar {
+    display: none;
+}
+
+.animate-avatar:hover > .avatar-container > .hidden-image {
+    display: block;
 }
 
 .message-container {

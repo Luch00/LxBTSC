@@ -13,6 +13,7 @@ function loadConfig() {
             Config.FAVICONS_ENABLED = false;
             Config.EMOTICONS_ENABLED = true;
             Config.AVATARS_ENABLED = false;
+            Config.HOVER_ANIMATES_GIFS = false;
             Config.DOWNLOAD_DIR = "";
             Config.REMOTE_EMOTES = [];
             resolve();

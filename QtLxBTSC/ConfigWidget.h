@@ -37,6 +37,7 @@ private:
 	QCheckBox* generics;
 	QCheckBox* favicons;
 	QCheckBox* emoticons;
+	QCheckBox* stopGifs;
 	QCheckBox* avatar;
 	QSpinBox* maxlines;
 	QPlainTextEdit* remotes;

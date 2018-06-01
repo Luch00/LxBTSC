@@ -13,9 +13,12 @@ const NormalTextTemplate = (msgid, direction, time, userlink, name, text) => `
 
 const AvatarStyle_NormalTextTemplate = (msgid, direction, time, userlink, name, text, target, client) => `
     <div id='${msgid}' class='avatar-style TextMessage_Normal'>
-    <div class='Body'>
+    <div class='Body animate-avatar'>
     <div class='avatar-container'>
-    <img class='avatar' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onerror='this.onerror=null;this.src="style/avatar.png";'>
+    ${Config.HOVER_ANIMATES_GIFS ? 
+        `<img class='static-avatar'>
+         <img class='avatar hidden-image' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onload='ThumbnailAvatar(this)' onerror='this.onerror=null;this.src="style/avatar.png";'>`: 
+        `<img class='avatar' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onerror='this.onerror=null;this.src="style/avatar.png";'>`}
     </div>
     <div class='message-container'>
         <div class='message-header'>
@@ -71,6 +74,17 @@ const PokeTextTemplate = (msgid, time, link, name, text) => Config.AVATARS_ENABL
     </span>
     </p>
 `;
+
+function ThumbnailAvatar(img) {
+    let still = $(img).prev('.static-avatar')[0];
+    let canvas = document.createElement('canvas');
+    console.log(canvas);
+    console.log(img);
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    canvas.getContext('2d').drawImage(img, 0, 0);
+    still.src = canvas.toDataURL('image/png');
+}
 
 function CheckMessageLimit(tab) {
     if (tab.childElementCount > Config.MAX_LINES) {
