@@ -16,9 +16,8 @@ const AvatarStyle_NormalTextTemplate = (msgid, direction, time, userlink, name, 
     <div class='Body animate-avatar'>
     <div class='avatar-container'>
     ${Config.HOVER_ANIMATES_GIFS ? 
-        `<img class='static-avatar'>
-         <img class='avatar hidden-image' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onload='ThumbnailAvatar(this)' onerror='this.onerror=null;this.src="style/avatar.png";'>`: 
-        `<img class='avatar' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onerror='this.onerror=null;this.src="style/avatar.png";'>`}
+        `<img class='avatar hidden-image' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onload='ThumbnailAvatar(this)' onerror='DefaultAvatar(this)'>`: 
+        `<img class='avatar' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onerror='this.onerror=null;this.classList.add("default-avatar");'>`}
     </div>
     <div class='message-container'>
         <div class='message-header'>
@@ -75,15 +74,21 @@ const PokeTextTemplate = (msgid, time, link, name, text) => Config.AVATARS_ENABL
     </p>
 `;
 
+function DefaultAvatar(img) {
+    img.onerror=null;
+    img.classList.remove("hidden-image");
+    img.classList.add("default-avatar");
+    img.src="";
+}
+
 function ThumbnailAvatar(img) {
-    let still = $(img).prev('.static-avatar')[0];
+    let still = $('<img/>', { class: 'static-avatar'});
     let canvas = document.createElement('canvas');
-    console.log(canvas);
-    console.log(img);
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
     canvas.getContext('2d').drawImage(img, 0, 0);
-    still.src = canvas.toDataURL('image/png');
+    still[0].src = canvas.toDataURL('image/png');
+    still.insertBefore(img);
 }
 
 function CheckMessageLimit(tab) {

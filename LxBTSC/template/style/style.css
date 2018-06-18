@@ -254,14 +254,6 @@ video {
     object-position: top;
 }
 
-.play-gif:hover .still-image {
-    display: none;
-}
-
-.play-gif:hover .hidden-image {
-    display: block;
-}
-
 .hidden-image {
     display: none;
 }
@@ -293,4 +285,9 @@ video {
 
 .avatar-style.TextMessage_Normal {
     padding-bottom: 10px;
+}
+
+.default-avatar {
+    background-image: url("avatar.png");
+    background-size: contain;
 }

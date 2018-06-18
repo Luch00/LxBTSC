@@ -47,7 +47,7 @@ function EmbedFile(fileMIME, url, message_id) {
     // image
     if (imageMime.indexOf(fileMIME) > -1) {
         if (fileMIME == "image/gif" && Config.HOVER_ANIMATES_GIFS) {
-            addEmbed(ThumbnailGif(url), message_id);
+            addEmbed(FreezeframeGif(url), message_id);
         }
         else {
             addEmbed(ImageFile(url), message_id);
@@ -116,36 +116,24 @@ function EmbedHtml(json, message_id) {
     }
 }
 
-function ThumbnailGif(url) {
+function FreezeframeGif(url) {
     let embed = $('<div/>', {
         class: "generic-file-embed"
     });
     let img = new Image();
-    img.className = "embed-image hidden-image";
+    img.className = "embed-image";
     img.setAttribute('crossOrigin', 'anonymous');
-    let still = new Image();
-    still.className = "embed-image still-image";
-    still.setAttribute('crossOrigin', 'anonymous');
 
     let a = $('<a/>', {
-        class: 'play-gif',
+        class: 'hidden-image',
         href: url,
         "data-featherlight": "image",
     });
-    a.append(still);
+
     a.append(img);
     img.onload = function() {
-        let canvas = document.createElement('canvas');
-        let ctx = canvas.getContext('2d');
-        canvas.height = img.naturalHeight;
-        canvas.width = img.naturalWidth;
-        ctx.drawImage(img, 0, 0);
-        ctx.beginPath();
-        ctx.moveTo(5, 5);
-        ctx.lineTo(15, 10);
-        ctx.lineTo(5, 15);
-        ctx.fill();
-        still.src = canvas.toDataURL('image/png');
+        $(img).freezeframe({overlay: true});        
+        $(a).removeClass('hidden-image');
     }
     img.src = encodeURI(url);
 
