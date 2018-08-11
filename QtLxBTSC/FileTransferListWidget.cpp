@@ -194,7 +194,7 @@ void FileTransferListWidget::checkForPassword()
 		// failed to get channel information -> cancel
 		return;
 	}
-
+	
 	if (has_password == 1)
 	{
 		pwDialog->show();
@@ -248,7 +248,6 @@ void FileTransferListWidget::transferStatusChanged(anyID transferID, unsigned st
 		{
 			case ERROR_file_transfer_complete:
 			{
-					//QMetaObject::invokeMethod(file.listWidget(), "setDone", Qt::QueuedConnection);
 					emit transferComplete(transferID);
 					emit showTransferCompletePop(file.filename());
 					break;

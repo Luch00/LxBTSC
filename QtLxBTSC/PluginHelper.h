@@ -91,5 +91,5 @@ private:
 	void dynamicConnect(const QString &signalName, const QString &slotName);
 	static QString time();
 	anyID getOwnClientId(uint64 serverConnectionHandlerID) const;
-	std::tuple<int, QString, QString> tuple_test();
+	std::tuple<int, QString, QString> getCurrentTab();
 };

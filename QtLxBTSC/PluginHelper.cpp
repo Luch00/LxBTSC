@@ -108,7 +108,7 @@ void PluginHelper::onTabChange(int i)
 	}
 }
 
-std::tuple<int, QString, QString> PluginHelper::tuple_test()
+std::tuple<int, QString, QString> PluginHelper::getCurrentTab()
 {
 	const int i = chatTabWidget->currentIndex();
 
@@ -141,35 +141,9 @@ void PluginHelper::recheckSelectedTab()
 	int mode;
 	QString server;
 	QString client;
-	std::tie(mode, server, client) = tuple_test();
+	std::tie(mode, server, client) = getCurrentTab();
 	if (mode > 0)
 		emit wObject->tabChanged(server, mode, client);
-
-	/*const int i = chatTabWidget->currentIndex();
-
-	if (i >= 0)
-	{
-		auto s = servers.value(ts3Functions.getCurrentServerConnectionHandlerID());
-		if (s == nullptr)
-			return;
-
-		if (i == 0)
-		{
-			emit wObject->tabChanged(s->safeUniqueId(), 3, "");
-		}
-		else if (i == 1)
-		{
-			emit wObject->tabChanged(s->safeUniqueId(), 2, "");
-		}
-		else
-		{
-			auto c = s->getClientByName(chatTabWidget->tabText(i));
-			if (c == nullptr)
-				return;
-
-			emit wObject->tabChanged(s->safeUniqueId(), 1, c->safeUniqueId());
-		}
-	}*/
 }
 
 void PluginHelper::onLinkHovered(const QUrl &url)
@@ -325,7 +299,7 @@ void PluginHelper::onPrintConsoleMessageToCurrentTab(QString message)
 	int mode;
 	QString server;
 	QString client;
-	std::tie(mode, server, client) = tuple_test();
+	std::tie(mode, server, client) = getCurrentTab();
 	if (mode > 0)
 		emit wObject->printConsoleMessage(server, mode, client, message);
 	else
