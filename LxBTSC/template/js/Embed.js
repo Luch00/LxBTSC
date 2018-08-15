@@ -42,7 +42,7 @@ function ParseHtml(htmlString, url, message_id) {
 }
 
 function EmbedFile(fileMIME, url, message_id) {
-    //console.log(fileMIME);
+    console.log(fileMIME);
     // embed single file
     // image
     if (imageMime.indexOf(fileMIME) > -1) {
@@ -67,7 +67,6 @@ function EmbedHtml(json, message_id) {
     //console.log(json);
 
     if (json.ogSiteName == "YouTube") {
-        // embed youtube
         addEmbed(Youtube(json), message_id);
         return;
     }
@@ -92,7 +91,6 @@ function EmbedHtml(json, message_id) {
         return;
     }
 
-    // embed works but does not play
     // most likely requires a newer version of chromium
     /*if (json.ogSiteName == "Spotify") {
         addEmbed(Spotify(json), message_id);
@@ -125,9 +123,8 @@ function FreezeframeGif(url) {
     img.setAttribute('crossOrigin', 'anonymous');
 
     let a = $('<a/>', {
-        class: 'hidden-image',
+        class: 'hidden-image fancybox',
         href: url,
-        "data-featherlight": "image",
     });
 
     a.append(img);
@@ -137,7 +134,6 @@ function FreezeframeGif(url) {
     }
     img.src = encodeURI(url);
 
-    a.featherlight();
     embed.append(a);
     return EmbedBlock(embed);
 }
@@ -150,8 +146,8 @@ function ImageFile(url) {
     img.className = "embed-image";
 
     let a = $('<a/>', {
+        class: 'fancybox',
         href: url,
-        "data-featherlight": "image",
         html: img
     });
     /*i.onload = function() {
@@ -163,7 +159,6 @@ function ImageFile(url) {
     };
     img.src = encodeURI(url);
 
-    a.featherlight();
     embed.append(a);
     return EmbedBlock(embed);
 }
@@ -203,8 +198,8 @@ function Youtube(json) {
         frameborder: "0",
         width: "400",
         height: "225",
-        allowfullscreen: true,
-        src: json.twitterPlayer
+        src: json.twitterPlayer + "?rel=0",
+        allowfullscreen: ""
     });
     return EmbedBlock(embed);
 }
@@ -220,12 +215,10 @@ function Twitter(json) {
     tweet.append('<div class="twitter-description">'+anchorme(json.ogDescription.slice(1, -1))+'</div>');
     if (json.ogImageUserGenerated == "true") {
         let img = $('<a/>', {
-            class: "tweet-image",
+            class: "tweet-image fancybox",
             href: json.ogImage,
-            "data-featherlight": "image",
             html: $('<img/>', { class: "tweet-image", src: encodeURI(json.ogImage) })
         });
-        img.featherlight();
         tweet.append(img);
     }
     // videos don't work, not webm
@@ -285,8 +278,8 @@ function Yandere(json) {
     img.className = "embed-image";
 
     let a = $('<a/>', {
+        class: 'fancybox',
         href: json.ogImage,
-        "data-featherlight": "image",
         html: img
     });
     /*i.onload = function() {
@@ -298,7 +291,6 @@ function Yandere(json) {
     };
     img.src = encodeURI(json.ogImage);
 
-    a.featherlight();
     embed.append(a);
     return EmbedBlock(embed);
 }
@@ -331,8 +323,8 @@ function Generic(json) {
         let img = new Image();
         img.className = "embed-og-image";
         let a = $('<a/>', {
+            class: 'fancybox',
             href: encodeURI(json.twitterImage || json.ogImage),
-            "data-featherlight": "image",
             html: img
         });
         /*i.onload = function() {
@@ -343,7 +335,6 @@ function Generic(json) {
             img.remove();
         };
         img.src = json.ogImage;
-        a.featherlight();
         embed.append(a);
     }
     return EmbedBlock(embed);

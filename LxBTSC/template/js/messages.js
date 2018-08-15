@@ -116,7 +116,6 @@ function AddTextMessage(target, direction, time, name, userlink, line, mode, cli
         GetFavicons(parsed);
     }
     
-    //tabMap.get(target).append(NormalTextTemplate(msgid, direction, time, userlink, name, parsed.get(0).outerHTML));
     let tab = GetTab(target, mode, (direction == "Outgoing") ? receiver : client);
     CheckMessageLimit(tab);
 
@@ -136,8 +135,7 @@ function AddTextMessage(target, direction, time, name, userlink, line, mode, cli
 function AddStatusMessage(target, line) {
     //console.log("status: "+target+" mesg:"+line);
 
-    //tabMap.get(target).append(line);
-    let tab = GetTab(target, 3, "");//.append(line);
+    let tab = GetTab(target, 3, "");
     CheckMessageLimit(tab);
     tab.append(line);
 

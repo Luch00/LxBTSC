@@ -5,7 +5,8 @@
         <meta name='viewport' content='width=device-width, initial-scale=1.0'>
         <link rel='stylesheet' type='text/css' href='style/style.css'/>
         <link rel='stylesheet' type='text/css' href='style/xbbcode.css'/>
-        <link rel='stylesheet' type='text/css' href='style/featherlight.min.css'/>
+        <link rel='stylesheet' type='text/css' href='style/freezeframe_styles.min.css'/>
+        <link rel='stylesheet' type='text/css' href='style/jquery.fancybox.min.css'/>
 
         <script type='text/javascript' src='js/jquery-3.2.1.min.js'></script>
         <script type='text/javascript' src='js/qwebchannel.js'></script>
@@ -19,7 +20,8 @@
         <script type='text/javascript' src='js/emotes.js'></script>
         <script type='text/javascript' src='js/favicons.js'></script>
         <script type='text/javascript' src='js/anchorme.min.js'></script>
-        <script type='text/javascript' src='js/featherlight.min.js'></script>
+        <script type='text/javascript' src='js/jquery.fancybox.min.js'></script>
+        <script type='text/javascript' src='js/freezeframe.pkgd.min.js'></script>
         <script type='text/javascript'>
             var interval;
             var main;
@@ -82,6 +84,22 @@
                 Emotes.emote_list_element = $('#emote-list');
                 waitForQt();
                 main.resize(stayDown);
+                
+                main.on('mouseenter', '.emote', function() {
+                    showTooltip($(this)[0]);
+                });
+                main.on('mouseleave', '.emote', function() {
+                    hideTooltip();
+                });
+                main.on('click', '.fancybox', function(e) {
+                    $.fancybox.open({
+                        src: this.href,
+                        type: 'image',
+                        backFocus: false
+                    });
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
             };
             window.onscroll = function(ev) {
                 if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight) {

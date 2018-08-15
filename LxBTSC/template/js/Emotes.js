@@ -3,7 +3,7 @@ var Emotes = {
     emoteKeyList: [],
     emoteset_json: "emotesets.json",
     emote_list_element: {},
-    retryID: 0,
+    emoteIndex: 0,
     addEmote: function (key, value) {
         if (this.emoteList.has(key)) {
             this.emoteList.get(key).element.remove();
@@ -15,7 +15,7 @@ var Emotes = {
         var html = string.html();
         this.emoteKeyList.forEach(function(key) {
             html = html.replace(new RegExp(escapeRegExp(key)+'(?![^<]*?(?:</a>|">))', 'g'), 
-                '<img class="emote" src="'+Emotes.emoteList.get(key).name+'" alt="'+key+'" onmouseenter="showTooltip(this)" onmouseleave="hideTooltip()">');
+                '<img class="emote emote-'+Emotes.emoteList.get(key).index+'" src="'+Emotes.emoteList.get(key).name+'" alt="'+key+'">');
         });
         string.html(html);
     },
@@ -26,7 +26,7 @@ var Emotes = {
         });
     },
     clear: function () {
-        window.clearTimeout(Emotes.retryID);
+        Emotes.emoteIndex = 0;
         Emotes.emoteList.clear();
         Emotes.emoteKeyList = [];
         Emotes.emote_list_element.empty();
@@ -58,15 +58,17 @@ var Emotes = {
         });
         set_element.append(emote_container);
         json.emoticons.forEach(function(emote) {
-            var e = { name: `${json.pathbase}${emote.name}${json.pathappend}` }
+            var e = { 
+                name: `${json.pathbase}${emote.name}${json.pathappend}`,
+                index: Emotes.emoteIndex 
+            }
+            Emotes.emoteIndex++;
             var emote_img = $('<img >', {
                 class: 'emote',
                 src: e.name,
                 alt: emote.code,
                 'data-key': emote.code
             })
-            .on('mouseenter', function() { showTooltip($(this)[0]); })
-            .on('mouseleave', function() { hideTooltip(); })
             .click(function(e) {
                 emoteClicked($(this).data('key'), e.shiftKey);
             });
