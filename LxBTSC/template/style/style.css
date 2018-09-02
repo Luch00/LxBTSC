@@ -291,3 +291,63 @@ video {
     background-image: url("avatar.png");
     background-size: contain;
 }
+
+.emote-mod-spin {
+    animation: spin 2.5s linear infinite;
+}
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+.emote-mod-flip {
+    animation: flip 2s linear infinite;
+}
+@keyframes flip {
+    100% { transform: rotateY(360deg); }
+}
+
+.emote-mod-flap {
+    animation: flap 2s linear infinite;
+}
+@keyframes flap {
+    100% { transform: rotateX(360deg); }
+}
+
+.emote-mod-gift {
+    animation-name: gift;
+    animation-duration: 1ms;
+    animation-fill-mode: backwards;
+    animation-play-state: paused;
+}
+.emote-mod-gift:hover {
+    animation-fill-mode: forwards;
+    animation-play-state: running;
+}
+@keyframes gift {
+    0% { content: url('data:image/png;base64,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'); }
+    100% { content: none; }
+}
+
+.emote-mod-shake {
+    animation: shake 0.1s linear infinite;
+}
+@keyframes shake {
+    100% { transform: translate(-2px, 0px) rotate(0deg); }
+}
+
+.emote-mod-triggered {
+    animation: triggered 0.2s linear infinite;
+}
+@keyframes triggered {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}

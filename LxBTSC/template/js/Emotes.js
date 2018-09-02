@@ -14,8 +14,12 @@ var Emotes = {
     emoticonize: function (string) {
         var html = string.html();
         this.emoteKeyList.forEach(function(key) {
-            html = html.replace(new RegExp(escapeRegExp(key)+'(?![^<]*?(?:</a>|">))', 'g'), 
-                '<img class="emote emote-'+Emotes.emoteList.get(key).index+'" src="'+Emotes.emoteList.get(key).name+'" alt="'+key+'">');
+            /*html = html.replace(new RegExp(escapeRegExp(key)+'(?![^<]*?(?:</a>|">))', 'g'), 
+                '<img class="emote emote-'+Emotes.emoteList.get(key).index+'" src="'+Emotes.emoteList.get(key).name+'" alt="'+key+'">');*/
+
+            html = html.replace(new RegExp(escapeRegExp(key)+'((?:[:])([a-z]+)(?:[:]))?(?![^<]*?(?:</a>|">))', 'g'), function (a, b, c) {
+                return `<img class="emote emote-${Emotes.emoteList.get(key).index} emote-mod-${c}" src="${Emotes.emoteList.get(key).name}" alt="${key}">`;
+            });
         });
         string.html(html);
     },
