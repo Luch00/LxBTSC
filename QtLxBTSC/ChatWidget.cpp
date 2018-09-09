@@ -6,7 +6,7 @@
 */
 
 #include "ChatWidget.h"
-//#include <QMessageBox>
+#include "FileTransferListWidget.h"
 
 
 ChatWidget::ChatWidget(QString path, TsWebObject* webObject, QWidget *parent)
@@ -115,7 +115,20 @@ void ChatWidget::reload() const
 
 void ChatWidget::onFullScreenRequested(QWebEngineFullScreenRequest request)
 {
-	request.accept();
+	if (request.toggleOn())
+	{
+		if (fullScreenWindow)
+			return;
+		request.accept();
+		fullScreenWindow.reset(new FullScreenWindow(view));
+	}
+	else
+	{
+		if (!fullScreenWindow)
+			return;
+		request.accept();
+		fullScreenWindow.reset();
+	}
 }
 
 

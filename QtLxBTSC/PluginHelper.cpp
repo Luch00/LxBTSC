@@ -227,6 +227,10 @@ void PluginHelper::toggleNormalChat() const
 	{
 		chatTabWidget->setMaximumHeight(24);
 		chat->show();
+		// prevent freezing
+		QSize s = chat->size();
+		chat->resize(s.width() + 1, s.height() + 1);
+		chat->resize(s);
 	}
 }
 

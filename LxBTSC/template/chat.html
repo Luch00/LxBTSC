@@ -92,6 +92,30 @@
                         IsBottom = (window.innerHeight + window.pageYOffset) >= document.body.offsetHeight;
                     }, 0);
                 });
+
+                (function checkForBodySizeChange() {
+                    var last_body_size = {
+                        /*width: document.body.clientWidth,*/
+                        height: document.body.clientHeight
+                    };
+                    function checkBodySizeChange() {
+                        /*var width_changed = last_body_size.width !== document.body.clientWidth,*/
+                        var height_changed = last_body_size.height !== document.body.clientHeight;
+                            
+                        //if(width_changed || height_changed) {
+                        if(height_changed) {
+                            $(document.body).trigger('sizechange');
+                            last_body_size = {
+                                /*width: document.body.clientWidth,*/
+                                height: document.body.clientHeight
+                            };
+                        }
+                        window.requestAnimationFrame(checkBodySizeChange);
+                    }
+                    window.requestAnimationFrame(checkBodySizeChange);
+                })();
+
+                main.on('sizechange', stayDown);
                 
                 main.on('mouseenter', '.emote', function() {
                     showTooltip($(this));
@@ -103,7 +127,8 @@
                     $.fancybox.open({
                         src: this.href || this.src,
                         type: 'image',
-                        backFocus: false
+                        backFocus: false,
+                        buttons: ["zoom", "fullScreen", "close"]
                     });
                     e.preventDefault();
                     e.stopPropagation();
@@ -158,7 +183,7 @@
                     LoadEmotes();
                 });
             }
-
+            
             function Ts3LinkClicked(event) {
                 if (event.which == 3) {
                     event.preventDefault();

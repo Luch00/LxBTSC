@@ -21,6 +21,7 @@
 #include <QWebEngineFullScreenRequest>
 #include <QApplication>
 #include <QKeyEvent>
+#include "FullScreenWindow.h"
 
 class ChatWidget : public QFrame
 {
@@ -62,6 +63,7 @@ public:
 private:
 	QVBoxLayout *verticalLayout;
 	QWebEngineView *view;
+	QScopedPointer<FullScreenWindow> fullScreenWindow;
 	TsWebObject *wObject;
 	TsWebEnginePage *page;
 	void setupUi();
