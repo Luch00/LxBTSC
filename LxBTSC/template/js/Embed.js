@@ -322,11 +322,13 @@ function Generic(json) {
     if (json.twitterImage || json.ogImage) {
         let img = new Image();
         img.className = "embed-og-image";
-        let a = $('<a/>', {
-            class: 'fancybox',
-            href: encodeURI(json.twitterImage || json.ogImage),
-            html: img
-        });
+        let a = $('<div/>').append(
+            $('<a/>', {
+                class: 'fancybox',
+                href: encodeURI(json.twitterImage || json.ogImage),
+                html: img
+            })
+        );
         /*i.onload = function() {
             console.log("success");
         };*/

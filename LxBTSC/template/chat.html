@@ -10,7 +10,6 @@
 
         <script type='text/javascript' src='js/jquery-3.2.1.min.js'></script>
         <script type='text/javascript' src='js/qwebchannel.js'></script>
-        <script type='text/javascript' src='js/jquery.resize.js'></script>
         <script type='text/javascript' src='js/notify.js'></script>
         <script type='text/javascript' src='js/xbbcode.js'></script>
         <script type='text/javascript' src='js/config.js'></script>
@@ -20,6 +19,7 @@
         <script type='text/javascript' src='js/emotes.js'></script>
         <script type='text/javascript' src='js/favicons.js'></script>
         <script type='text/javascript' src='js/anchorme.min.js'></script>
+        <script type='text/javascript' src='js/popper.min.js'></script>
         <script type='text/javascript' src='js/jquery.fancybox.min.js'></script>
         <script type='text/javascript' src='js/freezeframe.pkgd.min.js'></script>
         <script type='text/javascript'>
@@ -28,6 +28,7 @@
             var IsBottom = true;
             var QtObject;
             var tooltip;
+            var popper;
             var stayDown = function() {
                 if (IsBottom) {
                     window.scroll(0, document.body.scrollHeight);
@@ -83,17 +84,24 @@
                 tooltip = $('.tooltipper');
                 Emotes.emote_list_element = $('#emote-list');
                 waitForQt();
-                main.resize(stayDown);
+
+                $(window).resize(stayDown);
+
+                $(window).scroll(function() {
+                    setTimeout(function () {
+                        IsBottom = (window.innerHeight + window.pageYOffset) >= document.body.offsetHeight;
+                    }, 0);
+                });
                 
                 main.on('mouseenter', '.emote', function() {
-                    showTooltip($(this)[0]);
+                    showTooltip($(this));
                 });
                 main.on('mouseleave', '.emote', function() {
                     hideTooltip();
                 });
                 main.on('click', '.fancybox', function(e) {
                     $.fancybox.open({
-                        src: this.href,
+                        src: this.href || this.src,
                         type: 'image',
                         backFocus: false
                     });
@@ -101,41 +109,26 @@
                     e.stopPropagation();
                 });
             };
-            window.onscroll = function(ev) {
-                if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight) {
-                    IsBottom = true;
-                }
-                else {
-                    IsBottom = false;
-                }
-            };
 
             function showTooltip(elem) {
-                var bodyRect = document.body.getBoundingClientRect();
-                var elemRect = elem.getBoundingClientRect();
-                var wheight = $(window).height();
-                var wwidth = $(window).width();
-                var hOffset;
-                var vOffset = -60;
-                if (elemRect.top/wheight > 0.7) {
-                    hOffset = elemRect.top - elemRect.bottom;
-                    hOffset = -20;
-                }
-                else {
-                    hOffset = elemRect.bottom - elemRect.top;
-                }
-                if (elemRect.left/wwidth < 0.15) {
-                    vOffset = 0;
-                }
-                else if (elemRect.left/wwidth > 0.75) {
-                    vOffset = -120;
-                }
-                tooltip.css({top: elemRect.top - bodyRect.top, left: (elemRect.left-bodyRect.left)+ (elemRect.width/2.5), 'margin-left': vOffset, 'margin-top': hOffset});
-                tooltip.text($(elem).attr('alt'));
+                tooltip.text(elem.attr('alt'));
+                popper = new Popper(elem, tooltip, {
+                    placement: 'top',
+                    modifiers: {
+                        offset: {
+                            offset: 0
+                        },
+                        preventOverflow: {
+                            padding: 10
+                        }
+                    }
+                });
             }
 
             function hideTooltip() {
-                tooltip.text("");
+                if (popper) {
+                    popper.destroy();
+                }
             }
 
             function escapeRegExp(str) {
@@ -183,7 +176,7 @@
         </script>
     </head>
     <body id='main'>
-        <div class='tooltipper'></div>
+        <div class='tooltipper'>Tooltiptext</div>
         <div class='emote-menu' id='popup'>
             <div id='emote-list'></div>
         </div>

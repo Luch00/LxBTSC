@@ -54,6 +54,7 @@ function ShowTab(target, mode, client) {
     let tab = GetTab(target, mode, client);
     //console.log(tab);
     tab.show();
+    window.scroll(0, document.body.scrollHeight);
 }
 
 function CreateTab() {
