@@ -42,6 +42,7 @@ void ChatWidget::setupUi()
 	connect(copyAction, &QAction::triggered, this, &ChatWidget::onCopyActivated);
 	connect(copyUrlAction, &QAction::triggered, this, &ChatWidget::onCopyUrlActivated);
 	connect(view, &QWebEngineView::customContextMenuRequested, this, &ChatWidget::onShowContextMenu);
+	connect(view, &QWebEngineView::loadFinished, this, &ChatWidget::chatLoaded);
 }
 
 void ChatWidget::keyReleaseEvent(QKeyEvent* event)
@@ -102,12 +103,6 @@ void ChatWidget::onCopyUrlActivated()
 	QGuiApplication::clipboard()->setText(currentHoveredUrl.toString(), QClipboard::Clipboard);
 }
 
-void ChatWidget::onPageLoaded()
-{
-	isLoaded = true;
-
-}
-
 void ChatWidget::reload() const
 {
 	view->reload();
@@ -140,7 +135,6 @@ void ChatWidget::createPage()
 	page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 	page->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
 	connect(page, &TsWebEnginePage::fullScreenRequested, this, &ChatWidget::onFullScreenRequested);
-	connect(page, &TsWebEnginePage::loadFinished, this, &ChatWidget::onPageLoaded);
 	connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::onLinkHovered);
 	connect(page, &TsWebEnginePage::fileUrlClicked, this, &ChatWidget::onFileUrlClicked);
 	connect(page, &TsWebEnginePage::clientUrlClicked, this, &ChatWidget::onClientUrlClicked);

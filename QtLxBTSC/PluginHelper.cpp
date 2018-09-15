@@ -2,6 +2,7 @@
 #include "utils.h"
 #include <QThread>
 #include <QRegularExpression>
+#include <QTimer>
 
 PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 	: QObject(parent)
@@ -59,13 +60,13 @@ void PluginHelper::disconnect() const
 // delay ts a bit until webview  is loaded
 void PluginHelper::waitForLoad() const
 {
-	int waited = 0; //timeout after about 5s
-	while (!chat->loaded() && waited < 50)
-	{
-		QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-		++waited;
-		QThread::msleep(100);
-	}
+	QTimer timer;
+	timer.setSingleShot(true);
+	QEventLoop waitLoop;
+	connect(chat, &ChatWidget::chatLoaded, &waitLoop, &QEventLoop::quit);
+	connect(&timer, &QTimer::timeout, &waitLoop, &QEventLoop::quit);
+	timer.start(10000);
+	waitLoop.exec();
 }
 
 // silly thing to prevent webengineview freezing on minimize

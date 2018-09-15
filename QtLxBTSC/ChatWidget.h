@@ -33,21 +33,12 @@ public:
 	void createPage();
 	void reload() const;
 
-	/*TsWebObject* ChatWidget::webObject() const
-	{
-		return wObject;
-	}*/
-
-	bool ChatWidget::loaded() const
-	{
-		return isLoaded;
-	}
-
 	signals:
 	void fileUrlClicked(const QUrl &url);
 	void clientUrlClicked(const QUrl &url);
 	void channelUrlClicked(const QUrl &url);
 	void linkHovered(const QUrl &url);
+	void chatLoaded();
 
 	private slots:
 	void onCopyActivated();
@@ -57,7 +48,6 @@ public:
 	void onFileUrlClicked(const QUrl &url);
 	void onClientUrlClicked(const QUrl &url);
 	void onChannelUrlClicked(const QUrl &url);
-	void onPageLoaded();
 	void onFullScreenRequested(QWebEngineFullScreenRequest request);
 
 private:
@@ -73,6 +63,5 @@ private:
 	QAction *copyAction;
 	QAction *copyUrlAction;
 	QWebChannel *channel;
-	bool isLoaded = false;
 	void keyReleaseEvent(QKeyEvent* event) override;
 };
