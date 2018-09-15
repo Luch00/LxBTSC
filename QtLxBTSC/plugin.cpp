@@ -33,7 +33,7 @@ const char* ts3plugin_name() {
 
 /* Plugin version */
 const char* ts3plugin_version() {
-    return "1.8";
+    return "1.9";
 }
 
 /* Plugin API version. Must be the same as the clients API major version, else the plugin fails to load. */
@@ -221,62 +221,9 @@ void ts3plugin_configure(void* handle, void* qParentWidget) {
 	helper->openConfig();
 }
 
-/* Helper function to create a menu item */
-static struct PluginMenuItem* createMenuItem(enum PluginMenuType type, int id, const char* text, const char* icon) {
-	struct PluginMenuItem* menuItem = (struct PluginMenuItem*)malloc(sizeof(struct PluginMenuItem));
-	menuItem->type = type;
-	menuItem->id = id;
-	strcpy_s(menuItem->text, PLUGIN_MENU_BUFSZ, text);
-	strcpy_s(menuItem->icon, PLUGIN_MENU_BUFSZ, icon);
-	return menuItem;
-}
-
-/* Some makros to make the code to create menu items a bit more readable */
-#define BEGIN_CREATE_MENUS(x) const size_t sz = x + 1; size_t n = 0; *menuItems = (struct PluginMenuItem**)malloc(sizeof(struct PluginMenuItem*) * sz);
-#define CREATE_MENU_ITEM(a, b, c, d) (*menuItems)[n++] = createMenuItem(a, b, c, d);
-#define END_CREATE_MENUS (*menuItems)[n++] = NULL; assert(n == sz);
-
-void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
-	BEGIN_CREATE_MENUS(5);  /* IMPORTANT: Number of menu items must be correct! */
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 1, "Settings", "");
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 2, "Transfers", "");
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 3, "Toggle Chat", ""); // this initmenus is kinda ass, no submenus and no separators :(
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 4, "Reload Emotes", "");
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, 5, "Reload Chat", "");
-	END_CREATE_MENUS;  /* Includes an assert checking if the number of menu items matched */
-	*menuIcon = NULL;
-}
-
-// Called when a plugin menu item (see ts3plugin_initMenus) is triggered. Optional function, when not using plugin menus, do not implement this.
-void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenuType type, int menuItemID, uint64 selectedItemID) {
-	if (menuItemID == 1)
-	{
-		helper->openConfig();
-	}
-	if (menuItemID == 2)
-	{
-		helper->openTransfers();
-	}
-	if (menuItemID == 3)
-	{
-		helper->toggleNormalChat();
-	}
-	if (menuItemID == 4)
-	{
-		helper->reloadEmotes();
-	}
-	if (menuItemID == 5)
-	{
-		helper->reload();
-	}
-}
-
 void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage) {
 	helper->serverStopped(serverConnectionHandlerID, shutdownMessage);
 }
-
-
-
 
 //void ts3plugin_onNewChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID) {
 //}

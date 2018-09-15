@@ -7,7 +7,6 @@
 PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 	: QObject(parent)
 {
-	//QMessageBox::information(0, "debug", QString(""), QMessageBox::Ok);
 	pathToPlugin = QString(pluginPath);
 	utils::checkEmoteSets(pathToPlugin);
 	config = new ConfigWidget(pathToPlugin);
@@ -41,11 +40,13 @@ PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 PluginHelper::~PluginHelper()
 {
 	disconnect();
+	delete chatMenu;
 	delete chat;
 	delete config;
 	delete transfers;
 	delete client;
 	servers.clear();
+	chatTabWidget->setMaximumHeight(16777215);
 }
 
 // Disconnect used signals
@@ -67,6 +68,33 @@ void PluginHelper::waitForLoad() const
 	connect(&timer, &QTimer::timeout, &waitLoop, &QEventLoop::quit);
 	timer.start(10000);
 	waitLoop.exec();
+}
+
+// add own menu to menubar
+void PluginHelper::insertMenu()
+{
+	chatMenu = new QMenu("Bette&rChat");
+	QMenu* debug = new QMenu("D&ebug", chatMenu);
+	
+	QAction* settings = new QAction("&Settings", chatMenu);
+	QAction* transfers = new QAction("&Downloads", chatMenu);
+	QAction* toggle = new QAction("&Toggle Chat", chatMenu);
+	QAction* reloademotes = new QAction("&Reload Emotes", debug);
+	QAction* reloadchat = new QAction("&Clear and Reload Chat", debug);
+	connect(settings, &QAction::triggered, [this]() { openConfig(); });
+	connect(transfers, &QAction::triggered, [this]() { openTransfers(); });
+	connect(toggle, &QAction::triggered, [this]() { toggleNormalChat(); });
+	connect(reloademotes, &QAction::triggered, [this]() { reloadEmotes(); });
+	connect(reloadchat, &QAction::triggered, [this]() { chat->reload(); });
+	debug->addAction(reloademotes);
+	debug->addAction(reloadchat);
+	chatMenu->addAction(settings);
+	chatMenu->addAction(transfers);
+	chatMenu->addAction(toggle);
+	chatMenu->addMenu(debug);
+
+	QMenuBar* menubar = mainwindow->menuBar();
+	menubar->insertMenu(menubar->actions().last(), chatMenu);
 }
 
 // silly thing to prevent webengineview freezing on minimize
@@ -269,6 +297,8 @@ void PluginHelper::initUi()
 	emoticonButton = qobject_cast<QToolButton*>(findWidget("EmoticonButton", parent));
 	emoticonButton->disconnect();
 	e = connect(emoticonButton, &QToolButton::clicked, this, &PluginHelper::onEmoticonButtonClicked);
+
+	insertMenu();
 }
 
 void PluginHelper::dynamicConnect(const QString& signalName, const QString& slotName)

@@ -7,6 +7,7 @@
 #include <QPlainTextEdit>
 #include <QApplication>
 #include <QToolButton>
+#include <QMenuBar>
 #include <QMetaMethod>
 #include "ConfigWidget.h"
 #include "FileTransferListWidget.h"
@@ -62,6 +63,7 @@ private:
 	QTabWidget* chatTabWidget;
 	QTextEdit* chatLineEdit;
 	QToolButton* emoticonButton;
+	QMenu* chatMenu;
 	QMetaObject::Connection c;
 	QMetaObject::Connection d;
 	QMetaObject::Connection e;
@@ -80,6 +82,7 @@ private:
 	Qt::ApplicationState currentState;
 
 	void initUi();
+	void insertMenu();
 	void waitForLoad() const;
 	void disconnect() const;
 	QString getServerId(uint64 serverConnectionHandlerID);

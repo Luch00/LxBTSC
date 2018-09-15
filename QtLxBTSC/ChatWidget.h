@@ -30,7 +30,6 @@ class ChatWidget : public QFrame
 public:
 	ChatWidget(QString path, TsWebObject* webObject, QWidget *parent = Q_NULLPTR);
 	~ChatWidget();
-	void createPage();
 	void reload() const;
 
 	signals:
@@ -45,9 +44,6 @@ public:
 	void onCopyUrlActivated();
 	void onShowContextMenu(const QPoint &);
 	void onLinkHovered(const QUrl &);
-	void onFileUrlClicked(const QUrl &url);
-	void onClientUrlClicked(const QUrl &url);
-	void onChannelUrlClicked(const QUrl &url);
 	void onFullScreenRequested(QWebEngineFullScreenRequest request);
 
 private:
@@ -56,12 +52,13 @@ private:
 	QScopedPointer<FullScreenWindow> fullScreenWindow;
 	TsWebObject *wObject;
 	TsWebEnginePage *page;
-	void setupUi();
 	QString pathToPage;
 	QUrl currentHoveredUrl;
 	QMenu * menu;
 	QAction *copyAction;
 	QAction *copyUrlAction;
 	QWebChannel *channel;
+	void setupUi();
+	void createPage();
 	void keyReleaseEvent(QKeyEvent* event) override;
 };

@@ -78,21 +78,6 @@ void ChatWidget::onLinkHovered(const QUrl &u)
 	emit linkHovered(u);
 }
 
-void ChatWidget::onFileUrlClicked(const QUrl & url)
-{
-	emit fileUrlClicked(url);
-}
-
-void ChatWidget::onClientUrlClicked(const QUrl& url)
-{
-	emit clientUrlClicked(url);
-}
-
-void ChatWidget::onChannelUrlClicked(const QUrl& url)
-{
-	emit channelUrlClicked(url);
-}
-
 void ChatWidget::onCopyActivated()
 {
 	QGuiApplication::clipboard()->setText(page->selectedText(), QClipboard::Clipboard);
@@ -126,7 +111,6 @@ void ChatWidget::onFullScreenRequested(QWebEngineFullScreenRequest request)
 	}
 }
 
-
 void ChatWidget::createPage()
 {
 	page = new TsWebEnginePage(view);
@@ -136,9 +120,9 @@ void ChatWidget::createPage()
 	page->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
 	connect(page, &TsWebEnginePage::fullScreenRequested, this, &ChatWidget::onFullScreenRequested);
 	connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::onLinkHovered);
-	connect(page, &TsWebEnginePage::fileUrlClicked, this, &ChatWidget::onFileUrlClicked);
-	connect(page, &TsWebEnginePage::clientUrlClicked, this, &ChatWidget::onClientUrlClicked);
-	connect(page, &TsWebEnginePage::channelUrlClicked, this, &ChatWidget::onChannelUrlClicked);
+	connect(page, &TsWebEnginePage::fileUrlClicked, this, &ChatWidget::fileUrlClicked);
+	connect(page, &TsWebEnginePage::clientUrlClicked, this, &ChatWidget::clientUrlClicked);
+	connect(page, &TsWebEnginePage::channelUrlClicked, this, &ChatWidget::channelUrlClicked);
 	//page->setUrl(QUrl(pathToPage));
 	channel = new QWebChannel(page);
 	page->setWebChannel(channel);

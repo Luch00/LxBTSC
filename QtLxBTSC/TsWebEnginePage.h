@@ -16,8 +16,7 @@ class TsWebEnginePage : public QWebEnginePage
 	Q_OBJECT
 
 public:
-	TsWebEnginePage(QObject *parent = 0);
-	~TsWebEnginePage();
+	TsWebEnginePage(QObject *parent = 0) : QWebEnginePage(parent) {};
 	
 	// clicked links open in external browser
 	bool acceptNavigationRequest(const QUrl & url, QWebEnginePage::NavigationType type, bool isMainFrame) override
