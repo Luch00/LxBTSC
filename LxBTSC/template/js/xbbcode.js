@@ -218,7 +218,7 @@ var XBBCODE = (function() {
                 return '</span>';
             }
         },
-        "img": {
+        /*"img": {
             openTag: function(params,content) {
 
                 var myUrl = content;
@@ -234,7 +234,7 @@ var XBBCODE = (function() {
                 return '';
             },
             displayContent: false
-        },
+        },*/
         "justify": {
             openTag: function(params,content) {
                 return '<span class="xbbcode-justify">';
@@ -668,18 +668,6 @@ var XBBCODE = (function() {
         if ( tags[tagName].displayContent === false) {
             processedContent = "";
         }
-
-        /*if (tagName === "url") {
-            if (tagParams) {
-                if (tagParams.startsWith("=ts3file://")) {
-                    processedContent += " [OPEN FILELINKS IN NORMAL CHAT]";
-                }
-            }
-            else if (processedContent.startsWith("ts3file://")) {
-                processedContent += " [OPEN FILELINKS IN NORMAL CHAT]";
-            }
-            
-        }*/
 
         return openTag + processedContent + closeTag;
     };

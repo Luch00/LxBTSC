@@ -170,6 +170,9 @@ video {
     border-radius: 3px;
     width: 120px;
     text-align: center;
+    top: -10000px;
+    left: -10000px;
+    margin-bottom: 8px;
 }
 
 .tooltipper:empty {
@@ -182,10 +185,6 @@ video {
 
 .no-scroll {
     overflow: hidden;
-}
-
-.featherlight-content {
-    overflow: hidden !important;
 }
 
 .tweet-container, .generic-og-embed {
