@@ -1,18 +1,12 @@
 #pragma once
 
-#include <QWidget>
 #include <QCheckBox>
 #include <QSpinBox>
 #include <QFormLayout>
-#include <QLabel>
 #include <QPushButton>
-#include <qfile.h>
-#include <QJsonDocument>
 #include <QJsonObject>
 #include <QPlainTextEdit>
-#include <QJsonArray>
 #include <QLineEdit>
-#include <QFileDialog>
 
 class ConfigWidget : public QWidget
 {

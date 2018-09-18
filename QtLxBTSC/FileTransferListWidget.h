@@ -1,19 +1,9 @@
 #pragma once
 
 #include <globals.h>
-#include <QWidget>
 #include <QListWidget>
-#include <QLabel>
-#include <QPushButton>
-#include <QLineEdit>
-#include <QVBoxLayout>
-#include <FileTransferItemWidget.h>
 #include <file.h>
-#include <QListWidgetItem>
-#include <QUrlQuery>
 #include <QInputDialog>
-#include <QStandardPaths>
-#include <QFile>
 #include <QMessageBox>
 
 class FileTransferListWidget : public QWidget

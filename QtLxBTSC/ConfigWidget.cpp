@@ -1,4 +1,8 @@
 #include "ConfigWidget.h"
+#include <QLabel>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QFileDialog>
 
 ConfigWidget::ConfigWidget(QString path, QWidget *parent)
 	: QWidget(parent)

@@ -1,4 +1,9 @@
 #include "FileTransferListWidget.h"
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QFile>
+#include <QStandardPaths>
+#include <QUrlQuery>
 
 FileTransferListWidget::FileTransferListWidget(QWidget *parent)
 	: QWidget(parent)

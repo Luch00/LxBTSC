@@ -7,20 +7,14 @@
 
 #pragma once
 
-#include <QWidget>
 #include <QWebEngineView>
-#include <QWebEngineSettings>
 #include <QVBoxLayout>
-#include <QStackedWidget>
+#include <QFrame>
 #include <TsWebEnginePage.h>
-#include <QClipboard>
-//#include <QGuiApplication>
 #include <QMenu>
 #include <QtWebChannel/qwebchannel.h>
 #include <TsWebObject.h>
 #include <QWebEngineFullScreenRequest>
-#include <QApplication>
-#include <QKeyEvent>
 #include "FullScreenWindow.h"
 
 class ChatWidget : public QFrame

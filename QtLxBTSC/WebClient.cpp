@@ -1,4 +1,5 @@
 #include "WebClient.h"
+#include <QtNetwork/QNetworkReply>
 
 WebClient::WebClient(QObject *parent)
 	: QObject(parent)

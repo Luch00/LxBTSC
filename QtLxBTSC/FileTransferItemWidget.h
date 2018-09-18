@@ -1,10 +1,7 @@
 #pragma once
 
-#include <QWidget>
-#include <QLabel>
 #include <QProgressBar>
 #include <QPushButton>
-#include <QHBoxLayout>
 
 class FileTransferItemWidget : public QWidget
 {

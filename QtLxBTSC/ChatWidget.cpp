@@ -7,6 +7,10 @@
 
 #include "ChatWidget.h"
 #include "FileTransferListWidget.h"
+#include <QKeyEvent>
+#include <QApplication>
+#include <QClipboard>
+#include <QWebEngineSettings>
 
 
 ChatWidget::ChatWidget(QString path, TsWebObject* webObject, QWidget *parent)

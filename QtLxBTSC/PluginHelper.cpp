@@ -3,6 +3,10 @@
 #include <QThread>
 #include <QRegularExpression>
 #include <QTimer>
+#include <QMenuBar>
+#include <QMetaMethod>
+#include <QToolButton>
+#include <QApplication>
 
 PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 	: QObject(parent)
@@ -35,6 +39,9 @@ PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 
 	g = connect(qApp, &QApplication::applicationStateChanged, this, &PluginHelper::onAppStateChanged);
 	chat->setStyleSheet("border: 1px solid gray");
+
+	// run init when eventloop starts
+	QTimer::singleShot(0, this, [=]() { initUi(); });
 }
 
 PluginHelper::~PluginHelper()
@@ -47,6 +54,7 @@ PluginHelper::~PluginHelper()
 	delete client;
 	servers.clear();
 	chatTabWidget->setMaximumHeight(16777215);
+	connect(emoticonButton, SIGNAL(clicked()), mainwindow, SLOT(onEmoticonButtonClicked()));
 }
 
 // Disconnect used signals
@@ -75,7 +83,6 @@ void PluginHelper::insertMenu()
 {
 	chatMenu = new QMenu("Bette&rChat");
 	QMenu* debug = new QMenu("D&ebug", chatMenu);
-	
 	QAction* settings = new QAction("&Settings", chatMenu);
 	QAction* transfers = new QAction("&Downloads", chatMenu);
 	QAction* toggle = new QAction("&Toggle Chat", chatMenu);
@@ -165,7 +172,7 @@ std::tuple<int, QString, QString> PluginHelper::getCurrentTab()
 }
 
 // After server tab change check what chat tab is selected
-void PluginHelper::recheckSelectedTab()
+/*void PluginHelper::recheckSelectedTab()
 {
 	int mode;
 	QString server;
@@ -173,7 +180,7 @@ void PluginHelper::recheckSelectedTab()
 	std::tie(mode, server, client) = getCurrentTab();
 	if (mode > 0)
 		emit wObject->tabChanged(server, mode, client);
-}
+}*/
 
 void PluginHelper::onLinkHovered(const QUrl &url)
 {
@@ -293,6 +300,7 @@ void PluginHelper::initUi()
 
 	chatLineEdit = qobject_cast<QTextEdit*>(findWidget("ChatLineEdit", parent));
 	connect(wObject, &TsWebObject::emoteSignal, this, &PluginHelper::onEmoticonAppend);
+	// mainwindow onEmoticonsButtonClicked()
 
 	emoticonButton = qobject_cast<QToolButton*>(findWidget("EmoticonButton", parent));
 	emoticonButton->disconnect();
@@ -370,10 +378,10 @@ QWidget* PluginHelper::findWidget(QString name, QWidget* parent)
 // server tab changed
 void PluginHelper::currentServerChanged(uint64 serverConnectionHandlerID)
 {
-	if (first == false)
+	/*if (true == false)
 	{
 		recheckSelectedTab();
-	}
+	}*/
 }
 
 void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID fromID, anyID toID, anyID targetMode, QString senderUniqueID, QString fromName, QString message, bool outgoing)
@@ -416,12 +424,6 @@ QString PluginHelper::time()
 
 void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 {
-	if (first)
-	{
-		initUi();
-		first = false;
-	}
-
 	char *res;
 	if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_UNIQUE_IDENTIFIER, &res) == ERROR_ok)
 	{
@@ -443,7 +445,7 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 			emit wObject->serverConnected(getServerId(serverConnectionHandlerID), time(), msg);
 			free(msg);
 		}
-		recheckSelectedTab();
+		//recheckSelectedTab();
 	}
 }
 

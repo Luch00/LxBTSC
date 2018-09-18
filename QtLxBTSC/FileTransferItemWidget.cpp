@@ -1,4 +1,6 @@
 #include "FileTransferItemWidget.h"
+#include <QHBoxLayout>
+#include <QLabel>
 
 FileTransferItemWidget::FileTransferItemWidget(QString name, unsigned short transferID, QWidget *parent)
 	: QWidget(parent)

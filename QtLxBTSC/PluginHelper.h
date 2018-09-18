@@ -1,14 +1,8 @@
 #pragma once
 
 #include "globals.h"
-#include <QObject>
 #include "ChatWidget.h"
 #include <QMainWindow>
-#include <QPlainTextEdit>
-#include <QApplication>
-#include <QToolButton>
-#include <QMenuBar>
-#include <QMetaMethod>
 #include "ConfigWidget.h"
 #include "FileTransferListWidget.h"
 #include "TsServer.h"
@@ -35,7 +29,7 @@ public:
 	void poked(uint64 serverConnectionHandlerID, anyID pokerID, QString pokerName, QString pokerUniqueID, QString pokeMessage);
 	void transferStatusChanged(anyID transferID, unsigned int status);
 	void toggleNormalChat() const;
-	void recheckSelectedTab();
+	//void recheckSelectedTab();
 	void reload() const;
 	void reloadEmotes() const;
 	void openConfig() const;
@@ -75,10 +69,8 @@ private:
 	WebClient* client;
 	TsWebObject* wObject;
 
-	//uint64 currentServerID;
 	QMap<unsigned long long, QSharedPointer<TsServer>> servers;
 	QString pathToPlugin;
-	bool first = true;
 	Qt::ApplicationState currentState;
 
 	void initUi();
