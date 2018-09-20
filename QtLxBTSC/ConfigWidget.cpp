@@ -6,10 +6,11 @@
 
 ConfigWidget::ConfigWidget(QString path, QWidget *parent)
 	: QWidget(parent)
+	, configPath(QString("%1LxBTSC/template/config.json").arg(path))
 {
 	this->setWindowTitle("Better Chat Settings");
 	this->setFixedSize(300, 390);
-	configPath = QString("%1LxBTSC/template/config.json").arg(path);
+	//configPath = QString("%1LxBTSC/template/config.json").arg(path);
 	formLayout = new QFormLayout(this);
 	embeds = new QCheckBox("Enable embeds", this);
 	embeds->setChecked(true);

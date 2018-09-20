@@ -14,12 +14,34 @@
 
 
 ChatWidget::ChatWidget(QString path, TsWebObject* webObject, QWidget *parent)
-	: QFrame(parent)
+    : QFrame(parent)
+	, wObject(webObject)
+	, pathToPage(QString("file:///%1LxBTSC/template/chat.html").arg(path))
+	, view(new QWebEngineView(this))
+	, verticalLayout(new QVBoxLayout(this))
+	, menu(new QMenu(view))
+	, copyAction(new QAction("Copy", this))
+	, copyUrlAction(new QAction("Copy Link", this))
+	, page(new TsWebEnginePage(view))
+	, channel(new QWebChannel(page))
 {
-	setupUi();
-	pathToPage = QString("file:///%1LxBTSC/template/chat.html").arg(path);
-	wObject = webObject;
-	createPage();
+	if (this->objectName().isEmpty())
+		this->setObjectName(QStringLiteral("ChatWidget"));
+	this->setStyleSheet("border: 1px solid gray");
+
+	verticalLayout->setSpacing(1);
+	verticalLayout->setContentsMargins(1, 1, 1, 1);
+	verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+	verticalLayout->addWidget(view);
+
+	view->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+
+	connect(copyAction, &QAction::triggered, this, &ChatWidget::onCopyActivated);
+	connect(copyUrlAction, &QAction::triggered, this, &ChatWidget::onCopyUrlActivated);
+	connect(view, &QWebEngineView::customContextMenuRequested, this, &ChatWidget::onShowContextMenu);
+	connect(view, &QWebEngineView::loadFinished, this, &ChatWidget::chatLoaded);
+
+	setupPage();
 	view->setPage(page);
 }
 
@@ -27,26 +49,22 @@ ChatWidget::~ChatWidget()
 {
 }
 
-void ChatWidget::setupUi()
+void ChatWidget::setupPage() const
 {
-	if (this->objectName().isEmpty())
-		this->setObjectName(QStringLiteral("ChatWidget"));
+	//page->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+	page->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
+	page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
+	page->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
 
-	verticalLayout = new QVBoxLayout(this);
-	verticalLayout->setSpacing(1);
-	verticalLayout->setContentsMargins(1, 1, 1, 1);
-	verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
-	view = new QWebEngineView(this);
-	verticalLayout->addWidget(view);
-	view->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-	menu = new QMenu(view);
-	copyAction = new QAction("Copy", this);
-	copyUrlAction = new QAction("Copy Link", this);
+	connect(page, &TsWebEnginePage::fullScreenRequested, this, &ChatWidget::onFullScreenRequested);
+	connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::onLinkHovered);
+	connect(page, &TsWebEnginePage::fileUrlClicked, this, &ChatWidget::fileUrlClicked);
+	connect(page, &TsWebEnginePage::clientUrlClicked, this, &ChatWidget::clientUrlClicked);
+	connect(page, &TsWebEnginePage::channelUrlClicked, this, &ChatWidget::channelUrlClicked);
 
-	connect(copyAction, &QAction::triggered, this, &ChatWidget::onCopyActivated);
-	connect(copyUrlAction, &QAction::triggered, this, &ChatWidget::onCopyUrlActivated);
-	connect(view, &QWebEngineView::customContextMenuRequested, this, &ChatWidget::onShowContextMenu);
-	connect(view, &QWebEngineView::loadFinished, this, &ChatWidget::chatLoaded);
+	page->setWebChannel(channel);
+	channel->registerObject("wObject", wObject);
+	page->load(QUrl(pathToPage));
 }
 
 void ChatWidget::keyReleaseEvent(QKeyEvent* event)
@@ -59,7 +77,7 @@ void ChatWidget::keyReleaseEvent(QKeyEvent* event)
 	QFrame::keyReleaseEvent(event);
 }
 
-void ChatWidget::onShowContextMenu(const QPoint &p)
+void ChatWidget::onShowContextMenu(const QPoint &p) const
 {	
 	menu->clear();
 	if (page->hasSelection())
@@ -82,12 +100,12 @@ void ChatWidget::onLinkHovered(const QUrl &u)
 	emit linkHovered(u);
 }
 
-void ChatWidget::onCopyActivated()
+void ChatWidget::onCopyActivated() const
 {
 	QGuiApplication::clipboard()->setText(page->selectedText(), QClipboard::Clipboard);
 }
 
-void ChatWidget::onCopyUrlActivated()
+void ChatWidget::onCopyUrlActivated() const
 {
 	QGuiApplication::clipboard()->setText(currentHoveredUrl.toString(), QClipboard::Clipboard);
 }
@@ -114,25 +132,3 @@ void ChatWidget::onFullScreenRequested(QWebEngineFullScreenRequest request)
 		fullScreenWindow.reset();
 	}
 }
-
-void ChatWidget::createPage()
-{
-	page = new TsWebEnginePage(view);
-	//page->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
-	page->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
-	page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
-	page->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
-	connect(page, &TsWebEnginePage::fullScreenRequested, this, &ChatWidget::onFullScreenRequested);
-	connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::onLinkHovered);
-	connect(page, &TsWebEnginePage::fileUrlClicked, this, &ChatWidget::fileUrlClicked);
-	connect(page, &TsWebEnginePage::clientUrlClicked, this, &ChatWidget::clientUrlClicked);
-	connect(page, &TsWebEnginePage::channelUrlClicked, this, &ChatWidget::channelUrlClicked);
-	//page->setUrl(QUrl(pathToPage));
-	channel = new QWebChannel(page);
-	page->setWebChannel(channel);
-	//wObject = new TsWebObject(channel);
-	channel->registerObject("wObject", wObject);
-	page->load(QUrl(pathToPage));
-}
-
-

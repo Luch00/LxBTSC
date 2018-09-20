@@ -5,8 +5,11 @@
 class File
 {
 public:
-	File() : filename_(""), size_(""), serverConnectionHandlerId_(0) {}
-	//File(QString filename, QString size, uint64 serverConnectionHandlerId) : filename_(filename), size_(size), serverConnectionHandlerId_(serverConnectionHandlerId) {}
+	File() 
+	: filename_("")
+	, size_("")
+	, serverConnectionHandlerId_(0) {}
+
 	~File(){}
 
 	QString filename() const

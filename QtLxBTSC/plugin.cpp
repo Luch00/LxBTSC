@@ -114,9 +114,9 @@ int ts3plugin_processCommand(uint64 serverConnectionHandlerID, const char* comma
 }
 
 /* Client changed current server connection handler */
-void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID) {
+/*void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID) {
 	helper->currentServerChanged(serverConnectionHandlerID);
-}
+}*/
 
 /* Required to release the memory for parameter "data" allocated in ts3plugin_infoData and ts3plugin_initMenus */
 void ts3plugin_freeMemory(void* data) {

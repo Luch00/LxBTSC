@@ -29,7 +29,7 @@ Q_DECL_EXPORT void ts3plugin_shutdown();
 Q_DECL_EXPORT void ts3plugin_registerPluginID(const char* id);
 Q_DECL_EXPORT const char* ts3plugin_commandKeyword();
 Q_DECL_EXPORT int ts3plugin_processCommand(uint64 serverConnectionHandlerID, const char* command);
-Q_DECL_EXPORT void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID);
+//Q_DECL_EXPORT void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID);
 Q_DECL_EXPORT void ts3plugin_freeMemory(void* data);
 Q_DECL_EXPORT int ts3plugin_requestAutoload();
 
@@ -46,8 +46,8 @@ Q_DECL_EXPORT int  ts3plugin_onClientPokeEvent(uint64 serverConnectionHandlerID,
 
 Q_DECL_EXPORT int ts3plugin_offersConfigure();
 Q_DECL_EXPORT void ts3plugin_configure(void* handle, void* qParentWidget);
-Q_DECL_EXPORT void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon);
-Q_DECL_EXPORT void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenuType type, int menuItemID, uint64 selectedItemID);
+//Q_DECL_EXPORT void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon);
+//Q_DECL_EXPORT void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenuType type, int menuItemID, uint64 selectedItemID);
 
 Q_DECL_EXPORT void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage);
 

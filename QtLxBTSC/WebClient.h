@@ -27,4 +27,3 @@ private slots:
 private:
 	QNetworkAccessManager networkManager;
 };
-

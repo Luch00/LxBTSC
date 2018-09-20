@@ -2,15 +2,24 @@
 #include "utils.h"
 
 TsClient::TsClient(QObject *parent)
-	: QObject(parent), uniqueId_("DEFAULT"), safeUniqueId_("DEFAULT"), clientId_(99999)
+	: QObject(parent)
+	, uniqueId_("DEFAULT")
+	, safeUniqueId_("DEFAULT")
+	, clientId_(99999)
 {
 }
 
-TsClient::TsClient(QString name, QString uniqueId, unsigned short clientId, QObject *parent) : QObject(parent), name_(name), uniqueId_(uniqueId), clientId_(clientId)
+TsClient::TsClient(QString name, QString uniqueId, unsigned short clientId, QObject *parent) 
+	: QObject(parent)
+	, name_(name)
+	, uniqueId_(uniqueId)
+	, safeUniqueId_(utils::ts3WeirdBase16(uniqueId))
+	, clientLink_(link())
+	, clientId_(clientId)
 {
-	QString s = uniqueId;
-	safeUniqueId_ = utils::ts3WeirdBase16(s);
-	clientLink_ = link();
+	//QString s = uniqueId;
+	//safeUniqueId_ = utils::ts3WeirdBase16(s);
+	//clientLink_ = link();
 }
 
 TsClient::~TsClient()

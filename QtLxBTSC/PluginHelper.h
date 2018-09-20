@@ -16,40 +16,36 @@ public:
 	PluginHelper(QString pluginPath, QObject *parent = nullptr);
 	~PluginHelper();
 
-	void currentServerChanged(uint64 serverConnectionHandlerID);
-	void textMessageReceived(uint64 serverConnectionHandlerID, anyID fromID, anyID toID, anyID targetMode, QString senderUniqueID, QString fromName, QString message, bool outgoing);
+	void textMessageReceived(uint64 serverConnectionHandlerID, anyID fromID, anyID toID, anyID targetMode, QString senderUniqueID, QString fromName, QString message, bool outgoing) const;
 	void serverConnected(uint64 serverConnectionHandlerID);
-	void serverDisconnected(uint serverConnectionHandlerID);
-	void clientConnected(uint64 serverConnectionHandlerID, anyID clientID);
-	void clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message);
+	void serverDisconnected(uint serverConnectionHandlerID) const;
+	void clientConnected(uint64 serverConnectionHandlerID, anyID clientID) const;
+	void clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message) const;
 	void clientEnteredView(uint64 serverConnectionHandlerID, anyID clientID) const;
 	//void clientEnteredViewBySubscription(uint64 serverConnectionHandlerID, anyID clientID);
-	void clientTimeout(uint64 serverConnectionHandlerID, anyID clientID);
+	void clientTimeout(uint64 serverConnectionHandlerID, anyID clientID) const;
 	void clientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, QString displayName) const;
-	void poked(uint64 serverConnectionHandlerID, anyID pokerID, QString pokerName, QString pokerUniqueID, QString pokeMessage);
-	void transferStatusChanged(anyID transferID, unsigned int status);
+	void poked(uint64 serverConnectionHandlerID, anyID pokerID, QString pokerName, QString pokerUniqueID, QString pokeMessage) const;
+	void transferStatusChanged(anyID transferID, unsigned int status) const;
 	void toggleNormalChat() const;
-	//void recheckSelectedTab();
 	void reload() const;
 	void reloadEmotes() const;
 	void openConfig() const;
 	void openTransfers() const;
 
-	void serverStopped(uint64 serverConnectionHandlerID, QString message);
+	void serverStopped(uint64 serverConnectionHandlerID, QString message) const;
 
 private slots:
 	void onAppStateChanged(Qt::ApplicationState state);
 	void onEmoticonAppend(QString e) const;
 	void onEmoticonButtonClicked(bool c) const;
-	void onTabChange(int i);
-	void onTabClose(int i);
-	void onTransferCompleted(QString filename) const;
+	void onTabChange(int i) const;
 	void onTransferFailure() const;
-	void onClientUrlClicked(const QUrl &url);
-	void onChannelUrlClicked(const QUrl &url);
-	void onLinkHovered(const QUrl &url);
-	void onPrintConsoleMessageToCurrentTab(QString message);
-	void onPrintConsoleMessage(uint64 serverConnectionHandlerID, QString message, int targetMode);
+	void onClientUrlClicked(const QUrl &url) const;
+	void onChannelUrlClicked(const QUrl &url) const;
+	void onLinkHovered(const QUrl &url) const;
+	void onPrintConsoleMessageToCurrentTab(QString message) const;
+	void onPrintConsoleMessage(uint64 serverConnectionHandlerID, QString message, int targetMode) const;
 	void onConfigChanged() const;
 
 private:
@@ -57,34 +53,27 @@ private:
 	QTabWidget* chatTabWidget;
 	QTextEdit* chatLineEdit;
 	QToolButton* emoticonButton;
-	QMenu* chatMenu;
-	QMetaObject::Connection c;
-	QMetaObject::Connection d;
-	QMetaObject::Connection e;
-	QMetaObject::Connection g;
 
-	ChatWidget* chat;
+	TsWebObject* wObject;
 	ConfigWidget* config;
 	FileTransferListWidget* transfers;
 	WebClient* client;
-	TsWebObject* wObject;
+	QMenu* chatMenu;
+	ChatWidget* chat;
 
 	QMap<unsigned long long, QSharedPointer<TsServer>> servers;
-	QString pathToPlugin;
+	const QString pluginPath;
 	Qt::ApplicationState currentState;
 
 	void initUi();
 	void insertMenu();
 	void waitForLoad() const;
-	void disconnect() const;
-	QString getServerId(uint64 serverConnectionHandlerID);
-	//QSharedPointer<TsClient> getOrCreateClient(uint64 serverConnectionHandlerID, anyID clientID, QString fromName, QString senderUniqueID);
-	QMainWindow* findMainWindow() const;
-	static QWidget* findWidget(QString name, QWidget* parent);
+	QString getServerId(uint64 serverConnectionHandlerID) const;
 	static QSharedPointer<TsClient> getClient(uint64 serverConnectionHandlerID, anyID id);
 	static QMap<unsigned short, QSharedPointer<TsClient>> getAllClientNicks(uint64 serverConnectionHandlerID);
-	void dynamicConnect(const QString &signalName, const QString &slotName);
-	static QString time();
-	anyID getOwnClientId(uint64 serverConnectionHandlerID) const;
-	std::tuple<int, QString, QString> getCurrentTab();
+	static anyID getOwnClientId(uint64 serverConnectionHandlerID);
+	std::tuple<int, QString, QString> getCurrentTab() const;
+	std::tuple<int, QString, QString> getTab(int tabIndex) const;
+
+	//QSharedPointer<TsServer> getCachedServer(uint64 serverConnectionHandlerID);
 };

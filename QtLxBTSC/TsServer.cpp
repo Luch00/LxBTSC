@@ -1,13 +1,24 @@
 #include "TsServer.h"
 
-TsServer::TsServer(QObject *parent)	: QObject(parent), serverId_(99999), uniqueId_("DEFAULT"), myId_(999), safeUniqueId_("DEFAULT")
+TsServer::TsServer(QObject *parent)	
+	: QObject(parent)
+	, serverId_(99999)
+	, uniqueId_("DEFAULT")
+	, safeUniqueId_("DEFAULT")
+	, myId_(999)
+	, connected_(true)
 {
 }
 
-TsServer::TsServer(unsigned long long serverId, QString uniqueId, unsigned short myId, QMap<unsigned short, QSharedPointer<TsClient>> clients, QObject *parent) : QObject(parent), serverId_(serverId), uniqueId_(uniqueId), myId_(myId), clients_(clients)
+TsServer::TsServer(unsigned long long serverId, QString uniqueId, unsigned short myId, QMap<unsigned short, QSharedPointer<TsClient>> clients, QObject *parent) 
+	: QObject(parent)
+	, serverId_(serverId)
+	, uniqueId_(uniqueId)
+	, myId_(myId)
+	, clients_(clients)
+	, safeUniqueId_(uniqueId.toLatin1().toBase64())
+	, connected_(true)
 {
-	QString s = uniqueId_;
-	safeUniqueId_ = QString(s.toLatin1().toBase64());
 }
 
 TsServer::~TsServer()

@@ -16,7 +16,7 @@ public:
 private:
 	QProgressBar* bar;
 	QPushButton* button;
-	unsigned short transferID;
+	const unsigned short transferID;
 	bool isDone = false;
 
 public slots:
@@ -26,6 +26,5 @@ public slots:
 
 signals:
 	void cancelTransfer(unsigned short);
-
 
 };

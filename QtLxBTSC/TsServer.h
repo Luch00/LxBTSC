@@ -28,7 +28,7 @@ private:
 	unsigned long long serverId_;
 	const QString uniqueId_;
 	QString safeUniqueId_;
-	bool connected_ = true;
+	bool connected_;
 	unsigned short myId_;
 	QMap<unsigned short, QSharedPointer<TsClient>> clients_;
 };

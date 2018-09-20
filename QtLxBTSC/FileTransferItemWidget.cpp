@@ -4,14 +4,15 @@
 
 FileTransferItemWidget::FileTransferItemWidget(QString name, unsigned short transferID, QWidget *parent)
 	: QWidget(parent)
+	, bar(new QProgressBar(this))
+	, button(new QPushButton("Cancel"))
+	, transferID(transferID)
 {
-	this->transferID = transferID;
-	bar = new QProgressBar(this);
 	bar->setMinimum(0);
 	bar->setMaximum(0);
 	bar->setFixedWidth(150);
 	bar->setAlignment(Qt::AlignCenter);
-	button = new QPushButton("Cancel");
+
 	button->setFixedWidth(50);
 	connect(button, &QPushButton::clicked, this, &FileTransferItemWidget::cancelClicked);
 	QHBoxLayout* layout = new QHBoxLayout(this);
@@ -50,7 +51,6 @@ void FileTransferItemWidget::onTransferFailed(unsigned short transferID)
 		bar->setValue(100);
 	}
 }
-
 
 void FileTransferItemWidget::cancelClicked()
 {

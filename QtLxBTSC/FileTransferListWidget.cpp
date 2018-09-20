@@ -7,15 +7,15 @@
 
 FileTransferListWidget::FileTransferListWidget(QWidget *parent)
 	: QWidget(parent)
+	, list(new QListWidget)
+	, directory(new QLineEdit(""))
 {
 	initPwDialog();
 	initOverwriteDialog();
 	this->setWindowTitle("Better Chat File Transfers");
 	QLabel* title = new QLabel("Transfers:");
-	list = new QListWidget;
 	QPushButton* button = new QPushButton("Clear");
 	connect(button, &QPushButton::clicked, this, &FileTransferListWidget::onClear);
-	directory = new QLineEdit("");
 	directory->setDisabled(true);
 	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->addWidget(title);

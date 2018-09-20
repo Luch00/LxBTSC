@@ -34,25 +34,25 @@ public:
 	void chatLoaded();
 
 	private slots:
-	void onCopyActivated();
-	void onCopyUrlActivated();
-	void onShowContextMenu(const QPoint &);
+	void onCopyActivated() const;
+	void onCopyUrlActivated() const;
+	void onShowContextMenu(const QPoint &) const;
 	void onLinkHovered(const QUrl &);
 	void onFullScreenRequested(QWebEngineFullScreenRequest request);
 
 private:
-	QVBoxLayout *verticalLayout;
-	QWebEngineView *view;
+	QVBoxLayout* verticalLayout;
+	QWebEngineView* view;
 	QScopedPointer<FullScreenWindow> fullScreenWindow;
-	TsWebObject *wObject;
-	TsWebEnginePage *page;
-	QString pathToPage;
+	TsWebObject* wObject;
+	TsWebEnginePage* page;
+	const QString pathToPage;
 	QUrl currentHoveredUrl;
-	QMenu * menu;
-	QAction *copyAction;
-	QAction *copyUrlAction;
-	QWebChannel *channel;
-	void setupUi();
-	void createPage();
+	QMenu* menu;
+	QAction* copyAction;
+	QAction* copyUrlAction;
+	QWebChannel* channel;
+
+	void setupPage() const;
 	void keyReleaseEvent(QKeyEvent* event) override;
 };
