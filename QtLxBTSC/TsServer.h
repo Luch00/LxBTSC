@@ -10,7 +10,6 @@ class TsServer : public QObject
 	Q_OBJECT
 
 public:
-	TsServer(QObject *parent = 0);
 	TsServer(unsigned long long serverId, QString uniqueId, unsigned short myId, QMap<unsigned short, QSharedPointer<TsClient>> clients, QObject *parent = 0);
 	~TsServer();
 

@@ -67,13 +67,12 @@ private:
 
 	void initUi();
 	void insertMenu();
-	void waitForLoad() const;
+	//void waitForLoad() const;
 	QString getServerId(uint64 serverConnectionHandlerID) const;
 	static QSharedPointer<TsClient> getClient(uint64 serverConnectionHandlerID, anyID id);
-	static QMap<unsigned short, QSharedPointer<TsClient>> getAllClientNicks(uint64 serverConnectionHandlerID);
+	static QMap<unsigned short, QSharedPointer<TsClient>> getAllVisibleClients(uint64 serverConnectionHandlerID);
 	static anyID getOwnClientId(uint64 serverConnectionHandlerID);
 	std::tuple<int, QString, QString> getCurrentTab() const;
 	std::tuple<int, QString, QString> getTab(int tabIndex) const;
 
-	//QSharedPointer<TsServer> getCachedServer(uint64 serverConnectionHandlerID);
 };

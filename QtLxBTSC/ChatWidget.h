@@ -31,7 +31,7 @@ public:
 	void clientUrlClicked(const QUrl &url);
 	void channelUrlClicked(const QUrl &url);
 	void linkHovered(const QUrl &url);
-	void chatLoaded();
+	//void chatLoaded();
 
 	private slots:
 	void onCopyActivated() const;

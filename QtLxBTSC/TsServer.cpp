@@ -1,14 +1,5 @@
 #include "TsServer.h"
-
-TsServer::TsServer(QObject *parent)	
-	: QObject(parent)
-	, serverId_(99999)
-	, uniqueId_("DEFAULT")
-	, safeUniqueId_("DEFAULT")
-	, myId_(999)
-	, connected_(true)
-{
-}
+#include <QString>
 
 TsServer::TsServer(unsigned long long serverId, QString uniqueId, unsigned short myId, QMap<unsigned short, QSharedPointer<TsClient>> clients, QObject *parent) 
 	: QObject(parent)
@@ -79,6 +70,6 @@ QSharedPointer<TsClient> TsServer::getClientByName(QString name) const
 			return client;
 		}
 	}
-	return QSharedPointer<TsClient>(new TsClient());
+	return QSharedPointer<TsClient>(nullptr);
 }
 

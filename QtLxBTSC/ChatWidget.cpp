@@ -39,7 +39,7 @@ ChatWidget::ChatWidget(QString path, TsWebObject* webObject, QWidget *parent)
 	connect(copyAction, &QAction::triggered, this, &ChatWidget::onCopyActivated);
 	connect(copyUrlAction, &QAction::triggered, this, &ChatWidget::onCopyUrlActivated);
 	connect(view, &QWebEngineView::customContextMenuRequested, this, &ChatWidget::onShowContextMenu);
-	connect(view, &QWebEngineView::loadFinished, this, &ChatWidget::chatLoaded);
+	connect(view, &QWebEngineView::loadFinished, this, [=]() { ts3Functions.logMessage("Page load finished", LogLevel_INFO, "BetterChat", 0); });
 
 	setupPage();
 	view->setPage(page);
@@ -64,6 +64,7 @@ void ChatWidget::setupPage() const
 
 	page->setWebChannel(channel);
 	channel->registerObject("wObject", wObject);
+	ts3Functions.logMessage("Page load start", LogLevel_INFO, "BetterChat", 0);
 	page->load(QUrl(pathToPage));
 }
 

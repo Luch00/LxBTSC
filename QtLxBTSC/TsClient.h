@@ -7,7 +7,6 @@ class TsClient : public QObject
 	Q_OBJECT
 
 public:
-	TsClient(QObject *parent = 0);
 	TsClient(QString name, QString uniqueId, unsigned short clientId, QObject *parent = 0);
 	~TsClient();
 

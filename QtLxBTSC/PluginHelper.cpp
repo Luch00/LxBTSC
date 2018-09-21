@@ -1,6 +1,5 @@
 #include "PluginHelper.h"
 #include "utils.h"
-//#include <QThread>
 #include <QRegularExpression>
 #include <QTimer>
 #include <QMenuBar>
@@ -17,7 +16,6 @@ PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 	, pluginPath(pluginPath)
 {
 	utils::checkEmoteSets(pluginPath);
-	waitForLoad();
 	onConfigChanged();
 
 	connect(client, &WebClient::htmlData, wObject, &TsWebObject::htmlData);
@@ -52,22 +50,10 @@ PluginHelper::~PluginHelper()
 	connect(emoticonButton, SIGNAL(clicked()), mainwindow, SLOT(onEmoticonsButtonClicked()));
 }
 
-
-// delay ts a bit until webview  is loaded
-void PluginHelper::waitForLoad() const
-{
-	QTimer timer;
-	timer.setSingleShot(true);
-	QEventLoop waitLoop;
-	connect(chat, &ChatWidget::chatLoaded, &waitLoop, &QEventLoop::quit);
-	connect(&timer, &QTimer::timeout, &waitLoop, &QEventLoop::quit);
-	timer.start(10000);
-	waitLoop.exec();
-}
-
 // grab the necessary ui widgets
 void PluginHelper::initUi()
 {
+	ts3Functions.logMessage("Hook UI", LogLevel_INFO, "BetterChat", 0);
 	mainwindow = utils::findMainWindow();
 	connect(mainwindow, SIGNAL(callPrintConsoleMessage(uint64, QString, int)), this, SLOT(onPrintConsoleMessage(uint64, QString, int)));
 	connect(mainwindow, SIGNAL(callPrintConsoleMessageToCurrentTab(QString)), this, SLOT(onPrintConsoleMessageToCurrentTab(QString)));
@@ -149,6 +135,8 @@ std::tuple<int, QString, QString> PluginHelper::getTab(int tabIndex) const
 	if (tabIndex >= 0)
 	{
 		auto s = servers.value(ts3Functions.getCurrentServerConnectionHandlerID());
+		if (s == nullptr)
+			return { 0, "", "" };
 
 		if (tabIndex == 0)
 		{
@@ -159,6 +147,8 @@ std::tuple<int, QString, QString> PluginHelper::getTab(int tabIndex) const
 			return { 2, s->safeUniqueId(), "" };
 		}
 		auto c = s->getClientByName(chatTabWidget->tabText(tabIndex));
+		if (c == nullptr)
+			return { 0, "", "" };
 
 		return { 1, s->safeUniqueId(), c->safeUniqueId() };
 	}
@@ -273,14 +263,17 @@ void PluginHelper::onPrintConsoleMessageToCurrentTab(QString message) const
 
 void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID fromID, anyID toID, anyID targetMode, QString senderUniqueID, QString fromName, QString message, bool outgoing) const
 {
-	auto c = servers.value(serverConnectionHandlerID)->getClient(fromID);
+	auto s = servers.value(serverConnectionHandlerID);
+	if (s == nullptr)
+		return;
+	auto c = s->getClient(fromID);
 	if (c == nullptr)
 	{
 		QSharedPointer<TsClient> client(new TsClient(fromName, senderUniqueID, fromID));
 		c = client;
 		servers.value(serverConnectionHandlerID)->addClient(fromID, client);
 	}
-	auto r = servers.value(serverConnectionHandlerID)->getClient(toID);
+	auto r = s->getClient(toID);
 	// serverid, in or out, time, name, link, message, mode, senderid, targetid
 	emit wObject->textMessageReceived(
 		getServerId(serverConnectionHandlerID),
@@ -309,9 +302,8 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 	if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_UNIQUE_IDENTIFIER, &res) == ERROR_ok)
 	{
 		auto myid = getOwnClientId(serverConnectionHandlerID);
-		QSharedPointer<TsServer> server(new TsServer(serverConnectionHandlerID, res, myid, getAllClientNicks(serverConnectionHandlerID)));
+		QSharedPointer<TsServer> server(new TsServer(serverConnectionHandlerID, res, myid, getAllVisibleClients(serverConnectionHandlerID)));
 		emit wObject->addServer(server->safeUniqueId());
-		
 		servers.insert(serverConnectionHandlerID, server);
 		free(res);
 
@@ -345,17 +337,25 @@ void PluginHelper::serverDisconnected(uint serverConnectionHandlerID) const
 void PluginHelper::clientConnected(uint64 serverConnectionHandlerID, anyID clientID) const
 {
 	auto client = getClient(serverConnectionHandlerID, clientID);
-	servers.value(serverConnectionHandlerID)->addClient(clientID, client);
+	auto s = servers.value(serverConnectionHandlerID);
+	if (s == nullptr)
+		return;
+
+	s->addClient(clientID, client);
 	emit wObject->clientConnected(getServerId(serverConnectionHandlerID), utils::time(), client->clientLink(), client->name());
 }
 
 void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message) const
 {
+	auto s = servers.value(serverConnectionHandlerID);
+	if (s == nullptr)
+		return;
+
 	// don't print own disconnects
-	if (clientID == servers.value(serverConnectionHandlerID)->myId())
+	if (clientID == s->myId())
 		return;
 	
-	auto client = servers.value(serverConnectionHandlerID)->getClient(clientID);
+	auto client = s->getClient(clientID);
 	if (client == nullptr)
 		return;
 
@@ -364,9 +364,14 @@ void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID cl
 
 void PluginHelper::clientTimeout(uint64 serverConnectionHandlerID, anyID clientID) const
 {
-	auto server = servers.value(serverConnectionHandlerID);
-	auto client = server->getClient(clientID);
-	emit wObject->clientTimeout(getServerId(serverConnectionHandlerID), utils::time(), client->clientLink(), client->name());
+	auto s = servers.value(serverConnectionHandlerID);
+	if (s == nullptr)
+		return;
+	auto c = s->getClient(clientID);
+	if (c == nullptr)
+		return;
+
+	emit wObject->clientTimeout(getServerId(serverConnectionHandlerID), utils::time(), c->clientLink(), c->name());
 }
 
 // called when file transfer ends in some way
@@ -383,12 +388,16 @@ void PluginHelper::clientDisplayNameChanged(uint64 serverConnectionHandlerID, an
 
 void PluginHelper::poked(uint64 serverConnectionHandlerID, anyID pokerID, QString pokerName, QString pokerUniqueID, QString pokeMessage) const
 {
-	auto c = servers.value(serverConnectionHandlerID)->getClient(pokerID);
+	auto s = servers.value(serverConnectionHandlerID);
+	if (s == nullptr)
+		return;
+
+	auto c = s->getClient(pokerID);
 	if (c == nullptr)
 	{
 		QSharedPointer <TsClient> client(new TsClient(pokerName, pokerUniqueID, pokerID));
 		c = client;
-		servers.value(serverConnectionHandlerID)->addClient(pokerID, client);
+		s->addClient(pokerID, client);
 	}
 	emit wObject->clientPoked(
 		getServerId(serverConnectionHandlerID),
@@ -428,7 +437,7 @@ QSharedPointer<TsClient> PluginHelper::getClient(uint64 serverConnectionHandlerI
 }
 
 // cache all connected visible clients
-QMap<unsigned short, QSharedPointer<TsClient>> PluginHelper::getAllClientNicks(uint64 serverConnectionHandlerID)
+QMap<unsigned short, QSharedPointer<TsClient>> PluginHelper::getAllVisibleClients(uint64 serverConnectionHandlerID)
 {
 	QMap<unsigned short, QSharedPointer<TsClient>> map;
 	anyID *list;
@@ -483,12 +492,3 @@ anyID PluginHelper::getOwnClientId(uint64 serverConnectionHandlerID)
 	}
 	return id;
 }
-
-/*QSharedPointer<TsServer> PluginHelper::getCachedServer(uint64 serverConnectionHandlerID)
-{
-	auto server = servers.value(serverConnectionHandlerID);
-	if (server->uniqueId() == "DEFAULT")
-	{
-		
-	}
-}*/
