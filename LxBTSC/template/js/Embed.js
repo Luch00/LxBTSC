@@ -1,3 +1,9 @@
+/*
+ * Better Chat plugin for TeamSpeak 3
+ * GPLv3 license
+ *
+ * Copyright (C) 2018 Luch (https://github.com/Luch00)
+*/
 'use strict'
 var imageMime = [ "image/gif", "image/jpeg", "image/png", "image/svg+xml", "image/webp" ];
 var audioMime = [ "audio/wave", "audio/wav", "audio/x-wav", "audio/x-pn-wav", "audio/webm", "audio/ogg", "audio/flac"];

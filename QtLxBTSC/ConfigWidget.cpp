@@ -1,3 +1,10 @@
+/*
+ * Better Chat plugin for TeamSpeak 3
+ * GPLv3 license
+ *
+ * Copyright (C) 2018 Luch (https://github.com/Luch00)
+*/
+
 #include "ConfigWidget.h"
 #include <QLabel>
 #include <QJsonDocument>
@@ -10,7 +17,6 @@ ConfigWidget::ConfigWidget(QString path, QWidget *parent)
 {
 	this->setWindowTitle("Better Chat Settings");
 	this->setFixedSize(300, 390);
-	//configPath = QString("%1LxBTSC/template/config.json").arg(path);
 	formLayout = new QFormLayout(this);
 	embeds = new QCheckBox("Enable embeds", this);
 	embeds->setChecked(true);

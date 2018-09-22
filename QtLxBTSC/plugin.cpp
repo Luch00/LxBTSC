@@ -1,9 +1,9 @@
 ﻿/*
- * Teamspeak 3 chat plugin
- * HTML chatbox using WebEngine
+ * Better Chat plugin for TeamSpeak 3
+ * GPLv3 license
  *
- * Copyright (c) 2017 Luch
- */
+ * Copyright (C) 2018 Luch (https://github.com/Luch00)
+*/
 
 #ifdef _WIN32
 #pragma warning (disable : 4100)  /* Disable Unreferenced parameter warning */

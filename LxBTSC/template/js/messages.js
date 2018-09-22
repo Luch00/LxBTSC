@@ -1,3 +1,9 @@
+/*
+ * Better Chat plugin for TeamSpeak 3
+ * GPLv3 license
+ *
+ * Copyright (C) 2018 Luch (https://github.com/Luch00)
+*/
 'use strict'
 let msgid = 0;
 const NormalTextTemplate = (msgid, direction, time, userlink, name, text) => `
