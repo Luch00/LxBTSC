@@ -94,13 +94,17 @@ void PluginHelper::insertMenu()
 	QAction* settings = new QAction("&Settings", chatMenu);
 	QAction* transfers = new QAction("&Downloads", chatMenu);
 	QAction* toggle = new QAction("&Toggle Chat", chatMenu);
+	QAction* browseDirectory = new QAction("&Browse Directory", debug);
 	QAction* reloademotes = new QAction("&Reload Emotes", debug);
 	QAction* reloadchat = new QAction("&Clear and Reload Chat", debug);
 	connect(settings, &QAction::triggered, [this]() { openConfig(); });
 	connect(transfers, &QAction::triggered, [this]() { openTransfers(); });
 	connect(toggle, &QAction::triggered, [this]() { toggleNormalChat(); });
+	connect(browseDirectory, &QAction::triggered, [this]() { QDesktopServices::openUrl(QUrl::fromLocalFile(pluginPath + "LxBTSC/template")); });
 	connect(reloademotes, &QAction::triggered, [this]() { reloadEmotes(); });
 	connect(reloadchat, &QAction::triggered, [this]() { chat->reload(); });
+	debug->addAction(browseDirectory);
+	debug->addSeparator();
 	debug->addAction(reloademotes);
 	debug->addAction(reloadchat);
 	chatMenu->addAction(settings);
