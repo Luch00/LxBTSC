@@ -74,7 +74,6 @@ private:
 
 	void initUi();
 	void insertMenu();
-	//void waitForLoad() const;
 	QString getServerId(uint64 serverConnectionHandlerID) const;
 	static QSharedPointer<TsClient> getClient(uint64 serverConnectionHandlerID, anyID id);
 	static QMap<unsigned short, QSharedPointer<TsClient>> getAllVisibleClients(uint64 serverConnectionHandlerID);

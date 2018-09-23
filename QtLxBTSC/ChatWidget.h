@@ -31,7 +31,6 @@ public:
 	void clientUrlClicked(const QUrl &url);
 	void channelUrlClicked(const QUrl &url);
 	void linkHovered(const QUrl &url);
-	//void chatLoaded();
 
 	private slots:
 	void onCopyActivated() const;
@@ -52,7 +51,10 @@ private:
 	QAction* copyAction;
 	QAction* copyUrlAction;
 	QWebChannel* channel;
+	bool loadComplete;
 
 	void setupPage() const;
 	void keyReleaseEvent(QKeyEvent* event) override;
+
+	void waitloop() const;
 };

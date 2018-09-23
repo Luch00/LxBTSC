@@ -7,7 +7,7 @@
 
 #include "PluginHelper.h"
 #include "utils.h"
-#include <QRegularExpression>
+//#include <QRegularExpression>
 #include <QTimer>
 #include <QMenuBar>
 #include <QToolButton>
@@ -24,7 +24,7 @@ PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
 {
 	utils::checkEmoteSets(pluginPath);
 	onConfigChanged();
-
+	
 	connect(client, &WebClient::htmlData, wObject, &TsWebObject::htmlData);
 	connect(client, &WebClient::fileData, wObject, &TsWebObject::fileData);
 	connect(client, &WebClient::emoteJson, wObject, &TsWebObject::emoteJson);

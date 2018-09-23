@@ -11,7 +11,7 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QWebEngineSettings>
-
+#include <QTimer>
 
 ChatWidget::ChatWidget(QString path, TsWebObject* webObject, QWidget *parent)
     : QFrame(parent)
@@ -24,6 +24,7 @@ ChatWidget::ChatWidget(QString path, TsWebObject* webObject, QWidget *parent)
 	, copyUrlAction(new QAction("Copy Link", this))
 	, page(new TsWebEnginePage(view))
 	, channel(new QWebChannel(page))
+	, loadComplete(false)
 {
 	if (this->objectName().isEmpty())
 		this->setObjectName(QStringLiteral("ChatWidget"));
@@ -39,14 +40,37 @@ ChatWidget::ChatWidget(QString path, TsWebObject* webObject, QWidget *parent)
 	connect(copyAction, &QAction::triggered, this, &ChatWidget::onCopyActivated);
 	connect(copyUrlAction, &QAction::triggered, this, &ChatWidget::onCopyUrlActivated);
 	connect(view, &QWebEngineView::customContextMenuRequested, this, &ChatWidget::onShowContextMenu);
-	connect(view, &QWebEngineView::loadFinished, this, [=]() { ts3Functions.logMessage("Page load finished", LogLevel_INFO, "BetterChat", 0); });
+	connect(view, &QWebEngineView::loadFinished, this, [=]()
+	{
+		loadComplete = true;
+		ts3Functions.logMessage("Page load finished", LogLevel_INFO, "BetterChat", 0);
+	});
 
 	setupPage();
 	view->setPage(page);
+	waitloop();
 }
 
 ChatWidget::~ChatWidget()
 {
+}
+
+void ChatWidget::waitloop() const
+{
+	if(!loadComplete)
+	{
+		QTimer timer;
+		timer.setSingleShot(true);
+		QEventLoop wait;
+		connect(&timer, &QTimer::timeout, &wait, &QEventLoop::quit);
+		ts3Functions.logMessage("Waiting for page load...", LogLevel_INFO, "BetterChat", 0);
+		timer.start(200);
+		wait.exec();
+		if (!loadComplete)
+		{
+			waitloop();
+		}
+	}
 }
 
 void ChatWidget::setupPage() const
