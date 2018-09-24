@@ -42,8 +42,11 @@ ChatWidget::ChatWidget(QString path, TsWebObject* webObject, QWidget *parent)
 	connect(view, &QWebEngineView::customContextMenuRequested, this, &ChatWidget::onShowContextMenu);
 	connect(view, &QWebEngineView::loadFinished, this, [=]()
 	{
-		loadComplete = true;
-		ts3Functions.logMessage("Page load finished", LogLevel_INFO, "BetterChat", 0);
+		if (!loadComplete)
+		{
+			loadComplete = true;
+			ts3Functions.logMessage("Page load finished", LogLevel_INFO, "BetterChat", 0);
+		}
 	});
 
 	setupPage();

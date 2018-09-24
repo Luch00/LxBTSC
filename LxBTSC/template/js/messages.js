@@ -98,8 +98,9 @@ function ThumbnailAvatar(img) {
 }
 
 function CheckMessageLimit(tab) {
-    if (tab.childElementCount > Config.MAX_LINES) {
-        tab.firstElementChild.remove();
+    let over = tab.children().length - Config.MAX_LINES;
+    if(over > 0) {
+        tab.children().slice(0, over).remove();
     }
 }
 
