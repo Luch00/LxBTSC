@@ -12,8 +12,8 @@
 
 #include "plugin.h"
 #include "PluginHelper.h"
-#include <iostream>
-#include <cassert>
+//#include <iostream>
+//#include <cassert>
 
 #define PLUGIN_API_VERSION 22
 #define PATH_BUFSIZE 512
@@ -86,9 +86,7 @@ void ts3plugin_shutdown() {
  */
 
 void ts3plugin_registerPluginID(const char* id) {
-	const size_t sz = strlen(id) + 1;
-	pluginID = (char*)malloc(sz * sizeof(char));
-	strcpy_s(pluginID, sz, id);  /* The id buffer will invalidate after exiting this function */
+	pluginID = _strdup(id);
 }
 
 /* Plugin command keyword. Return NULL or "" if not used. */

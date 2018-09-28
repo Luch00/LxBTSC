@@ -8,6 +8,7 @@ extern "C" {
 #include "teamspeak/clientlib_publicdefinitions.h"
 #include "teamspeak/public_definitions.h"
 #include "plugin_definitions.h"
+#include "stddef.h"
 
 /* Functions exported to plugin from main binary */
 struct TS3Functions {
