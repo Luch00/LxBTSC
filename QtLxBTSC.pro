@@ -4,7 +4,7 @@
 
 TEMPLATE = lib
 TARGET = QtLxBTSC
-INCLUDEPATH += . ts_plugin/include
+INCLUDEPATH += . QtLxBTSC ts_plugin/include
 CONFIG += release qt c++11 plugin
 QT += network webchannel webenginewidgets widgets
 DESTDIR = build

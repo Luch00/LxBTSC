@@ -70,7 +70,7 @@ QSharedPointer<TsClient> TsServer::getClient(unsigned short clientId) const
 
 QSharedPointer<TsClient> TsServer::getClientByName(QString name) const
 {
-	for each (QSharedPointer<TsClient> client in clients_)
+	for (QSharedPointer<TsClient> client : clients_)
 	{
 		if (client->name() == name)
 		{

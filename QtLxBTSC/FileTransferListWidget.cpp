@@ -54,7 +54,7 @@ void FileTransferListWidget::onClear() const
 			toDelete.append(item);
 		}
 	}
-	for each (QListWidgetItem* item in toDelete)
+	for (QListWidgetItem* item : toDelete)
 	{
 		delete item;
 	}

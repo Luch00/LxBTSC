@@ -44,7 +44,7 @@ public:
 	}
 
 	// required to open links from iframes
-	QWebEnginePage* TsWebEnginePage::createWindow(WebWindowType type) override
+	QWebEnginePage* createWindow(WebWindowType type) override
 	{
 		return new TsWebEnginePage();
 	}
