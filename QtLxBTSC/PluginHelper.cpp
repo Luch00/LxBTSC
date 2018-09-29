@@ -70,8 +70,8 @@ void PluginHelper::initUi()
 	qobject_cast<QBoxLayout*>(parent->layout())->insertWidget(0, chat);
 
 	chatTabWidget = qobject_cast<QTabWidget*>(utils::findWidget("ChatTabWidget", parent));
-	chatTabWidget->setMinimumHeight(24);
-	chatTabWidget->setMaximumHeight(24);
+	chatTabWidget->setMinimumHeight(chatTabWidget->tabBar()->height());
+	chatTabWidget->setMaximumHeight(chatTabWidget->tabBar()->height());
 
 	connect(chatTabWidget, &QTabWidget::currentChanged, this, &PluginHelper::onTabChange);
 	chatTabWidget->setMovable(false);
