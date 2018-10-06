@@ -7,13 +7,12 @@
 
 #include "PluginHelper.h"
 #include "utils.h"
-//#include <QRegularExpression>
 #include <QTimer>
 #include <QMenuBar>
 #include <QToolButton>
 #include <QApplication>
 
-PluginHelper::PluginHelper(QString pluginPath, QObject *parent)
+PluginHelper::PluginHelper(const QString& pluginPath, QObject *parent)
 	: QObject(parent)
 	, wObject(new TsWebObject(this))
 	, config(new ConfigWidget(pluginPath))
@@ -60,7 +59,6 @@ PluginHelper::~PluginHelper()
 // grab the necessary ui widgets
 void PluginHelper::initUi()
 {
-	ts3Functions.logMessage("Hook UI", LogLevel_INFO, "BetterChat", 0);
 	mainwindow = utils::findMainWindow();
 	connect(mainwindow, SIGNAL(callPrintConsoleMessage(uint64, QString, int)), this, SLOT(onPrintConsoleMessage(uint64, QString, int)));
 	connect(mainwindow, SIGNAL(callPrintConsoleMessageToCurrentTab(QString)), this, SLOT(onPrintConsoleMessageToCurrentTab(QString)));
@@ -84,6 +82,8 @@ void PluginHelper::initUi()
 	connect(emoticonButton, &QToolButton::clicked, this, &PluginHelper::onEmoticonButtonClicked);
 
 	insertMenu();
+	wObject->setDone(true);
+	ts3Functions.logMessage("Hook UI", LogLevel_INFO, "BetterChat", 0);
 }
 
 // add own menu to menubar
@@ -260,7 +260,7 @@ void PluginHelper::onPrintConsoleMessage(uint64 serverConnectionHandlerID, QStri
 	emit wObject->printConsoleMessage(getServerId(serverConnectionHandlerID), targetMode, "", message);
 }
 
-void PluginHelper::onPrintConsoleMessageToCurrentTab(QString message) const
+void PluginHelper::onPrintConsoleMessageToCurrentTab(const QString& message) const
 {
 	int mode;
 	QString server;

@@ -25,12 +25,13 @@ signals:
 	void webError(QString errorMessage);
 
 public slots:
-	void onEmbedData(QString url, qulonglong messageId);
-	void onEmoteData(QString url);
+	void onEmbedData(const QString& url, qulonglong messageId);
+	void onEmoteData(QStringList urlList);
 
 private slots:
 	void onDownloadProgress(qint64 downloadedBytes, qint64 totalBytes);
 
 private:
 	QNetworkAccessManager networkManager;
+	void getEmoteJson(const QNetworkRequest& request);
 };

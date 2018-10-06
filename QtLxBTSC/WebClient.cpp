@@ -7,6 +7,7 @@
 
 #include "WebClient.h"
 #include <QtNetwork/QNetworkReply>
+#include "globals.h"
 
 WebClient::WebClient(QObject *parent)
 	: QObject(parent)
@@ -17,29 +18,40 @@ WebClient::~WebClient()
 {
 }
 
-void WebClient::onEmoteData(QString url)
+void WebClient::onEmoteData(QStringList urlList)
 {
-	QNetworkRequest request;
-	request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
-	request.setUrl(QUrl(url));
+	ts3Functions.logMessage("onEmoteData", LogLevel_DEBUG, "BetterChat", 0);
+	for (const QString& url : urlList)
+	{
+		QNetworkRequest request;
+		request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+		request.setUrl(QUrl(url));
+		getEmoteJson(request);
+	}
+}
+
+void WebClient::getEmoteJson(const QNetworkRequest& request)
+{
 	QNetworkReply* reply = networkManager.get(request);
 	connect(reply, &QNetworkReply::downloadProgress, this, &WebClient::onDownloadProgress);
 	connect(reply, &QNetworkReply::finished, [=]()
 	{
 		QNetworkReply::NetworkError headError = reply->error();
-		if (headError != QNetworkReply::NoError)
+		if (headError == QNetworkReply::NoError)
 		{
-			// get was not successful
-			emit webError(reply->errorString());
-			reply->deleteLater();
-			return;
+			emit emoteJson(reply->readAll());
 		}
-		emit emoteJson(reply->readAll());
+		else
+		{
+			ts3Functions.logMessage("Emote get failed", LogLevel_DEBUG, "BetterChat", 0);
+			//getEmoteJson(reply->request()); // retry?
+			emit webError("Emote load failed, try reloading");
+		}
 		reply->deleteLater();
 	});
 }
 
-void WebClient::onEmbedData(QString url, qulonglong messageId)
+void WebClient::onEmbedData(const QString& url, qulonglong messageId)
 {
 	QNetworkRequest headRequest;
 	headRequest.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
@@ -95,7 +107,7 @@ void WebClient::onDownloadProgress(qint64 downloadedBytes, qint64 totalBytes)
 	// if size is already known
 	if (totalBytes > 5242880)
 	{
-		QNetworkReply* reply = static_cast<QNetworkReply*>(sender());
+		auto reply = static_cast<QNetworkReply*>(sender());
 		reply->abort();
 		return;
 	}
@@ -103,7 +115,7 @@ void WebClient::onDownloadProgress(qint64 downloadedBytes, qint64 totalBytes)
 	// else check current progress and cancel when limit is exceeded
 	if (downloadedBytes > 5242880)
 	{
-		QNetworkReply* reply = static_cast<QNetworkReply*>(sender());
+		auto* reply = static_cast<QNetworkReply*>(sender());
 		reply->abort();
 	}	
 }

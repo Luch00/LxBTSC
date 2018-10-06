@@ -29,7 +29,6 @@
          *
          * Copyright (C) 2018 Luch (https://github.com/Luch00)
         */
-            var interval;
             var main;
             var IsBottom = true;
             var QtObject;
@@ -69,20 +68,24 @@
                 QtObject.htmlData.connect(ParseHtml);
                 QtObject.fileData.connect(EmbedFile);
                 QtObject.emoteJson.connect(Emotes.addRemoteEmote);
-                QtObject.webError.connect(Ts3Error)
+                QtObject.webError.connect(Ts3Error);
             });
 
             function waitForQt() {
                 // try to make sure qwebchannel exists before loading config
-                interval = setInterval(function() {
-                    if(QtObject) {
-                        clearInterval(interval);
-                        loadConfig()
-                        .then(function() {
-                            LoadEmotes();
-                        });
-                    }
-                }, 50);
+                setTimeout(function() {
+                    QtObject.getDone(function(done) {
+                        if (done === true) {
+                            loadConfig()
+                            .then(function() {
+                                LoadEmotes();
+                            });
+                        }
+                        else {
+                            waitForQt();
+                        }
+                });
+                }, 100);
             }
             
             window.onload = function() {
@@ -175,6 +178,7 @@
                 QtObject.emoteClicked(key);
                 if(!shift) {
                     ToggleEmoteMenu();
+                    hideTooltip();
                 }
             }
 

@@ -47,9 +47,12 @@ var Emotes = {
                 });
             });
         });
+        /*var list = [];
         Config.REMOTE_EMOTES.forEach(function(set) {
-            QtObject.requestEmoteJson(set);
+            list.push(set);
         });
+        QtObject.requestEmoteJson(list);*/
+        QtObject.requestEmoteJson(Config.REMOTE_EMOTES);
     },
     addRemoteEmote: function (jsonString) {
         Emotes.parseJson(JSON.parse(jsonString));

@@ -20,7 +20,7 @@ class PluginHelper : public QObject
 	Q_OBJECT
 
 public:
-	PluginHelper(QString pluginPath, QObject *parent = nullptr);
+	PluginHelper(const QString& pluginPath, QObject *parent = nullptr);
 	~PluginHelper();
 
 	void textMessageReceived(uint64 serverConnectionHandlerID, anyID fromID, anyID toID, anyID targetMode, QString senderUniqueID, QString fromName, QString message, bool outgoing) const;
@@ -51,7 +51,7 @@ private slots:
 	void onClientUrlClicked(const QUrl &url) const;
 	void onChannelUrlClicked(const QUrl &url) const;
 	void onLinkHovered(const QUrl &url) const;
-	void onPrintConsoleMessageToCurrentTab(QString message) const;
+	void onPrintConsoleMessageToCurrentTab(const QString& message) const;
 	void onPrintConsoleMessage(uint64 serverConnectionHandlerID, QString message, int targetMode) const;
 	void onConfigChanged() const;
 
