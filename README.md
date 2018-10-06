@@ -35,6 +35,8 @@ Embed linked images, youtube, tweets etc...
 
 
 ## Building
+
+### Windows:
 Visual Studio 2015/2017
 
 Visual Studio 2015 (v140) toolset
@@ -44,6 +46,14 @@ Windows 8.1/10 SDK
 [Qt Visual Studio Tools](https://marketplace.visualstudio.com/items?itemName=TheQtCompany.QtVisualStudioTools-19123)
 
 [Qt 5.6.2](https://download.qt.io/official_releases/qt/5.6/5.6.2/)
+
+### Linux:
+Install Qt sdk and in the project directory run:
+
+```
+qmake -config release
+make
+```
 
 
 ## Debugging
