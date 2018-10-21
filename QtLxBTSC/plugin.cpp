@@ -106,7 +106,7 @@ int ts3plugin_processCommand(uint64 serverConnectionHandlerID, const char* comma
 	}
 	if (strcmp(command, "emotes") == 0)
 	{
-		helper->reloadEmotes();
+		helper->fullReloadEmotes();
 	}
 	return 0;  /* Plugin handled command */
 }
@@ -221,6 +221,10 @@ void ts3plugin_configure(void* handle, void* qParentWidget) {
 
 void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage) {
 	helper->serverStopped(serverConnectionHandlerID, shutdownMessage);
+}
+
+void ts3plugin_onFileInfoEvent(uint64 serverConnectionHandlerID, uint64 channelID, const char* name, uint64 size, uint64 datetime) {
+	helper->handleFileInfoEvent(serverConnectionHandlerID, channelID, name, size, datetime);
 }
 
 //void ts3plugin_onNewChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID) {
@@ -338,9 +342,6 @@ void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, a
 //}
 
 //void ts3plugin_onFileListFinishedEvent(uint64 serverConnectionHandlerID, uint64 channelID, const char* path) {
-//}
-
-//void ts3plugin_onFileInfoEvent(uint64 serverConnectionHandlerID, uint64 channelID, const char* name, uint64 size, uint64 datetime) {
 //}
 
 //void ts3plugin_onServerGroupListEvent(uint64 serverConnectionHandlerID, uint64 serverGroupID, const char* name, int type, int iconID, int saveDB) {

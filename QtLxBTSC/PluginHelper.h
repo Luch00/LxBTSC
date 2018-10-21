@@ -33,14 +33,20 @@ public:
 	void clientTimeout(uint64 serverConnectionHandlerID, anyID clientID) const;
 	void clientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, QString displayName) const;
 	void poked(uint64 serverConnectionHandlerID, anyID pokerID, QString pokerName, QString pokerUniqueID, QString pokeMessage) const;
-	void transferStatusChanged(anyID transferID, unsigned int status) const;
+	void transferStatusChanged(anyID transferID, unsigned int status);
 	void toggleNormalChat() const;
 	void reload() const;
 	void reloadEmotes() const;
+	void fullReloadEmotes();
 	void openConfig() const;
 	void openTransfers() const;
 
+	void handleFileInfoEvent(uint64 serverConnectionHandlerID, uint64 channelID, const QString& name, uint64 size, uint64 datetime);
+
 	void serverStopped(uint64 serverConnectionHandlerID, QString message) const;
+
+signals:
+	void triggerReloadEmotes();
 
 private slots:
 	void onAppStateChanged(Qt::ApplicationState state);
@@ -71,6 +77,7 @@ private:
 	QMap<unsigned long long, QSharedPointer<TsServer>> servers;
 	const QString pluginPath;
 	Qt::ApplicationState currentState;
+	QList<anyID> downloads;
 
 	void initUi();
 	void insertMenu();
@@ -80,5 +87,10 @@ private:
 	static anyID getOwnClientId(uint64 serverConnectionHandlerID);
 	std::tuple<int, QString, QString> getCurrentTab() const;
 	std::tuple<int, QString, QString> getTab(int tabIndex) const;
+
+	int getServerDefaultChannel(uint64 serverConnectionHandlerID);
+	void getServerEmoteFileInfo(uint64 serverConnectionHandlerID);
+
+	void requestServerEmoteJson(uint64 serverConnectionHandlerID, uint64 channelID, const QString& filePath);
 
 };

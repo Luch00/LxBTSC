@@ -8,7 +8,7 @@
 #pragma once
 
 #include <utils.h>
-#include <QDir>
+#include <QDirIterator>
 #include <QApplication>
 #include <QTime>
 
@@ -19,7 +19,7 @@ namespace utils
 	{
 		foreach(QWidget *widget, qApp->topLevelWidgets())
 		{
-			if (QMainWindow *m = qobject_cast<QMainWindow*>(widget))
+			if (QMainWindow* m = qobject_cast<QMainWindow*>(widget))
 			{
 				return m;
 			}
@@ -28,7 +28,7 @@ namespace utils
 	}
 
 	// find widget by object name
-	QWidget* findWidget(QString name, QWidget* parent)
+	QWidget* findWidget(const QString& name, QWidget* parent)
 	{
 		QList<QWidget*> children = parent->findChildren<QWidget*>();
 		for (int i = 0; i < children.count(); ++i)
@@ -46,9 +46,8 @@ namespace utils
 	{
 		return QTime::currentTime().toString("hh:mm:ss");
 	}
-
-	// make a list of all local emotesets so javascript can load them
-	void checkEmoteSets(const QString &path)
+	
+	/*void checkEmoteSets(const QString& path)
 	{
 		QDir directory(path + "LxBTSC/template/Emotes");
 		QStringList f = directory.entryList(QStringList("*.json"), QDir::Files, QDir::NoSort);
@@ -70,10 +69,42 @@ namespace utils
 			QTextStream stream(&file);
 			stream << json << endl;
 		}
+	}*/
+
+	// make a list of all local emotesets so javascript can load them
+	void makeEmoteJsonArray(const QString& path)
+	{
+		QString json;
+		QDir emotePath(path + "LxBTSC/template/Emotes", "*.json", QDir::NoSort, QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+		QDirIterator it(emotePath, QDirIterator::Subdirectories);
+		if (it.hasNext())
+		{
+			json = "[\"";
+			QStringList files;
+			while (it.hasNext())
+			{
+				it.next();
+				QFileInfo fileInfo(it.fileInfo());
+				files.append(emotePath.relativeFilePath(fileInfo.filePath()));
+			}
+			json.append(files.join("\",\""));
+			json.append("\"]");
+		}
+		else
+		{
+			json = "[]";
+		}
+
+		QFile file(path + "LxBTSC/template/emotesets.json");
+		if (file.open(QIODevice::WriteOnly))
+		{
+			QTextStream stream(&file);
+			stream << json << endl;
+		}
 	}
 
 	// string used for avatar filenames
-	QString ts3WeirdBase16(QString uid)
+	QString ts3WeirdBase16(const QString& uid)
 	{
 		QString hexArray = "0123456789abcdef";
 		QString replaceArray = "abcdefghijklmnop";

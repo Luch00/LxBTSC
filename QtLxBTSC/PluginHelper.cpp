@@ -11,6 +11,8 @@
 #include <QMenuBar>
 #include <QToolButton>
 #include <QApplication>
+#include "plugin.h"
+#include <QFileDialog>
 
 PluginHelper::PluginHelper(const QString& pluginPath, QObject *parent)
 	: QObject(parent)
@@ -21,9 +23,10 @@ PluginHelper::PluginHelper(const QString& pluginPath, QObject *parent)
 	, chat(new ChatWidget(pluginPath, this->wObject))
 	, pluginPath(pluginPath)
 {
-	utils::checkEmoteSets(pluginPath);
+	utils::makeEmoteJsonArray(pluginPath);
 	onConfigChanged();
-	
+
+	connect(this, &PluginHelper::triggerReloadEmotes, this, &PluginHelper::reloadEmotes);
 	connect(client, &WebClient::htmlData, wObject, &TsWebObject::htmlData);
 	connect(client, &WebClient::fileData, wObject, &TsWebObject::fileData);
 	connect(client, &WebClient::emoteJson, wObject, &TsWebObject::emoteJson);
@@ -101,7 +104,7 @@ void PluginHelper::insertMenu()
 	connect(transfers, &QAction::triggered, [this]() { openTransfers(); });
 	connect(toggle, &QAction::triggered, [this]() { toggleNormalChat(); });
 	connect(browseDirectory, &QAction::triggered, [this]() { QDesktopServices::openUrl(QUrl::fromLocalFile(pluginPath + "LxBTSC/template")); });
-	connect(reloademotes, &QAction::triggered, [this]() { reloadEmotes(); });
+	connect(reloademotes, &QAction::triggered, [this]() { fullReloadEmotes(); });
 	connect(reloadchat, &QAction::triggered, [this]() { chat->reload(); });
 	debug->addAction(browseDirectory);
 	debug->addSeparator();
@@ -165,6 +168,95 @@ std::tuple<int, QString, QString> PluginHelper::getTab(int tabIndex) const
 	}
 	return { 0, "", "" };
 }
+
+int PluginHelper::getServerDefaultChannel(uint64 serverConnectionHandlerID)
+{
+	// first need server channel list
+	uint64* channelList;
+	if (ts3Functions.getChannelList(serverConnectionHandlerID, &channelList) == ERROR_ok)
+	{
+		// then go through each channel
+		for (size_t i = 0; channelList[i] != NULL; i++)
+		{
+			// get CHANNEL_FLAG_DEFAULT variable until 1 is returned
+			int res;
+			if (ts3Functions.getChannelVariableAsInt(serverConnectionHandlerID, channelList[i], CHANNEL_FLAG_DEFAULT, &res) == ERROR_ok)
+			{
+				if (res == 1)
+				{
+					// free the array and return id of default channel
+					free(channelList);
+					return res;
+				}
+			}
+		}
+	}
+	ts3Functions.logMessage("Could not find default channel", LogLevel_INFO, "BetterChat", 0);
+	return 0;
+}
+
+void PluginHelper::getServerEmoteFileInfo(uint64 serverConnectionHandlerID)
+{
+	int channelID = getServerDefaultChannel(serverConnectionHandlerID);
+	if (channelID != 0)
+	{
+		// request file info of emotes.json in default channel root, this will be returned in OnFileInfoEvent
+		if (ts3Functions.requestFileInfo(serverConnectionHandlerID, channelID, "", "/emotes.json", nullptr) != ERROR_ok)
+		{
+			ts3Functions.logMessage("Could not request server emotes.json", LogLevel_INFO, "BetterChat", 0);
+		}
+	}
+}
+
+void PluginHelper::handleFileInfoEvent(uint64 serverConnectionHandlerID, uint64 channelID, const QString& name, uint64 size, uint64 datetime)
+{
+	if (name != "/emotes.json") // only handle emotes.json
+		return;
+
+	if (size > 31457280) // put in some kind of size limitation, left it as large for now
+	{
+		ts3Functions.logMessage("emotes.json too large, skipping", LogLevel_INFO, "BetterChat", 0);
+		return;
+	}
+
+	QFileInfo old(QString("%1LxBTSC/template/Emotes/%2/emotes.json").arg(pluginPath).arg(servers[serverConnectionHandlerID]->safeUniqueId()));
+
+	// check if old file on disk
+	if (old.exists())
+	{
+		qint64 oldUnixtime = old.created().toMSecsSinceEpoch() / 1000; // fileinfoevent gives file creation time as unix timestamp in seconds
+		if (datetime > oldUnixtime)
+		{
+			// file on server is newer, download it
+			requestServerEmoteJson(serverConnectionHandlerID, channelID, old.absolutePath());
+		}
+	}
+	else
+	{
+		// file doesn't exist, download it
+		// create subdir
+		QDir dir = old.absoluteDir();
+		if (!dir.exists())
+			dir.mkpath(".");
+
+		requestServerEmoteJson(serverConnectionHandlerID, channelID, old.absolutePath());
+	}
+}
+
+void PluginHelper::requestServerEmoteJson(uint64 serverConnectionHandlerID, uint64 channelID, const QString& filePath)
+{
+	std::string std_download_path = filePath.toStdString();
+	anyID res;
+	if (ts3Functions.requestFile(serverConnectionHandlerID, channelID, "", "/emotes.json", 1, 0, std_download_path.c_str(), &res, nullptr) == ERROR_ok)
+	{
+		downloads.append(res);
+	}
+	else
+	{
+		ts3Functions.logMessage("Could not start file transfer (emotes.json)", LogLevel_INFO, "BetterChat", 0);
+	}
+}
+
 
 std::tuple<int, QString, QString> PluginHelper::getCurrentTab() const
 {
@@ -329,6 +421,7 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 			emit wObject->serverConnected(getServerId(serverConnectionHandlerID), utils::time(), msg);
 			free(msg);
 		}
+		getServerEmoteFileInfo(serverConnectionHandlerID);
 	}
 }
 
@@ -386,9 +479,17 @@ void PluginHelper::clientTimeout(uint64 serverConnectionHandlerID, anyID clientI
 }
 
 // called when file transfer ends in some way
-void PluginHelper::transferStatusChanged(anyID transferID, unsigned int status) const
+void PluginHelper::transferStatusChanged(anyID transferID, unsigned int status)
 {
-	transfers->transferStatusChanged(transferID, status);
+	if (downloads.contains(transferID))
+	{
+		downloads.removeOne(transferID);
+		emit triggerReloadEmotes();
+	}
+	else
+	{
+		transfers->transferStatusChanged(transferID, status);
+	}
 }
 
 void PluginHelper::clientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, QString displayName) const
@@ -426,7 +527,22 @@ void PluginHelper::reload() const
 
 void PluginHelper::reloadEmotes() const
 {
-	utils::checkEmoteSets(pluginPath);
+	utils::makeEmoteJsonArray(pluginPath);
+	emit wObject->loadEmotes();
+}
+
+void PluginHelper::fullReloadEmotes()
+{
+	uint64* servers;
+	if (ts3Functions.getServerConnectionHandlerList(&servers) == ERROR_ok)
+	{
+		for (size_t i = 0; servers[i] != NULL; i++)
+		{
+			getServerEmoteFileInfo(servers[i]);
+		}
+		free(servers);
+	}
+	utils::makeEmoteJsonArray(pluginPath);
 	emit wObject->loadEmotes();
 }
 
