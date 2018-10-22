@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2018 Luch (https://github.com/Luch00)
 */
-'use strict'
+'use strict';
 var imageMime = [ "image/gif", "image/jpeg", "image/png", "image/svg+xml", "image/webp" ];
 var audioMime = [ "audio/wave", "audio/wav", "audio/x-wav", "audio/x-pn-wav", "audio/webm", "audio/ogg", "audio/flac"];
 var videoMime = [ "video/webm", "video/ogg", "application/ogg" ];
@@ -130,14 +130,14 @@ function FreezeframeGif(url) {
 
     let a = $('<a/>', {
         class: 'hidden-image fancybox',
-        href: url,
+        href: url
     });
 
     a.append(img);
     img.onload = function() {
         $(img).freezeframe({overlay: true});        
         $(a).removeClass('hidden-image');
-    }
+    };
     img.src = encodeURI(url);
 
     embed.append(a);

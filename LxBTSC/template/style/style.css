@@ -160,6 +160,12 @@ video {
     max-height: 32px;
 }
 
+/*.emote-wrapper {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+}*/
+
 .set-header {
     text-align: center;
     padding: 2px;
@@ -302,6 +308,13 @@ video {
 }
 @keyframes spin {
     100% { transform: rotate(360deg); }
+}
+
+.emote-mod-spin2 {
+    animation: spin2 2.5s linear infinite;
+}
+@keyframes spin2 {
+    100% { transform: rotate(-360deg);}
 }
 
 .emote-mod-flip {

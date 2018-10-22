@@ -165,10 +165,6 @@
                 }
             }
 
-            function escapeRegExp(str) {
-                return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-            }
-
             function ToggleEmoteMenu() {
                 $("#popup").toggleClass('menu-visible');
                 main.toggleClass('no-scroll');
