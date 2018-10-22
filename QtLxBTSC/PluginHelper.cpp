@@ -11,7 +11,6 @@
 #include <QMenuBar>
 #include <QToolButton>
 #include <QApplication>
-#include "plugin.h"
 #include <QFileDialog>
 
 PluginHelper::PluginHelper(const QString& pluginPath, QObject *parent)
@@ -185,8 +184,9 @@ int PluginHelper::getServerDefaultChannel(uint64 serverConnectionHandlerID)
 				if (res == 1)
 				{
 					// free the array and return id of default channel
+					int channelid = channelList[i];
 					free(channelList);
-					return res;
+					return channelid;
 				}
 			}
 		}

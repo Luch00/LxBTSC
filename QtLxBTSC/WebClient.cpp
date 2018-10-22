@@ -20,7 +20,6 @@ WebClient::~WebClient()
 
 void WebClient::onEmoteData(QStringList urlList)
 {
-	ts3Functions.logMessage("onEmoteData", LogLevel_DEBUG, "BetterChat", 0);
 	for (const QString& url : urlList)
 	{
 		QNetworkRequest request;
@@ -43,7 +42,7 @@ void WebClient::getEmoteJson(const QNetworkRequest& request)
 		}
 		else
 		{
-			ts3Functions.logMessage("Emote get failed", LogLevel_DEBUG, "BetterChat", 0);
+			ts3Functions.logMessage("Emote get failed", LogLevel_INFO, "BetterChat", 0);
 			//getEmoteJson(reply->request()); // retry?
 			emit webError("Emote load failed, try reloading");
 		}
