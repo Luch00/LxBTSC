@@ -27,7 +27,7 @@ let Emotes = {
         string.html(html);
     },
     buildRegex: function () {
-        let emoteKeyList = Array.from(this.emoteList.keys()).sort(function(a, b) {
+        let emoteKeyList = Array.from(this.emoteList.keys()).sort(function (a, b) {
             return b.length - a.length;
         });
         var stringlist = Emotes.escapeRegExp(emoteKeyList.join('|'));
@@ -40,10 +40,17 @@ let Emotes = {
         Emotes.emote_list_element.empty();
     },
     load: function () {
-        $.getJSON(this.emoteset_json, function(setlist) {
-            setlist.forEach(function(set) {
-                $.getJSON("Emotes/" + set).then(function(json) {
-                    Emotes.parseJson(json);
+        $.getJSON(this.emoteset_json, function (setlist) {
+            setlist.forEach(function (set) {
+                $.getJSON("Emotes/" + set).then(function (json) {
+                    if (Array.isArray(json)) {
+                        json.forEach(function (item) {
+                            Emotes.parseJson(item);
+                        });
+                    }
+                    else {
+                        Emotes.parseJson(json);
+                    }
                 });
             });
         });
@@ -52,9 +59,17 @@ let Emotes = {
         }
     },
     addRemoteEmote: function (jsonString) {
-        Emotes.parseJson(JSON.parse(jsonString));
+        let json = JSON.parseJson(jsonString);
+        if (Array.isArray(json)) {
+            json.forEach(function (item) {
+                Emotes.parseJson(item);
+            });
+        }
+        else {
+            Emotes.parseJson(json);
+        }
     },
-    parseJson: function(json) {
+    parseJson: function (json) {
         let set_element = $('<div>', {
             class: 'emoteset',
             'data-name': json.setname
@@ -64,7 +79,7 @@ let Emotes = {
             class: 'emote-container'
         });
         set_element.append(emote_container);
-        json.emoticons.forEach(function(emote) {
+        json.emoticons.forEach(function (emote) {
             let e = {
                 name: `${json.pathbase}${emote.name}${json.pathappend}`,
                 code: emote.code,
@@ -77,7 +92,7 @@ let Emotes = {
                 alt: emote.code,
                 'data-key': emote.code
             })
-            .click(function(e) {
+            .click(function (e) {
                 emoteClicked($(this).data('key'), e.shiftKey);
             });
             emote_container.append(emote_img);
@@ -87,7 +102,7 @@ let Emotes = {
         Emotes.buildRegex();
         this.emote_list_element.append(set_element);
     },
-    escapeRegExp: function(str) {
+    escapeRegExp: function (str) {
         return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$]/g, "\\$&");
     }
 };
