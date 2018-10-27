@@ -13,7 +13,7 @@
 #include <QWebEngineSettings>
 #include <QTimer>
 
-ChatWidget::ChatWidget(QString path, TsWebObject* webObject, QWidget *parent)
+ChatWidget::ChatWidget(const QString& path, TsWebObject* webObject, QWidget *parent)
     : QFrame(parent)
 	, wObject(webObject)
 	, pathToPage(QString("file:///%1LxBTSC/template/chat.html").arg(path))
@@ -97,7 +97,7 @@ void ChatWidget::setupPage() const
 
 void ChatWidget::keyReleaseEvent(QKeyEvent* event)
 {
-	if (event->key() == Qt::Key_C && QApplication::keyboardModifiers().testFlag(Qt::ControlModifier) == true)
+	if (event->key() == Qt::Key_C && QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
 	{
 		onCopyActivated();
 		return;
@@ -112,11 +112,11 @@ void ChatWidget::onShowContextMenu(const QPoint &p) const
 	{
 		menu->addAction(copyAction);
 	}
-	if (currentHoveredUrl.isEmpty() == false)
+	if (!currentHoveredUrl.isEmpty())
 	{
 		menu->addAction(copyUrlAction);
 	}
-	if (menu->actions().isEmpty() == false)
+	if (!menu->actions().isEmpty())
 	{
 		menu->popup(view->mapToGlobal(p));
 	}

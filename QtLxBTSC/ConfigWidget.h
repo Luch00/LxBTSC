@@ -20,10 +20,10 @@ class ConfigWidget : public QWidget
 	Q_OBJECT
 
 public:
-	ConfigWidget(QString path, QWidget *parent = 0);
+	ConfigWidget(const QString& path, QWidget *parent = 0);
 	~ConfigWidget();
 
-	QString getConfigAsString(QString key);
+	QString getConfigAsString(const QString& key);
 
 signals:
 	void configChanged();

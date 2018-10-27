@@ -22,7 +22,7 @@ class ChatWidget : public QFrame
 	Q_OBJECT
 
 public:
-	ChatWidget(QString path, TsWebObject* webObject, QWidget *parent = Q_NULLPTR);
+	ChatWidget(const QString& path, TsWebObject* webObject, QWidget *parent = Q_NULLPTR);
 	~ChatWidget();
 	void reload() const;
 

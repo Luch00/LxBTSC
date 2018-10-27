@@ -201,7 +201,7 @@ void PluginHelper::getServerEmoteFileInfo(uint64 serverConnectionHandlerID)
 	if (channelID != 0)
 	{
 		// request file info of emotes.json in default channel root, this will be returned in OnFileInfoEvent
-		if (ts3Functions.requestFileInfo(serverConnectionHandlerID, channelID, "", "/emotes.json", nullptr) != ERROR_ok)
+		if (ts3Functions.requestFileInfo(serverConnectionHandlerID, channelID, "", "/emotes.json", "BetterChat_EmoteFileInfo") != ERROR_ok)
 		{
 			ts3Functions.logMessage("Could not request server emotes.json", LogLevel_INFO, "BetterChat", 0);
 		}
@@ -237,7 +237,11 @@ void PluginHelper::handleFileInfoEvent(uint64 serverConnectionHandlerID, uint64 
 		// create subdir
 		QDir dir = old.absoluteDir();
 		if (!dir.exists())
-			dir.mkpath(".");
+			if (!dir.mkpath("."))
+			{
+				ts3Functions.logMessage("Could not create directory in template/Emotes", LogLevel_INFO, "BetterChat", 0);
+				return;
+			}
 
 		requestServerEmoteJson(serverConnectionHandlerID, channelID, old.absolutePath());
 	}
@@ -247,7 +251,7 @@ void PluginHelper::requestServerEmoteJson(uint64 serverConnectionHandlerID, uint
 {
 	std::string std_download_path = filePath.toStdString();
 	anyID res;
-	if (ts3Functions.requestFile(serverConnectionHandlerID, channelID, "", "/emotes.json", 1, 0, std_download_path.c_str(), &res, nullptr) == ERROR_ok)
+	if (ts3Functions.requestFile(serverConnectionHandlerID, channelID, "", "/emotes.json", 1, 0, std_download_path.c_str(), &res, "BetterChat_RequestEmoteFile") == ERROR_ok)
 	{
 		downloads.append(res);
 	}
@@ -273,7 +277,7 @@ void PluginHelper::onLinkHovered(const QUrl &url) const
 
 void PluginHelper::onClientUrlClicked(const QUrl &url) const
 {
-	const static QRegularExpression re("client://0\\.0\\.0\\.(\\d+)\\/([\\S]+)~(.+)");
+	const static QRegularExpression re(R"(client://0\.0\.0\.(\d+)\/([\S]+)~(.+))");
 	QRegularExpressionMatch match = re.match(url.toString(QUrl::PrettyDecoded));
 	if (match.hasMatch())
 	{
@@ -288,7 +292,7 @@ void PluginHelper::onClientUrlClicked(const QUrl &url) const
 
 void PluginHelper::onChannelUrlClicked(const QUrl& url) const
 {
-	const static QRegularExpression re("channelid://0\\.0\\.0\\.(\\d+)");
+	const static QRegularExpression re(R"(channelid://0\.0\.0\.(\d+))");
 	QRegularExpressionMatch match = re.match(url.toString(QUrl::PrettyDecoded));
 	if (match.hasMatch())
 	{
@@ -305,7 +309,7 @@ void PluginHelper::onTransferFailure() const
 }
 
 // called when emote is clicked in html emote menu
-void PluginHelper::onEmoticonAppend(QString e) const
+void PluginHelper::onEmoticonAppend(const QString& e) const
 {
 	if (!chatLineEdit->document()->isModified())
 	{
@@ -364,7 +368,7 @@ void PluginHelper::onPrintConsoleMessageToCurrentTab(const QString& message) con
 		emit wObject->printConsoleMessage(server, 3, "", message);
 }
 
-void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID fromID, anyID toID, anyID targetMode, QString senderUniqueID, QString fromName, QString message, bool outgoing) const
+void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID fromID, anyID toID, anyID targetMode, QString senderUniqueID, const QString& fromName, QString message, bool outgoing) const
 {
 	auto s = servers.value(serverConnectionHandlerID);
 	if (s == nullptr)
@@ -498,7 +502,7 @@ void PluginHelper::clientDisplayNameChanged(uint64 serverConnectionHandlerID, an
 	c->setName(displayName);
 }
 
-void PluginHelper::poked(uint64 serverConnectionHandlerID, anyID pokerID, QString pokerName, QString pokerUniqueID, QString pokeMessage) const
+void PluginHelper::poked(uint64 serverConnectionHandlerID, anyID pokerID, const QString& pokerName, QString pokerUniqueID, QString pokeMessage) const
 {
 	auto s = servers.value(serverConnectionHandlerID);
 	if (s == nullptr)
@@ -595,7 +599,7 @@ void PluginHelper::onConfigChanged() const
 	transfers->setDownloadDirectory(dir);
 }
 
-void PluginHelper::serverStopped(uint64 serverConnectionHandlerID, QString message) const
+void PluginHelper::serverStopped(uint64 serverConnectionHandlerID, const QString& message) const
 {
 	emit wObject->serverStopped(getServerId(serverConnectionHandlerID), utils::time(), message);
 }

@@ -23,7 +23,8 @@ public:
 	PluginHelper(const QString& pluginPath, QObject *parent = nullptr);
 	~PluginHelper();
 
-	void textMessageReceived(uint64 serverConnectionHandlerID, anyID fromID, anyID toID, anyID targetMode, QString senderUniqueID, QString fromName, QString message, bool outgoing) const;
+	void textMessageReceived(uint64 serverConnectionHandlerID, anyID fromID, anyID toID, anyID targetMode, QString senderUniqueID,
+	                         const QString& fromName, QString message, bool outgoing) const;
 	void serverConnected(uint64 serverConnectionHandlerID);
 	void serverDisconnected(uint serverConnectionHandlerID) const;
 	void clientConnected(uint64 serverConnectionHandlerID, anyID clientID) const;
@@ -32,7 +33,7 @@ public:
 	//void clientEnteredViewBySubscription(uint64 serverConnectionHandlerID, anyID clientID);
 	void clientTimeout(uint64 serverConnectionHandlerID, anyID clientID) const;
 	void clientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, QString displayName) const;
-	void poked(uint64 serverConnectionHandlerID, anyID pokerID, QString pokerName, QString pokerUniqueID, QString pokeMessage) const;
+	void poked(uint64 serverConnectionHandlerID, anyID pokerID, const QString& pokerName, QString pokerUniqueID, QString pokeMessage) const;
 	void transferStatusChanged(anyID transferID, unsigned int status);
 	void toggleNormalChat() const;
 	void reload() const;
@@ -43,14 +44,14 @@ public:
 
 	void handleFileInfoEvent(uint64 serverConnectionHandlerID, uint64 channelID, const QString& name, uint64 size, uint64 datetime);
 
-	void serverStopped(uint64 serverConnectionHandlerID, QString message) const;
+	void serverStopped(uint64 serverConnectionHandlerID, const QString& message) const;
 
 signals:
 	void triggerReloadEmotes();
 
 private slots:
 	void onAppStateChanged(Qt::ApplicationState state);
-	void onEmoticonAppend(QString e) const;
+	void onEmoticonAppend(const QString& e) const;
 	void onEmoticonButtonClicked(bool c) const;
 	void onTabChange(int i) const;
 	void onTransferFailure() const;

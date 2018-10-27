@@ -11,7 +11,7 @@
 #include <QJsonArray>
 #include <QFileDialog>
 
-ConfigWidget::ConfigWidget(QString path, QWidget *parent)
+ConfigWidget::ConfigWidget(const QString& path, QWidget *parent)
 	: QWidget(parent)
 	, configPath(QString("%1LxBTSC/template/config.json").arg(path))
 {
@@ -135,7 +135,7 @@ void ConfigWidget::save()
 	}
 }
 
-QString ConfigWidget::getConfigAsString(QString key)
+QString ConfigWidget::getConfigAsString(const QString& key)
 {
 	return jsonObj.value(key).toString();
 }

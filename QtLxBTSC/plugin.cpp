@@ -167,10 +167,51 @@ void ts3plugin_onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID 
 }
 
 int ts3plugin_onServerErrorEvent(uint64 serverConnectionHandlerID, const char* errorMessage, unsigned int error, const char* returnCode, const char* extraMessage) {
-	if(returnCode) {
+	
+	if (strcmp(returnCode, "BetterChat_RequestEmoteFile") == 0)
+	{
+		ts3Functions.logMessage(QString("Could not dowload emotes, %1").arg(errorMessage).toLatin1(), LogLevel_INFO, "BetterChat", 0);
 		return 1;
 	}
-	return 0;  /* If no plugin return code was used, the return value of this function is ignored */
+	if (strcmp(returnCode, "BetterChat_EmoteFileInfo") == 0)
+	{
+		ts3Functions.logMessage(QString("Could not get emote fileinfo, %1").arg(errorMessage).toLatin1(), LogLevel_INFO, "BetterChat", 0);
+		return 1;
+	}
+	
+	/*if(returnCode)
+	{
+		return 1;
+	}*/
+
+	ts3Functions.logMessage(errorMessage, LogLevel_INFO, "BetterChat2", 0);
+
+	/* A plugin could now check the returnCode with previously (when calling a function) remembered returnCodes and react accordingly
+	 * In case of using a a plugin return code, the plugin can return:
+	 * 0: Client will continue handling this error (print to chat tab)
+	 * 1: Client will ignore this error, the plugin announces it has handled it */
+
+	
+	return 1;
+}
+
+int ts3plugin_onServerPermissionErrorEvent(uint64 serverConnectionHandlerID, const char* errorMessage, unsigned int error, const char* returnCode, unsigned int failedPermissionID) {
+	
+	if (strcmp(returnCode, "BetterChat_RequestEmoteFile") == 0)
+	{
+		ts3Functions.logMessage(QString("Could not dowload emotes, %1").arg(errorMessage).toLatin1(), LogLevel_INFO, "BetterChat", 0);
+		return 1;
+	}
+	if (strcmp(returnCode, "BetterChat_EmoteFileInfo") == 0) //trying to catch i_ft_needed_file_browse_power permission error and others
+	{
+		ts3Functions.logMessage(QString("Could not get emote fileinfo, %1").arg(errorMessage).toLatin1(), LogLevel_INFO, "BetterChat", 0);	// this is hit correctly and printed to log
+		return 1;	// this should cause the client to ignore the error but it still gets printed in the chat and the user alerted!!!
+	}
+
+	ts3Functions.logMessage(errorMessage, LogLevel_INFO, "BetterChat", 0); // log any other possible errors
+
+	/* See onServerErrorEvent for return code description */
+	return 1;  // returning 1 here should make the client ignore any error but its not working?
 }
 
 // Client received a text message
@@ -395,9 +436,7 @@ void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, a
 //void ts3plugin_onClientChannelGroupChangedEvent(uint64 serverConnectionHandlerID, uint64 channelGroupID, uint64 channelID, anyID clientID, anyID invokerClientID, const char* invokerName, const char* invokerUniqueIdentity) {
 //}
 
-//int ts3plugin_onServerPermissionErrorEvent(uint64 serverConnectionHandlerID, const char* errorMessage, unsigned int error, const char* returnCode, unsigned int failedPermissionID) {
-//	return 0;  /* See onServerErrorEvent for return code description */
-//}
+
 
 //void ts3plugin_onPermissionListGroupEndIDEvent(uint64 serverConnectionHandlerID, unsigned int groupEndID) {
 //}
