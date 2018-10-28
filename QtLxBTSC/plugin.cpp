@@ -31,7 +31,7 @@ const char* ts3plugin_name() {
 
 /* Plugin version */
 const char* ts3plugin_version() {
-    return "1.11";
+    return "1.11.1";
 }
 
 /* Plugin API version. Must be the same as the clients API major version, else the plugin fails to load. */
@@ -59,7 +59,9 @@ void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
 // Init plugin
 int ts3plugin_init() {
 	char pluginPath[PATH_BUFSIZE];
-	
+
+	ts3Functions.createReturnCode(pluginID, returnCodeEmoteFileInfo, 64);
+	ts3Functions.createReturnCode(pluginID, returnCodeEmoteFileRequest, 64);
 	ts3Functions.getPluginPath(pluginPath, PATH_BUFSIZE, pluginID);
 	helper = new PluginHelper(pluginPath);
 
@@ -167,51 +169,60 @@ void ts3plugin_onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID 
 }
 
 int ts3plugin_onServerErrorEvent(uint64 serverConnectionHandlerID, const char* errorMessage, unsigned int error, const char* returnCode, const char* extraMessage) {
-	
-	if (strcmp(returnCode, "BetterChat_RequestEmoteFile") == 0)
+
+	if (error == ERROR_ok) // on success, ignore
+		return 1;
+
+	if (strcmp(returnCode, returnCodeEmoteFileRequest) == 0)
 	{
 		ts3Functions.logMessage(QString("Could not dowload emotes, %1").arg(errorMessage).toLatin1(), LogLevel_INFO, "BetterChat", 0);
 		return 1;
 	}
-	if (strcmp(returnCode, "BetterChat_EmoteFileInfo") == 0)
+	if (strcmp(returnCode, returnCodeEmoteFileInfo) == 0)
 	{
 		ts3Functions.logMessage(QString("Could not get emote fileinfo, %1").arg(errorMessage).toLatin1(), LogLevel_INFO, "BetterChat", 0);
 		return 1;
 	}
 	
-	/*if(returnCode)
+	if(returnCode)
 	{
 		return 1;
-	}*/
-
-	ts3Functions.logMessage(errorMessage, LogLevel_INFO, "BetterChat2", 0);
+	}
 
 	/* A plugin could now check the returnCode with previously (when calling a function) remembered returnCodes and react accordingly
 	 * In case of using a a plugin return code, the plugin can return:
 	 * 0: Client will continue handling this error (print to chat tab)
 	 * 1: Client will ignore this error, the plugin announces it has handled it */
-
 	
-	return 1;
+	// RETURN CODES MUST HAVE PREFIX "PR:" FOR ANY OF THIS TO WORK!!!!!!!
+	// Using createReturnCode will make a string in the format of "PR:<PluginID>:<ID>"
+	
+	return 0;
 }
 
 int ts3plugin_onServerPermissionErrorEvent(uint64 serverConnectionHandlerID, const char* errorMessage, unsigned int error, const char* returnCode, unsigned int failedPermissionID) {
-	
-	if (strcmp(returnCode, "BetterChat_RequestEmoteFile") == 0)
+
+	if (error == ERROR_ok) // on success, ignore
+		return 1;
+
+	if (strcmp(returnCode, returnCodeEmoteFileRequest) == 0)
 	{
 		ts3Functions.logMessage(QString("Could not dowload emotes, %1").arg(errorMessage).toLatin1(), LogLevel_INFO, "BetterChat", 0);
 		return 1;
 	}
-	if (strcmp(returnCode, "BetterChat_EmoteFileInfo") == 0) //trying to catch i_ft_needed_file_browse_power permission error and others
+	if (strcmp(returnCode, returnCodeEmoteFileInfo) == 0)
 	{
-		ts3Functions.logMessage(QString("Could not get emote fileinfo, %1").arg(errorMessage).toLatin1(), LogLevel_INFO, "BetterChat", 0);	// this is hit correctly and printed to log
-		return 1;	// this should cause the client to ignore the error but it still gets printed in the chat and the user alerted!!!
+		ts3Functions.logMessage(QString("Could not get emote fileinfo, %1").arg(errorMessage).toLatin1(), LogLevel_INFO, "BetterChat", 0);
+		return 1;
 	}
 
-	ts3Functions.logMessage(errorMessage, LogLevel_INFO, "BetterChat", 0); // log any other possible errors
+	if (returnCode)
+	{
+		return 1;
+	}
 
-	/* See onServerErrorEvent for return code description */
-	return 1;  // returning 1 here should make the client ignore any error but its not working?
+	// See onServerErrorEvent for return code description
+	return 0;
 }
 
 // Client received a text message

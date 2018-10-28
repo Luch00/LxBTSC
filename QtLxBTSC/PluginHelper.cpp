@@ -168,7 +168,7 @@ std::tuple<int, QString, QString> PluginHelper::getTab(int tabIndex) const
 	return { 0, "", "" };
 }
 
-int PluginHelper::getServerDefaultChannel(uint64 serverConnectionHandlerID)
+uint64 PluginHelper::getServerDefaultChannel(uint64 serverConnectionHandlerID)
 {
 	// first need server channel list
 	uint64* channelList;
@@ -184,7 +184,7 @@ int PluginHelper::getServerDefaultChannel(uint64 serverConnectionHandlerID)
 				if (res == 1)
 				{
 					// free the array and return id of default channel
-					int channelid = channelList[i];
+					uint64 channelid = channelList[i];
 					free(channelList);
 					return channelid;
 				}
@@ -197,11 +197,11 @@ int PluginHelper::getServerDefaultChannel(uint64 serverConnectionHandlerID)
 
 void PluginHelper::getServerEmoteFileInfo(uint64 serverConnectionHandlerID)
 {
-	int channelID = getServerDefaultChannel(serverConnectionHandlerID);
+	uint64 channelID = getServerDefaultChannel(serverConnectionHandlerID);
 	if (channelID != 0)
 	{
 		// request file info of emotes.json in default channel root, this will be returned in OnFileInfoEvent
-		if (ts3Functions.requestFileInfo(serverConnectionHandlerID, channelID, "", "/emotes.json", "BetterChat_EmoteFileInfo") != ERROR_ok)
+		if (ts3Functions.requestFileInfo(serverConnectionHandlerID, channelID, "", "/emotes.json", returnCodeEmoteFileInfo) != ERROR_ok)
 		{
 			ts3Functions.logMessage("Could not request server emotes.json", LogLevel_INFO, "BetterChat", 0);
 		}
@@ -251,7 +251,7 @@ void PluginHelper::requestServerEmoteJson(uint64 serverConnectionHandlerID, uint
 {
 	std::string std_download_path = filePath.toStdString();
 	anyID res;
-	if (ts3Functions.requestFile(serverConnectionHandlerID, channelID, "", "/emotes.json", 1, 0, std_download_path.c_str(), &res, "BetterChat_RequestEmoteFile") == ERROR_ok)
+	if (ts3Functions.requestFile(serverConnectionHandlerID, channelID, "", "/emotes.json", 1, 0, std_download_path.c_str(), &res, returnCodeEmoteFileRequest) == ERROR_ok)
 	{
 		downloads.append(res);
 	}

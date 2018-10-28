@@ -15,3 +15,5 @@
 #include "ts3_functions.h"
 
 extern struct TS3Functions ts3Functions;
+extern char returnCodeEmoteFileInfo[64];
+extern char returnCodeEmoteFileRequest[64];

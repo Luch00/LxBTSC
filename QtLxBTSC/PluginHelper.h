@@ -89,7 +89,7 @@ private:
 	std::tuple<int, QString, QString> getCurrentTab() const;
 	std::tuple<int, QString, QString> getTab(int tabIndex) const;
 
-	int getServerDefaultChannel(uint64 serverConnectionHandlerID);
+	uint64 getServerDefaultChannel(uint64 serverConnectionHandlerID);
 	void getServerEmoteFileInfo(uint64 serverConnectionHandlerID);
 
 	void requestServerEmoteJson(uint64 serverConnectionHandlerID, uint64 channelID, const QString& filePath);

@@ -8,3 +8,5 @@
 #include "globals.h"
 
 struct TS3Functions ts3Functions;
+char returnCodeEmoteFileInfo[64];
+char returnCodeEmoteFileRequest[64];
