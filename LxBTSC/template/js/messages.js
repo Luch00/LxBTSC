@@ -23,7 +23,7 @@ const AvatarStyle_NormalTextTemplate = (msgid, direction, time, userlink, name, 
     <div class='avatar-container'>
     ${Config.HOVER_ANIMATES_GIFS ? 
         `<img class='avatar hidden-image fancybox' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onload='ThumbnailAvatar(this)' onerror='DefaultAvatar(this)'>`: 
-        `<img class='avatar fancybox' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onerror='this.onerror=null;this.classList.add("default-avatar");'>`}
+        `<img class='avatar fancybox' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onerror='this.onerror=null;DefaultAvatar(this);'>`}
     </div>
     <div class='message-container'>
         <div class='message-header'>
@@ -63,7 +63,7 @@ const PokeTextTemplate = (msgid, time, link, name, text) => Config.AVATARS_ENABL
         <span class='avatar-style TextMessage_Time'>${time}</span>
         </div>
         <div class='message-content'>
-        <span class='avatar-style TextMessage_Text'>pokes you: ${text}</span>
+        <span class='avatar-style TextMessage_Text'>Pokes you: ${text}</span>
         </div>
     </div>
     </div>
@@ -83,6 +83,7 @@ const PokeTextTemplate = (msgid, time, link, name, text) => Config.AVATARS_ENABL
 function DefaultAvatar(img) {
     img.onerror=null;
     img.classList.remove("hidden-image");
+    img.classList.remove("fancybox");
     img.classList.add("default-avatar");
     img.src="";
 }
@@ -157,7 +158,7 @@ function Ts3ClientPoked(target, time, link, name, message) {
     var parsed = ParseBBCode(message);
     let tab = GetTab(target, 3, "");
     CheckMessageLimit(tab);
-    tab.append(PokeMessageTemplate(msgid, time, link, name, parsed));
+    tab.append(PokeTextTemplate(msgid, time, link, name, parsed));
 
     if (IsBottom) {
         window.scroll(0, document.body.scrollHeight);
