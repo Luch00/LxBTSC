@@ -328,7 +328,14 @@ void PluginHelper::onEmoticonButtonClicked(bool c) const
 	}
 	else
 	{
-		emit wObject->toggleEmoteMenu();
+		if (chat->isVisible())
+		{
+			emit wObject->toggleEmoteMenu();
+		}
+		else
+		{
+			QMetaObject::invokeMethod(mainwindow, "onEmoticonsButtonClicked");
+		}
 	}
 }
 
