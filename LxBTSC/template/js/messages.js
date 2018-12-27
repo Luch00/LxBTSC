@@ -211,15 +211,18 @@ function Ts3ServerConnectionLost(target, time) {
 
 function Ts3ClientConnected(target, time, link, name) {
     ++msgid;
+    if (!name) { return; }
     AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_ClientConnected", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"'+name+'"</a> connected'));
 }
 
 function Ts3ClientDisconnected(target, time, link, name, message) {
     ++msgid;
+    if (!name) { return; }
     AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_ClientDisconnected", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"'+name+'"</a> disconnected ('+message+')'));
 }
 
 function Ts3ClientTimeout(target, time, link, name) {
     ++msgid;
+    if (!name) { return; }
     AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_ClientDropped", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"'+name+'"</a> timed out'));
 }
