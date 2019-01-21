@@ -61,6 +61,7 @@ private slots:
 	void onPrintConsoleMessageToCurrentTab(const QString& message) const;
 	void onPrintConsoleMessage(uint64 serverConnectionHandlerID, QString message, int targetMode) const;
 	void onConfigChanged() const;
+	void onReloaded() const;
 
 private:
 	QMainWindow* mainwindow;

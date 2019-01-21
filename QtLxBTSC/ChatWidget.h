@@ -31,6 +31,7 @@ public:
 	void clientUrlClicked(const QUrl &url);
 	void channelUrlClicked(const QUrl &url);
 	void linkHovered(const QUrl &url);
+	void pageReloaded();
 
 	private slots:
 	void onCopyActivated() const;

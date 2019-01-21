@@ -47,6 +47,11 @@ ChatWidget::ChatWidget(const QString& path, TsWebObject* webObject, QWidget *par
 			loadComplete = true;
 			ts3Functions.logMessage("Page load finished", LogLevel_INFO, "BetterChat", 0);
 		}
+		else
+		{
+			emit pageReloaded();
+			ts3Functions.logMessage("Page reload finished", LogLevel_INFO, "BetterChat", 0);
+		}
 	});
 
 	setupPage();

@@ -37,6 +37,7 @@ PluginHelper::PluginHelper(const QString& pluginPath, QObject *parent)
 	connect(chat, &ChatWidget::clientUrlClicked, this, &PluginHelper::onClientUrlClicked);
 	connect(chat, &ChatWidget::channelUrlClicked, this, &PluginHelper::onChannelUrlClicked);
 	connect(chat, &ChatWidget::linkHovered, this, &PluginHelper::onLinkHovered);
+	connect(chat, &ChatWidget::pageReloaded, this, &PluginHelper::onReloaded);
 	connect(transfers, &FileTransferListWidget::transferFailed, this, &PluginHelper::onTransferFailure);
 	connect(config, &ConfigWidget::configChanged, wObject, &TsWebObject::configChanged);
 	connect(config, &ConfigWidget::configChanged, this, &PluginHelper::onConfigChanged);
@@ -260,7 +261,6 @@ void PluginHelper::requestServerEmoteJson(uint64 serverConnectionHandlerID, uint
 		ts3Functions.logMessage("Could not start file transfer (emotes.json)", LogLevel_INFO, "BetterChat", 0);
 	}
 }
-
 
 std::tuple<int, QString, QString> PluginHelper::getCurrentTab() const
 {
@@ -534,6 +534,15 @@ void PluginHelper::poked(uint64 serverConnectionHandlerID, anyID pokerID, const 
 void PluginHelper::reload() const
 {
 	chat->reload();
+}
+
+void PluginHelper::onReloaded() const
+{
+	int mode;
+	QString server;
+	QString client;
+	std::tie(mode, server, client) = getCurrentTab();
+	wObject->tabChanged(server, mode, client);
 }
 
 void PluginHelper::reloadEmotes() const
