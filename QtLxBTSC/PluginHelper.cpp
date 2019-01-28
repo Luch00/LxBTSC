@@ -489,6 +489,61 @@ void PluginHelper::clientTimeout(uint64 serverConnectionHandlerID, anyID clientI
 	emit wObject->clientTimeout(getServerId(serverConnectionHandlerID), utils::time(), c->clientLink(), c->name());
 }
 
+void PluginHelper::clientKickedFromChannel(uint64 serverConnectionHandlerID, anyID kickedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage)
+{
+	// add channel name here?
+	auto s = servers.value(serverConnectionHandlerID);
+	if (s == nullptr)
+		return;
+	
+	if (kickedID == s->myId())
+	{
+		emit wObject->clientKickedFromChannel(getServerId(serverConnectionHandlerID), utils::time(), "", "", TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+	}
+
+	auto c = s->getClient(kickedID);
+	if (c == nullptr)
+		return;
+
+	emit wObject->clientKickedFromChannel(getServerId(serverConnectionHandlerID), utils::time(), c->clientLink(), c->name(), TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+}
+
+void PluginHelper::clientKickedFromServer(uint64 serverConnectionHandlerID, anyID kickedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage)
+{
+	auto s = servers.value(serverConnectionHandlerID);
+	if (s == nullptr)
+		return;
+
+	if (kickedID == s->myId())
+	{
+		emit wObject->clientKickedFromChannel(getServerId(serverConnectionHandlerID), utils::time(), "", "", TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+	}
+
+	auto c = s->getClient(kickedID);
+	if (c == nullptr)
+		return;
+	
+	emit wObject->clientKickedFromServer(getServerId(serverConnectionHandlerID), utils::time(), c->clientLink(), c->name(), TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+}
+
+void PluginHelper::clientBannedFromServer(uint64 serverConnectionHandlerID, anyID bannedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage)
+{
+	auto s = servers.value(serverConnectionHandlerID);
+	if (s == nullptr)
+		return;
+
+	if (bannedID == s->myId())
+	{
+		emit wObject->clientKickedFromChannel(getServerId(serverConnectionHandlerID), utils::time(), "", "", TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+	}
+
+	auto c = s->getClient(bannedID);
+	if (c == nullptr)
+		return;
+
+	emit wObject->clientBannedFromServer(getServerId(serverConnectionHandlerID), utils::time(), c->clientLink(), c->name(), TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+}
+
 // called when file transfer ends in some way
 void PluginHelper::transferStatusChanged(anyID transferID, unsigned int status)
 {

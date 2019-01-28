@@ -18,4 +18,5 @@ namespace utils
 	//void checkEmoteSets(const QString &path);
 	void makeEmoteJsonArray(const QString& path);
 	QString ts3WeirdBase16(const QString& id);
+	//QString buildClientLink(unsigned short clientID, const QString& uniqueID, const QString& name);
 }

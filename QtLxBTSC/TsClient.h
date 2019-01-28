@@ -14,7 +14,7 @@ class TsClient : public QObject
 	Q_OBJECT
 
 public:
-	TsClient(QString name, QString uniqueId, unsigned short clientId, QObject *parent = 0);
+	TsClient(const QString& name, const QString& uniqueId, unsigned short clientId, QObject *parent = 0);
 	~TsClient();
 
 	QString name() const;
@@ -24,6 +24,11 @@ public:
 
 	void setName(QString newName);
 
+	static QString link(unsigned short clientId, const QString& uniqueId, const QString& name)
+	{
+		return QString("client://%1/%2~%3").arg(QString::number(clientId), uniqueId, name.toHtmlEscaped());
+	}
+
 private:
 	QString name_;
 	const QString uniqueId_;
@@ -31,5 +36,5 @@ private:
 	QString clientLink_;
 	const unsigned short clientId_;
 
-	QString link() const;
+	//QString link() const;
 };

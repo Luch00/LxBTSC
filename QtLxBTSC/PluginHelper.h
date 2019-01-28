@@ -46,6 +46,10 @@ public:
 
 	void serverStopped(uint64 serverConnectionHandlerID, const QString& message) const;
 
+	void clientKickedFromChannel(uint64 serverConnectionHandlerID, anyID kickedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage);
+	void clientKickedFromServer(uint64 serverConnectionHandlerID, anyID kickedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage);
+	void clientBannedFromServer(uint64 serverConnectionHandlerID, anyID bannedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage);
+
 signals:
 	void triggerReloadEmotes();
 

@@ -47,7 +47,7 @@ const StatusTextTemplate = (msgid, type, time, text) => Config.AVATARS_ENABLED ?
 `:
 `
     <p id='${msgid}' class='${type}'>
-    <img class='Incoming'>
+    <img class='InfoMessage'>
     <span class='TextMessage_Time'><${time}> </span>
     <span class='TextMessage_Text'>${text}</span>
     </p>
@@ -222,4 +222,34 @@ function Ts3ClientDisconnected(target, time, link, name, message) {
 function Ts3ClientTimeout(target, time, link, name) {
     ++msgid;
     AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_ClientDropped", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"'+name+'"</a> timed out'));
+}
+
+function Ts3ClientKickedFromChannel(target, time, link, name, kickerlink, kickername, message) {
+    ++msgid;
+    let text;
+    if (link)
+        text = `<a href="${link}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${name}"</a> was kicked from a channel by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
+    else
+        text = `You were kicked from the channel by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
+    AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_ClientKicked", time, text));
+}
+
+function Ts3ClientKickedFromServer(target, time, link, name, kickerlink, kickername, message) {
+    ++msgid;
+    let text;
+    if (link)
+        text = `<a href="${link}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${name}"</a> was kicked from the server by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
+    else
+        text = `You were kicked from the server by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
+    AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_ClientKicked", time, text));
+}
+
+function Ts3ClientBannedFromServer(target, time, link, name, kickerlink, kickername, message) {
+    ++msgid;
+    let text;
+    if (link)
+        text = `<a href="${link}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${name}"</a> was banned from the server by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
+    else
+        text = `You were banned from the server by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
+    AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_ClientBanned", time, text));
 }

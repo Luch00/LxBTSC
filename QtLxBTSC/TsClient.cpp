@@ -8,12 +8,12 @@
 #include "TsClient.h"
 #include "utils.h"
 
-TsClient::TsClient(QString name, QString uniqueId, unsigned short clientId, QObject *parent) 
+TsClient::TsClient(const QString& name, const QString& uniqueId, unsigned short clientId, QObject *parent) 
 	: QObject(parent)
 	, name_(name)
 	, uniqueId_(uniqueId)
 	, safeUniqueId_(utils::ts3WeirdBase16(uniqueId))
-	, clientLink_(link())
+	, clientLink_(link(clientId, uniqueId, name))
 	, clientId_(clientId)
 {
 }
@@ -22,15 +22,16 @@ TsClient::~TsClient()
 {
 }
 
-QString TsClient::link() const
+/*QString TsClient::link() const
 {
 	return QString("client://%1/%2~%3").arg(QString::number(clientId_), uniqueId_, name_.toHtmlEscaped());
-}
+}*/
 
 void TsClient::setName(QString newName)
 {
 	name_ = newName;
-	clientLink_ = link();
+	//clientLink_ = link();
+	clientLink_ = link(clientId_, uniqueId_, name_);
 }
 
 QString TsClient::name() const

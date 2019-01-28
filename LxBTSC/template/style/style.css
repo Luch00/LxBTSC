@@ -21,6 +21,11 @@ img.Outgoing {
     width: 16px;
     height: 12px;
 }
+img.InfoMessage {
+    content: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAYAAABr5z2BAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwAAADsABataJCQAAABl0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuNUmK/OAAAAGUSURBVDhPY2AAAmNjY1Yg5isuLv7f0dHxv7u7+39/f///CRMm/C8vL/8LUgMDQHWMyHyQZkaQZiCW7Ozs/J+XlwfSBDZk0qRJ/ydPnvwbRQM6B2q7GJBWBmkCuaKmpuZ/X1/f/2nTpv2fMmUKigHYXMAJFJQFYh2QASDba2trwbZPnz6dsAHR0dFtUVFRPeHh4dN6e3v/V1dXgzHQ6f9nzpwJMuBvXFxcAwxjuCA1NbVl/fr1fxcvXvx/wYIFYOeDXDFx4kSwAdu3b/+/b9++/4cPH/6bk5NThGGAmZkZb35+/rb58+f/r6+vB9sOMqCtrQ3shblz5/7ftm3b/4qKiiXQGMOIBU47Ozu1ysrKK0DnghT+LykpgXtjzZo1/5ubm4/HxMSw4zIAlAbEPTw8bFtaWl6CbC4sLPxfWlr6f968eaD08CA2NlaCUDrgBxoiHRwcHNTT0/MT5AWQd4Be+A4MPBO8CQkpJQoADRECasgAxsDfGTNm/E1KSgrHm4jQTGYBGsAOxMzp6enTMjMz24nRDABnZOZ4+SKOEQAAAABJRU5ErkJggg==');
+    width: 16px;
+    height: 12px;
+}
 p {
     padding: 0px;
     margin: 0px;
@@ -50,6 +55,10 @@ p {
 }
 .TextMessage_ClientDropped {
     color: #C9070A;
+}
+.TextMessage_ClientKicked, .TextMessage_ClientBanned {
+    color: #C9070A;
+    /*display: none;*/
 }
 .TextMessage_Console {
     color: #0000ee;

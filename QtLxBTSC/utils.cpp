@@ -118,4 +118,9 @@ namespace utils
 		}
 		return ret;
 	}
+
+	/*QString buildClientLink(unsigned short clientID, const QString& uniqueID, const QString& name)
+	{
+		return QString("client://%1/%2~%3").arg(QString::number(clientID), uniqueID, name.toHtmlEscaped());
+	}*/
 }

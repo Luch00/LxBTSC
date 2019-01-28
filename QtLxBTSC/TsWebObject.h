@@ -42,6 +42,9 @@ signals:
 	void clientConnected(QString target, QString time, QString clientLink, QString clientName);
 	void clientDisconnected(QString target, QString time, QString clientLink, QString clientName, QString disconnectMessage);
 	void clientTimeout(QString target, QString time, QString clientLink, QString clientName);
+	void clientKickedFromChannel(QString target, QString time, QString clientLink, QString name, QString kickerLink, QString kickerName, QString kickMessage);
+	void clientKickedFromServer(QString target, QString time, QString clientLink, QString name, QString kickerLink, QString kickerName, QString kickMessage);
+	void clientBannedFromServer(QString target, QString time, QString clientLink, QString name, QString kickerLink, QString kickerName, QString kickMessage);
 
 	void clientPoked(QString target, QString time, QString clientLink, QString clientName, QString message);
 

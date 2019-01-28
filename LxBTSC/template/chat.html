@@ -60,6 +60,9 @@
                 QtObject.clientConnected.connect(Ts3ClientConnected);
                 QtObject.clientDisconnected.connect(Ts3ClientDisconnected);
                 QtObject.clientTimeout.connect(Ts3ClientTimeout);
+                QtObject.clientKickedFromChannel.connect(Ts3ClientKickedFromChannel);
+                QtObject.clientKickedFromServer.connect(Ts3ClientKickedFromServer);
+                QtObject.clientBannedFromServer.connect(Ts3ClientBannedFromServer);
 
                 QtObject.clientPoked.connect(Ts3ClientPoked);
 
