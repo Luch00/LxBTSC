@@ -140,7 +140,7 @@ video {
     transform: translate(-50%, -50%);
     overflow-y: scroll;
     overflow-x: hidden;
-  }
+}
 
 .emote-menu.menu-visible {
     display: block;
@@ -167,6 +167,37 @@ video {
     padding: 1px;
     cursor: pointer;
     max-height: 32px;
+}
+.emotetabs {
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    overflow: hidden;
+}
+.emotetabs button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 8px 10px;
+}
+.emotetabs button:hover {
+    background-color: #ddd;
+}
+.emotetabs button.active {
+    background-color: #bbb;
+}
+.tenor-searchbox, .tenor-loadmore {
+    overflow: hidden;
+    padding: 8px;
+    text-align: center;
+}
+.tenor-searchbox input {
+    width: 80%;
+}
+.tenor-gif {
+    margin-left: 4px;
+    cursor: pointer;
 }
 
 /*.emote-wrapper {

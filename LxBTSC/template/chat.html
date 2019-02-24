@@ -22,6 +22,7 @@
         <script type='text/javascript' src='js/popper.min.js'></script>
         <script type='text/javascript' src='js/jquery.fancybox.min.js'></script>
         <script type='text/javascript' src='js/freezeframe.pkgd.min.js'></script>
+        <script type='text/javascript' src='js/tenor.js'></script>
         <script type='text/javascript'>
         /*
          * Better Chat plugin for TeamSpeak 3
@@ -82,6 +83,7 @@
                             loadConfig()
                             .then(function() {
                                 LoadEmotes();
+                                init_tenor();
                             });
                         }
                         else {
@@ -181,6 +183,19 @@
                 }
             }
 
+            function openTab(event, tabName) {
+                var tabcontent = document.getElementsByClassName('tabcontent');
+                for (i = 0; i < tabcontent.length; i++) {
+                    tabcontent[i].style.display = "none";
+                }
+                var tablinks = document.getElementsByClassName('emote-tablink');
+                for (i = 0; i < tablinks.length; i++) {
+                    tablinks[i].className = tablinks[i].className.replace(" active", "");
+                }
+                document.getElementById(tabName).style.display = "block";
+                event.currentTarget.className += " active";
+            }
+
             function LoadEmotes() {
                 Emotes.clear();
                 Emotes.load();
@@ -212,7 +227,20 @@
     <body id='main'>
         <div class='tooltipper'>Tooltiptext</div>
         <div class='emote-menu' id='popup'>
-            <div id='emote-list'></div>
+            <div class="emotetabs">
+                <button class="emote-tablink active" onclick="openTab(event, 'emote-list')">Emotes</button>
+                <button class="emote-tablink" onclick="openTab(event, 'tenor')">Gif Search</button>
+            </div>
+            <div id='emote-list' class='tabcontent'></div>
+            <div id='tenor' class='tabcontent' style="display:none;">
+                <div class='tenor-searchbox'>
+                    <input id='tenor-search' type="text" placeholder="Search Tenor" onkeyup="search_tenor()" onclick="this.select()"/>
+                </div>
+                <div id='tenor-results'></div>
+                <div class='tenor-loadmore'>
+                    <button id='tenor-load' onclick="search_more()">Load More</button>
+                </div>
+            </div>
         </div>
     </body>
 </html>
