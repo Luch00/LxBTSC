@@ -28,7 +28,7 @@
          * Better Chat plugin for TeamSpeak 3
          * GPLv3 license
          *
-         * Copyright (C) 2018 Luch (https://github.com/Luch00)
+         * Copyright (C) 2019 Luch (https://github.com/Luch00)
         */
             var main;
             var IsBottom = true;
@@ -231,14 +231,16 @@
                 <button class="emote-tablink active" onclick="openTab(event, 'emote-list')">Emotes</button>
                 <button class="emote-tablink" onclick="openTab(event, 'tenor')">Gif Search</button>
             </div>
-            <div id='emote-list' class='tabcontent'></div>
+            <div id='emote-list' class='tabcontent custom-scroll'></div>
             <div id='tenor' class='tabcontent' style="display:none;">
                 <div class='tenor-searchbox'>
                     <input id='tenor-search' type="text" placeholder="Search Tenor" onkeyup="search_tenor()" onclick="this.select()"/>
                 </div>
-                <div id='tenor-results'></div>
-                <div class='tenor-loadmore'>
-                    <button id='tenor-load' onclick="search_more()">Load More</button>
+                <div class='tenor-results-wrap custom-scroll'>
+                    <div id='tenor-results'></div>
+                    <div class='tenor-loadmore'>
+                        <button id='tenor-load' onclick="search_more()">Load More</button>
+                    </div>
                 </div>
             </div>
         </div>

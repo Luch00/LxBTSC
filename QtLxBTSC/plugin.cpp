@@ -2,7 +2,7 @@
  * Better Chat plugin for TeamSpeak 3
  * GPLv3 license
  *
- * Copyright (C) 2018 Luch (https://github.com/Luch00)
+ * Copyright (C) 2019 Luch (https://github.com/Luch00)
 */
 
 #ifdef _WIN32
@@ -31,7 +31,7 @@ const char* ts3plugin_name() {
 
 /* Plugin version */
 const char* ts3plugin_version() {
-    return "1.11.1";
+    return "1.12";
 }
 
 /* Plugin API version. Must be the same as the clients API major version, else the plugin fails to load. */

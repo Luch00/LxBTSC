@@ -2,7 +2,7 @@
  * Better Chat plugin for TeamSpeak 3
  * GPLv3 license
  *
- * Copyright (C) 2018 Luch (https://github.com/Luch00)
+ * Copyright (C) 2019 Luch (https://github.com/Luch00)
 */
 @import url("style.user.css");
 body {
@@ -138,29 +138,48 @@ video {
     background: #FFF;
     z-index: 20;
     transform: translate(-50%, -50%);
-    overflow-y: scroll;
+    overflow-y: hidden;
     overflow-x: hidden;
 }
 
 .emote-menu.menu-visible {
-    display: block;
+    /*display: block;*/
+    display: flex;
+    flex-direction: column;
 }
 
-.emote-menu::-webkit-scrollbar {
+.custom-scroll::-webkit-scrollbar {
     width: 6px;
 }
 
-.emote-menu::-webkit-scrollbar-thumb {
-    background-color: #000;
+.custom-scroll::-webkit-scrollbar-thumb {
+    background-color: #bbb;
 }
 
-.emote-menu::-webkit-scrollbar-track {
-    background-color: darkgray;
+.custom-scroll::-webkit-scrollbar-track {
+    background-color: #ddd;
 }
 
 #popup {
     -webkit-box-shadow:  0px 0px 0px 9999px rgba(0, 0, 0, 0.5);
     box-shadow:  0px 0px 0px 9999px rgba(0, 0, 0, 0.5);
+}
+#tenor {
+    overflow: hidden;
+    height: 100%;
+}
+#emote-list {
+    height: 100%;
+    width: 100%;
+    padding-right: 10px;
+    overflow: auto;
+}
+.tenor-results-wrap {
+    position: absolute;
+    top: 80px;
+    bottom: 0;
+    overflow: auto;
+    width: calc(100% - 10px);
 }
 
 .emote-container > .emote {
@@ -171,7 +190,7 @@ video {
 .emotetabs {
     background-color: #f1f1f1;
     border: 1px solid #ccc;
-    overflow: hidden;
+    height: 25px;
 }
 .emotetabs button {
     background-color: inherit;
@@ -179,7 +198,7 @@ video {
     border: none;
     outline: none;
     cursor: pointer;
-    padding: 8px 10px;
+    padding: 4px 10px;
 }
 .emotetabs button:hover {
     background-color: #ddd;
@@ -188,7 +207,6 @@ video {
     background-color: #bbb;
 }
 .tenor-searchbox, .tenor-loadmore {
-    overflow: hidden;
     padding: 8px;
     text-align: center;
 }
@@ -199,12 +217,6 @@ video {
     margin-left: 4px;
     cursor: pointer;
 }
-
-/*.emote-wrapper {
-    display: inline-block;
-    position: relative;
-    overflow: hidden;
-}*/
 
 .set-header {
     text-align: center;

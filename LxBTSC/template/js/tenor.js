@@ -1,3 +1,9 @@
+/*
+    * Better Chat plugin for TeamSpeak 3
+    * GPLv3 license
+    *
+    * Copyright (C) 2019 Luch (https://github.com/Luch00)
+*/
 'use strict'
 let apikey = "7ASG3DHEKMVX"
 let anonid;
@@ -40,15 +46,15 @@ function search_more(){
 }
 
 function search_new_clear(json) {
-    let elem = document.getElementById('tenor-results');
-    elem.innerHTML = "";
+    //let elem = document.getElementById('tenor-results');
+    result_element.innerHTML = "";
     search_append_callback(json);
 }
 
 function search_append_callback(json) {
     console.log(json);
     sessionStorage.setItem('next', json['next']);
-    let elem = document.getElementById('tenor-results');
+    let elem = result_element;//document.getElementById('tenor-results');
     let results = json['results'];
     results.forEach(element => {
         let img = new Image;
