@@ -247,6 +247,10 @@ video {
     display: none;
 }
 
+.chattab > * {
+    clear: left;
+}
+
 .no-scroll {
     overflow: hidden;
 }

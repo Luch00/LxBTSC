@@ -63,5 +63,6 @@ function ShowTab(target, mode, client) {
 }
 
 function CreateTab() {
-    return $('<div/>', { class: 'chattab'} );
+    console.log(Config.FONT_SIZE);
+    return $('<div/>', { class: 'chattab', style: `font-size: ${Config.FONT_SIZE ? Config.FONT_SIZE : 12}pt;`} );
 }

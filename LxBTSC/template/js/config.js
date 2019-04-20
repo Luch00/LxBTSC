@@ -22,6 +22,7 @@ function loadConfig() {
             Config.HOVER_ANIMATES_GIFS = false;
             Config.DOWNLOAD_DIR = "";
             Config.REMOTE_EMOTES = [];
+            Config.FONT_SIZE = 12;
             resolve();
         });
     });

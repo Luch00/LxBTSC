@@ -16,7 +16,7 @@ ConfigWidget::ConfigWidget(const QString& path, QWidget *parent)
 	, configPath(QString("%1LxBTSC/template/config.json").arg(path))
 {
 	this->setWindowTitle("Better Chat Settings");
-	this->setFixedSize(300, 390);
+	this->setFixedSize(300, 410);
 	formLayout = new QFormLayout(this);
 	embeds = new QCheckBox("Enable embeds", this);
 	embeds->setChecked(true);
@@ -34,6 +34,10 @@ ConfigWidget::ConfigWidget(const QString& path, QWidget *parent)
 	maxlines->setMinimum(50);
 	maxlines->setMaximum(1000);
 	maxlines->setValue(500);
+	fontsize = new QSpinBox(this);
+	fontsize->setMinimum(6);
+	fontsize->setMaximum(34);
+	fontsize->setValue(12);
 	downloadDir = new QLineEdit("", this);
 	downloadDir->setDisabled(true);
 	QPushButton* browseButton = new QPushButton("...", this);
@@ -58,6 +62,7 @@ ConfigWidget::ConfigWidget(const QString& path, QWidget *parent)
 	formLayout->addRow(avatar);
 	formLayout->addRow(stopGifs);
 	formLayout->addRow(new QLabel("Max lines in tab:", this), maxlines);
+	formLayout->addRow(new QLabel("Font size:", this), fontsize);
 	formLayout->addRow(new QLabel("Download directory:"));
 	formLayout->addRow(downloadDir);
 	formLayout->addRow(browseButton);
@@ -88,6 +93,7 @@ void ConfigWidget::readConfig()
 		avatar->setChecked(jsonObj.value("AVATARS_ENABLED").toBool());
 		stopGifs->setChecked(jsonObj.value("HOVER_ANIMATES_GIFS").toBool());
 		maxlines->setValue(jsonObj.value("MAX_LINES").toInt());
+		fontsize->setValue(jsonObj.value("FONT_SIZE").toInt());
 		downloadDir->setText(jsonObj.value("DOWNLOAD_DIR").toString());
 		QJsonArray remotejson = jsonObj.value("REMOTE_EMOTES").toArray();
 		QStringList list;
@@ -114,6 +120,7 @@ void ConfigWidget::save()
 	jsonObj.insert("AVATARS_ENABLED", avatar->isChecked());
 	jsonObj.insert("HOVER_ANIMATES_GIFS", stopGifs->isChecked());
 	jsonObj.insert("MAX_LINES", maxlines->value());
+	jsonObj.insert("FONT_SIZE", fontsize->value());
 	jsonObj.insert("DOWNLOAD_DIR", downloadDir->text());
 	if (remotes->toPlainText().length() > 1)
 	{

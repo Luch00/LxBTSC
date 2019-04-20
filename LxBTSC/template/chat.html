@@ -82,6 +82,7 @@
                         if (done === true) {
                             loadConfig()
                             .then(function() {
+                                $('.chattab').css('font-size', Config.FONT_SIZE + 'pt');
                                 LoadEmotes();
                                 init_tenor();
                             });
@@ -204,6 +205,8 @@
             function ConfigChanged() {
                 loadConfig()
                 .then(function () {
+                    console.log("load");
+                    $('.chattab').css('font-size', Config.FONT_SIZE + 'pt');
                     LoadEmotes();
                 });
             }

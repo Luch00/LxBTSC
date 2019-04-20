@@ -41,6 +41,7 @@ private:
 	QCheckBox* stopGifs;
 	QCheckBox* avatar;
 	QSpinBox* maxlines;
+	QSpinBox* fontsize;
 	QPlainTextEdit* remotes;
 	QPushButton* saveButton;
 	QString configPath;
