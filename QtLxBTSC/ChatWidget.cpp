@@ -40,8 +40,13 @@ ChatWidget::ChatWidget(const QString& path, TsWebObject* webObject, QWidget *par
 	connect(copyAction, &QAction::triggered, this, &ChatWidget::onCopyActivated);
 	connect(copyUrlAction, &QAction::triggered, this, &ChatWidget::onCopyUrlActivated);
 	connect(view, &QWebEngineView::customContextMenuRequested, this, &ChatWidget::onShowContextMenu);
-	connect(view, &QWebEngineView::loadFinished, this, [=]()
+	connect(view, &QWebEngineView::loadFinished, this, [=](bool ok)
 	{
+		if (!ok)
+		{
+			// don't trigger anything when loadFinished is triggered but load is not ok
+			return;
+		}
 		if (!loadComplete)
 		{
 			loadComplete = true;
