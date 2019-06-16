@@ -87,6 +87,7 @@ void ChatWidget::setupPage() const
 	page->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
 	page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 	page->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
+	page->settings()->setUnknownUrlSchemePolicy(QWebEngineSettings::UnknownUrlSchemePolicy::AllowAllUnknownUrlSchemes);
 
 	connect(page, &TsWebEnginePage::fullScreenRequested, this, &ChatWidget::onFullScreenRequested);
 	connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::onLinkHovered);
