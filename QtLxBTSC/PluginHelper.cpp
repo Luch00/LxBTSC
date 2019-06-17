@@ -2,7 +2,7 @@
  * Better Chat plugin for TeamSpeak 3
  * GPLv3 license
  *
- * Copyright (C) 2018 Luch (https://github.com/Luch00)
+ * Copyright (C) 2019 Luch (https://github.com/Luch00)
 */
 
 #include "PluginHelper.h"
@@ -42,7 +42,7 @@ PluginHelper::PluginHelper(const QString& pluginPath, QObject *parent)
 	connect(config, &ConfigWidget::configChanged, wObject, &TsWebObject::configChanged);
 	connect(config, &ConfigWidget::configChanged, this, &PluginHelper::onConfigChanged);
 
-	connect(qApp, &QApplication::applicationStateChanged, this, &PluginHelper::onAppStateChanged);
+	//connect(qApp, &QApplication::applicationStateChanged, this, &PluginHelper::onAppStateChanged); // may be fixed now?
 
 	// run init when eventloop starts
 	QTimer::singleShot(0, this, [=]() { initUi(); });
