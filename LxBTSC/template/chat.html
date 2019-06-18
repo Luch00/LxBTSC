@@ -136,6 +136,10 @@
                     e.preventDefault();
                     e.stopPropagation();
                 });
+
+                main.on('click', '.close-embeds', function(e) {
+                    $(this).parent().remove();
+                });
             };
 
             function showTooltip(elem) {

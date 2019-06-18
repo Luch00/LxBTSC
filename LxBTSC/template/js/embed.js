@@ -2,11 +2,11 @@
  * Better Chat plugin for TeamSpeak 3
  * GPLv3 license
  *
- * Copyright (C) 2018 Luch (https://github.com/Luch00)
+ * Copyright (C) 2019 Luch (https://github.com/Luch00)
 */
 'use strict';
 var imageMime = [ "image/gif", "image/jpeg", "image/png", "image/svg+xml", "image/webp" ];
-var audioMime = [ "audio/wave", "audio/wav", "audio/x-wav", "audio/x-pn-wav", "audio/webm", "audio/ogg", "audio/flac"];
+var audioMime = [ "audio/mpeg", "audio/wave", "audio/wav", "audio/x-wav", "audio/x-pn-wav", "audio/webm", "audio/ogg", "audio/flac"];
 var videoMime = [ "video/webm", "video/ogg", "application/ogg" ];
 
 function Embed(message_id, message_text) {
@@ -19,6 +19,7 @@ function Embed(message_id, message_text) {
 }
 
 function ParseHtml(htmlString, url, message_id) {
+    //console.log(htmlString);
     let parser = new DOMParser();
     let doc = parser.parseFromString(htmlString, 'text/html');
     //console.log(doc);
@@ -92,16 +93,20 @@ function EmbedHtml(json, message_id) {
         return;
     }
 
+    if (json.ogSiteName == "Gist") {
+        addEmbed(Gist(json), message_id);
+        return;
+    }
+
     if (json.ogSiteName == "yande.re") {
         addEmbed(Yandere(json), message_id);
         return;
     }
 
-    // most likely requires a newer version of chromium
-    /*if (json.ogSiteName == "Spotify") {
+    if (json.ogSiteName == "Spotify") {
         addEmbed(Spotify(json), message_id);
         return;
-    }*/
+    }
 
     if (json.twitterSite == "@pornhub") {
         addEmbed(Pornhub(json), message_id);
@@ -243,6 +248,15 @@ function Pastebin(json) {
     return EmbedBlock(embed);
 }
 
+function Gist(json) {
+    let embed = $('<iframe/>', {
+        frameborder: '0',
+        width: '100%',
+        src: json.ogUrl + '.pibb?scroll=true'
+    });
+    return EmbedBlock(embed);
+}
+
 function Gfycat(json) {
     let embed = $('<iframe/>', {
         src: json.ogVideoIframe,
@@ -257,8 +271,11 @@ function Gfycat(json) {
 
 function Spotify(json) {
     let embed = $('<iframe/>', {
+        width: 250,
+        height: 330,
+        'allow': 'encrypted-media',
         frameborder: "0",
-        src: json.twitterPlayer
+        src: json.twitterPlayer.split('?', 1)
     });
     return EmbedBlock(embed);
 }
@@ -349,16 +366,15 @@ function Generic(json) {
 }
 
 function addEmbed(embed, message_id) {
-    embed.insertAfter($('#'+message_id));
+    document.getElementById(message_id).insertAdjacentElement('afterend', embed[0]);
 }
 
 function EmbedBlock(embed) {
-    let embed_container = $('<div/>', { class:'outer-container' }).append($('<div/>', { class:'embed-container' }).append(embed));
-    let close_a = $('<a/>', { class:'close-embeds', href:'#_', title:'close', text:'x' })
-    .click(function(e) {
-        $(this).parent().remove();
-    });
-    embed_container.append(close_a);
+    let embed_container = $('<div/>', { class:'outer-container' }).append(
+                            $('<div/>', { class:'embed-container' }).append([
+                                    embed, 
+                                    $('<a/>', { class:'close-embeds', href:'#_', title:'close', text:'x' })
+                            ]));
     return embed_container;
 }
 
