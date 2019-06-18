@@ -23,7 +23,7 @@ const AvatarStyle_NormalTextTemplate = (msgid, direction, time, userlink, name, 
     <div class='avatar-container'>
     ${Config.HOVER_ANIMATES_GIFS ? 
         `<img class='avatar hidden-image fancybox' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onload='ThumbnailAvatar(this)' onerror='DefaultAvatar(this)'>`: 
-        `<img class='avatar fancybox' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onerror='this.onerror=null;DefaultAvatar(this);'>`}
+        `<img class='avatar fancybox' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onerror='DefaultAvatar(this);'>`}
     </div>
     <div class='message-container'>
         <div class='message-header'>

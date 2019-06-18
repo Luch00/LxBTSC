@@ -35,11 +35,19 @@
             var QtObject;
             var tooltip;
             var popper;
+
+            // keep chat scrolled to the bottom, if it was
             var stayDown = function() {
                 if (IsBottom) {
                     window.scroll(0, document.body.scrollHeight);
                 }
             };
+
+            var obs = new ResizeObserver(entries => {
+                for (var entry of entries) {
+                    stayDown();
+                }
+            });
 
             new QWebChannel(qt.webChannelTransport, function(channel) {
                 QtObject = channel.objects.wObject;
@@ -56,6 +64,7 @@
                 QtObject.serverConnected.connect(Ts3ServerConnected);
                 QtObject.serverDisconnected.connect(Ts3ServerDisconnected);
                 QtObject.serverStopped.connect(Ts3ServerStopped);
+
                 //QtObject.serverConnectionLost.connect(Ts3ServerConnectionLost);
 
                 QtObject.clientConnected.connect(Ts3ClientConnected);
@@ -100,37 +109,16 @@
                 Emotes.emote_list_element = $('#emote-list');
                 waitForQt();
 
+                // monitor body and window resizing
+                obs.observe(main[0]);
                 $(window).resize(stayDown);
 
+                // when scrolling check if we are at the bottom
                 $(window).scroll(function() {
                     setTimeout(function () {
                         IsBottom = (window.innerHeight + window.pageYOffset) >= document.body.offsetHeight;
                     }, 0);
                 });
-
-                (function checkForBodySizeChange() {
-                    var last_body_size = {
-                        /*width: document.body.clientWidth,*/
-                        height: document.body.clientHeight
-                    };
-                    function checkBodySizeChange() {
-                        /*var width_changed = last_body_size.width !== document.body.clientWidth,*/
-                        var height_changed = last_body_size.height !== document.body.clientHeight;
-                            
-                        //if(width_changed || height_changed) {
-                        if(height_changed) {
-                            $(document.body).trigger('sizechange');
-                            last_body_size = {
-                                /*width: document.body.clientWidth,*/
-                                height: document.body.clientHeight
-                            };
-                        }
-                        window.requestAnimationFrame(checkBodySizeChange);
-                    }
-                    window.requestAnimationFrame(checkBodySizeChange);
-                })();
-
-                main.on('sizechange', stayDown);
                 
                 main.on('mouseenter', '.emote', function() {
                     showTooltip($(this));
@@ -184,6 +172,7 @@
                 }
             }
 
+            // for switching tabs in emote menu
             function openTab(event, tabName) {
                 var tabcontent = document.getElementsByClassName('tabcontent');
                 for (i = 0; i < tabcontent.length; i++) {
@@ -205,12 +194,11 @@
             function ConfigChanged() {
                 loadConfig()
                 .then(function () {
-                    console.log("load");
                     $('.chattab').css('font-size', Config.FONT_SIZE + 'pt');
                     LoadEmotes();
                 });
             }
-            
+
             function Ts3LinkClicked(event) {
                 if (event.which == 3) {
                     event.preventDefault();

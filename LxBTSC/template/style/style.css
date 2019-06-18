@@ -355,6 +355,7 @@ video {
 }
 
 .default-avatar {
+    content: url(data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D);
     background-image: url("avatar.png");
     background-size: contain;
 }
