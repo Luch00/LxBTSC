@@ -36,7 +36,7 @@ public:
 	private slots:
 	void onCopyActivated() const;
 	void onCopyUrlActivated() const;
-	void onShowContextMenu(const QPoint &) const;
+	void onShowContextMenu(const QPoint &);
 	void onLinkHovered(const QUrl &);
 	void onFullScreenRequested(QWebEngineFullScreenRequest request);
 
@@ -48,6 +48,7 @@ private:
 	TsWebEnginePage* page;
 	const QString pathToPage;
 	QUrl currentHoveredUrl;
+	QUrl currentHoveredUrlTemp;
 	QMenu* menu;
 	QAction* copyAction;
 	QAction* copyUrlAction;

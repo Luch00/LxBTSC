@@ -116,15 +116,16 @@ void ChatWidget::keyReleaseEvent(QKeyEvent* event)
 	QFrame::keyReleaseEvent(event);
 }
 
-void ChatWidget::onShowContextMenu(const QPoint &p) const
+void ChatWidget::onShowContextMenu(const QPoint &p)
 {	
 	menu->clear();
 	if (page->hasSelection())
 	{
 		menu->addAction(copyAction);
 	}
-	if (!currentHoveredUrl.isEmpty())
+	if (!currentHoveredUrlTemp.isEmpty())
 	{
+		currentHoveredUrl = currentHoveredUrlTemp;
 		menu->addAction(copyUrlAction);
 	}
 	if (!menu->actions().isEmpty())
@@ -135,7 +136,7 @@ void ChatWidget::onShowContextMenu(const QPoint &p) const
 
 void ChatWidget::onLinkHovered(const QUrl &u)
 {
-	currentHoveredUrl = u;
+	currentHoveredUrlTemp = u;
 	emit linkHovered(u);
 }
 
