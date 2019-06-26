@@ -11,6 +11,7 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QWebEngineSettings>
+#include <QWebEngineProfile>
 #include <QTimer>
 
 ChatWidget::ChatWidget(const QString& path, TsWebObject* webObject, QWidget *parent)
@@ -88,11 +89,12 @@ void ChatWidget::waitloop() const
 
 void ChatWidget::setupPage() const
 {
-	//page->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+	page->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
 	page->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
 	page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 	page->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
 	page->settings()->setUnknownUrlSchemePolicy(QWebEngineSettings::UnknownUrlSchemePolicy::AllowAllUnknownUrlSchemes);
+	page->profile()->setHttpUserAgent(QString("Twitterbot/1.0 %1").arg(QWebEngineProfile::defaultProfile()->httpUserAgent()));
 
 	connect(page, &TsWebEnginePage::fullScreenRequested, this, &ChatWidget::onFullScreenRequested);
 	connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::onLinkHovered);

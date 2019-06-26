@@ -13,7 +13,6 @@
 #include "ConfigWidget.h"
 #include "FileTransferListWidget.h"
 #include "TsServer.h"
-#include "WebClient.h"
 
 class PluginHelper : public QObject
 {
@@ -76,7 +75,6 @@ private:
 	TsWebObject* wObject;
 	ConfigWidget* config;
 	FileTransferListWidget* transfers;
-	WebClient* client;
 	QMenu* chatMenu;
 	ChatWidget* chat;
 

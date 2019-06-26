@@ -18,7 +18,6 @@ PluginHelper::PluginHelper(const QString& pluginPath, QObject *parent)
 	, wObject(new TsWebObject(this))
 	, config(new ConfigWidget(pluginPath))
 	, transfers(new FileTransferListWidget())
-	, client(new WebClient(this))
 	, chat(new ChatWidget(pluginPath, this->wObject))
 	, pluginPath(pluginPath)
 {
@@ -26,12 +25,6 @@ PluginHelper::PluginHelper(const QString& pluginPath, QObject *parent)
 	onConfigChanged();
 
 	connect(this, &PluginHelper::triggerReloadEmotes, this, &PluginHelper::reloadEmotes);
-	connect(client, &WebClient::htmlData, wObject, &TsWebObject::htmlData);
-	connect(client, &WebClient::fileData, wObject, &TsWebObject::fileData);
-	connect(client, &WebClient::emoteJson, wObject, &TsWebObject::emoteJson);
-	connect(client, &WebClient::webError, wObject, &TsWebObject::webError);
-	connect(wObject, &TsWebObject::getEmbedData, client, &WebClient::onEmbedData);
-	connect(wObject, &TsWebObject::getEmoteJson, client, &WebClient::onEmoteData);
 
 	connect(chat, &ChatWidget::fileUrlClicked, transfers, &FileTransferListWidget::onFileUrlClicked);
 	connect(chat, &ChatWidget::clientUrlClicked, this, &PluginHelper::onClientUrlClicked);
@@ -305,7 +298,8 @@ void PluginHelper::onChannelUrlClicked(const QUrl& url) const
 
 void PluginHelper::onTransferFailure() const
 {
-	QMetaObject::invokeMethod(wObject, "downloadFailed");
+	ts3Functions.printMessageToCurrentTab("File transfer failure");
+	ts3Functions.logMessage("File transfer failure", LogLevel_ERROR, "BetterChat", 0);
 }
 
 // called when emote is clicked in html emote menu

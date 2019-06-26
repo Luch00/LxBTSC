@@ -10,7 +10,6 @@
 
         <script type='text/javascript' src='js/jquery-3.2.1.min.js'></script>
         <script type='text/javascript' src='js/qwebchannel.js'></script>
-        <script type='text/javascript' src='js/notify.js'></script>
         <script type='text/javascript' src='js/xbbcode.js'></script>
         <script type='text/javascript' src='js/config.js'></script>
         <script type='text/javascript' src='js/tabs.js'></script>
@@ -31,14 +30,14 @@
          * Copyright (C) 2019 Luch (https://github.com/Luch00)
         */
             var main;
-            var IsBottom = true;
-            var QtObject;
+            var isBottom = true;
+            var qtObject;
             var tooltip;
             var popper;
 
             // keep chat scrolled to the bottom, if it was
             var stayDown = function() {
-                if (IsBottom) {
+                if (isBottom) {
                     window.scroll(0, document.body.scrollHeight);
                 }
             };
@@ -50,50 +49,43 @@
             });
 
             new QWebChannel(qt.webChannelTransport, function(channel) {
-                QtObject = channel.objects.wObject;
+                qtObject = channel.objects.wObject;
                 
-                QtObject.toggleEmoteMenu.connect(ToggleEmoteMenu);
-                QtObject.textMessageReceived.connect(AddTextMessage);
-                QtObject.printConsoleMessage.connect(AddConsoleMessage);
-                QtObject.tabChanged.connect(ShowTab);
-                QtObject.addServer.connect(AddServerTabs);
-                QtObject.loadEmotes.connect(LoadEmotes);
-                QtObject.configChanged.connect(ConfigChanged);
+                qtObject.toggleEmoteMenu.connect(toggleEmoteMenu);
+                qtObject.textMessageReceived.connect(addTextMessage);
+                qtObject.printConsoleMessage.connect(addConsoleMessage);
+                qtObject.tabChanged.connect(showTab);
+                qtObject.addServer.connect(addServerTabs);
+                qtObject.loadEmotes.connect(loadEmotes);
+                qtObject.configChanged.connect(configChanged);
 
-                QtObject.serverWelcomeMessage.connect(Ts3ServerWelcome);
-                QtObject.serverConnected.connect(Ts3ServerConnected);
-                QtObject.serverDisconnected.connect(Ts3ServerDisconnected);
-                QtObject.serverStopped.connect(Ts3ServerStopped);
+                qtObject.serverWelcomeMessage.connect(ts3ServerWelcome);
+                qtObject.serverConnected.connect(ts3ServerConnected);
+                qtObject.serverDisconnected.connect(ts3ServerDisconnected);
+                qtObject.serverStopped.connect(ts3ServerStopped);
 
-                //QtObject.serverConnectionLost.connect(Ts3ServerConnectionLost);
+                //qtObject.serverConnectionLost.connect(Ts3ServerConnectionLost);
 
-                QtObject.clientConnected.connect(Ts3ClientConnected);
-                QtObject.clientDisconnected.connect(Ts3ClientDisconnected);
-                QtObject.clientTimeout.connect(Ts3ClientTimeout);
-                QtObject.clientKickedFromChannel.connect(Ts3ClientKickedFromChannel);
-                QtObject.clientKickedFromServer.connect(Ts3ClientKickedFromServer);
-                QtObject.clientBannedFromServer.connect(Ts3ClientBannedFromServer);
+                qtObject.clientConnected.connect(ts3ClientConnected);
+                qtObject.clientDisconnected.connect(ts3ClientDisconnected);
+                qtObject.clientTimeout.connect(ts3ClientTimeout);
+                qtObject.clientKickedFromChannel.connect(ts3ClientKickedFromChannel);
+                qtObject.clientKickedFromServer.connect(ts3ClientKickedFromServer);
+                qtObject.clientBannedFromServer.connect(ts3ClientBannedFromServer);
 
-                QtObject.clientPoked.connect(Ts3ClientPoked);
-
-                QtObject.downloadFailed.connect(Ts3fileDownloadFailed);
-
-                QtObject.htmlData.connect(ParseHtml);
-                QtObject.fileData.connect(EmbedFile);
-                QtObject.emoteJson.connect(Emotes.addRemoteEmote);
-                QtObject.webError.connect(Ts3Error);
+                qtObject.clientPoked.connect(ts3ClientPoked);
             });
 
             function waitForQt() {
                 // try to make sure qwebchannel exists before loading config
                 setTimeout(function() {
-                    QtObject.getDone(function(done) {
+                    qtObject.getDone(function(done) {
                         if (done === true) {
                             loadConfig()
                             .then(function() {
                                 $('.chattab').css('font-size', Config.FONT_SIZE + 'pt');
-                                LoadEmotes();
-                                init_tenor();
+                                loadEmotes();
+                                initTenor();
                             });
                         }
                         else {
@@ -106,7 +98,7 @@
             window.onload = function() {
                 main = $('#main');
                 tooltip = $('.tooltipper');
-                Emotes.emote_list_element = $('#emote-list');
+                Emotes.emoteListElement = $('#emote-list');
                 waitForQt();
 
                 // monitor body and window resizing
@@ -116,7 +108,7 @@
                 // when scrolling check if we are at the bottom
                 $(window).scroll(function() {
                     setTimeout(function () {
-                        IsBottom = (window.innerHeight + window.pageYOffset) >= document.body.offsetHeight;
+                        isBottom = (window.innerHeight + window.pageYOffset) >= document.body.offsetHeight;
                     }, 0);
                 });
                 
@@ -140,6 +132,14 @@
                 main.on('click', '.close-embeds', function(e) {
                     $(this).parent().remove();
                 });
+
+                $(document.getElementById('emote-list')).on('click', '.emote', function(e) {
+                    qtObject.emoteClicked(this.dataset.key);
+                    if(!e.shiftKey) {
+                        toggleEmoteMenu();
+                        hideTooltip();
+                    }
+                })
             };
 
             function showTooltip(elem) {
@@ -163,17 +163,9 @@
                 }
             }
 
-            function ToggleEmoteMenu() {
+            function toggleEmoteMenu() {
                 $("#popup").toggleClass('menu-visible');
                 main.toggleClass('no-scroll');
-            }
-
-            function emoteClicked(key, shift) {
-                QtObject.emoteClicked(key);
-                if(!shift) {
-                    ToggleEmoteMenu();
-                    hideTooltip();
-                }
             }
 
             // for switching tabs in emote menu
@@ -190,32 +182,24 @@
                 event.currentTarget.className += " active";
             }
 
-            function LoadEmotes() {
+            function loadEmotes() {
                 Emotes.clear();
                 Emotes.load();
             }
 
-            function ConfigChanged() {
+            function configChanged() {
                 loadConfig()
                 .then(function () {
                     $('.chattab').css('font-size', Config.FONT_SIZE + 'pt');
-                    LoadEmotes();
+                    loadEmotes();
                 });
             }
 
-            function Ts3LinkClicked(event) {
+            function ts3LinkClicked(event) {
                 if (event.which == 3) {
                     event.preventDefault();
                     $(event.currentTarget)[0].click();
                 }
-            }
-
-            function Ts3fileDownloadFailed() {
-                $.notify("Download failed to start");
-            }
-
-            function Ts3Error(msg) {
-                $.notify(msg);
             }
         </script>
     </head>
@@ -229,12 +213,12 @@
             <div id='emote-list' class='tabcontent custom-scroll'></div>
             <div id='tenor' class='tabcontent' style="display:none;">
                 <div class='tenor-searchbox'>
-                    <input id='tenor-search' type="text" placeholder="Search Tenor" onkeyup="search_tenor()" onclick="this.select()"/>
+                    <input id='tenor-search' type="text" placeholder="Search Tenor" onkeyup="searchTenor()" onclick="this.select()"/>
                 </div>
                 <div class='tenor-results-wrap custom-scroll'>
                     <div id='tenor-results'></div>
                     <div class='tenor-loadmore'>
-                        <button id='tenor-load' onclick="search_more()">Load More</button>
+                        <button id='tenor-load' onclick="searchMore()">Load More</button>
                     </div>
                 </div>
             </div>

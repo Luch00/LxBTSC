@@ -9,19 +9,43 @@ var imageMime = [ "image/gif", "image/jpeg", "image/png", "image/svg+xml", "imag
 var audioMime = [ "audio/mpeg", "audio/wave", "audio/wav", "audio/x-wav", "audio/x-pn-wav", "audio/webm", "audio/ogg", "audio/flac"];
 var videoMime = [ "video/webm", "video/ogg", "application/ogg" ];
 
-function Embed(message_id, message_text) {
+function embed(messageId, message_text) {
     $('a', message_text).each(function(index, element) {
-        //let url = element;
         if (element.protocol.toLocaleLowerCase().startsWith("http")) {
-            QtObject.requestEmbedData(element.href, message_id);
+            fetchEmbedHead(element.href)
+                .then(contentType => {
+                    if (contentType.indexOf('text/html') === -1)
+                        embedFile(contentType, element.href, messageId);
+                    else
+                        fetchEmbedData(element.href, messageId)
+                            .then(responseText => parseHtml(responseText, element.href, messageId));
+                });
         }
     });
 }
 
-function ParseHtml(htmlString, url, message_id) {
-    //console.log(htmlString);
+async function fetchEmbedHead(url) {
+    let response = await fetch(url, { method: 'HEAD' });
+    let contentType = response.headers.get('Content-Type');
+    return contentType;
+}
+
+async function fetchEmbedData(url, messageId) {
+    try {
+        let response = await fetch(url);
+        let responseText = await response.text();
+        return responseText;
+    }
+    catch (error) {
+        console.log(error);
+    }
+}
+
+function parseHtml(htmlString, url, messageId) {
+    let s = htmlString.substring(0, htmlString.indexOf('</head>'));
+    //console.log(s);
     let parser = new DOMParser();
-    let doc = parser.parseFromString(htmlString, 'text/html');
+    let doc = parser.parseFromString(s, 'text/html');
     //console.log(doc);
     let meta = doc.getElementsByTagName('meta');
     let set = {};
@@ -44,88 +68,88 @@ function ParseHtml(htmlString, url, message_id) {
         }
         set[fixName(name)] = content;
     });
-    console.log(set);
-    EmbedHtml(set, message_id);
+    //console.log(set);
+    embedHtml(set, messageId);
 }
 
-function EmbedFile(fileMIME, url, message_id) {
-    console.log(fileMIME);
+function embedFile(fileMIME, url, messageId) {
+    //console.log(fileMIME);
     // embed single file
     // image
     if (imageMime.indexOf(fileMIME) > -1) {
-        if (fileMIME == "image/gif" && Config.HOVER_ANIMATES_GIFS) {
-            addEmbed(FreezeframeGif(url), message_id);
+        if (fileMIME === "image/gif" && Config.HOVER_ANIMATES_GIFS) {
+            addEmbed(freezeframeGif(url), messageId);
         }
         else {
-            addEmbed(ImageFile(url), message_id);
+            addEmbed(imageFile(url), messageId);
         }
     }
     // audio
     if (audioMime.indexOf(fileMIME) > -1) {
-        addEmbed(AudioFile(url), message_id);
+        addEmbed(audioFile(url), messageId);
     }
     // video
     if (videoMime.indexOf(fileMIME) > -1) {
-        addEmbed(VideoFile(url), message_id);
+        addEmbed(videoFile(url), messageId);
     }
 }
 
-function EmbedHtml(json, message_id) {
+function embedHtml(json, messageId) {
     //console.log(json);
 
-    if (json.ogSiteName == "YouTube") {
-        addEmbed(Youtube(json), message_id);
+    if (json.ogSiteName === "YouTube") {
+        addEmbed(youtube(json), messageId);
         return;
     }
 
-    if (json.ogSiteName == "Gfycat") {
-        addEmbed(Gfycat(json), message_id);
+    if (json.ogSiteName === "Gfycat") {
+        addEmbed(gfycat(json), messageId);
         return;
     }
 
-    if (json.ogSiteName == "Twitter") {
-        addEmbed(Twitter(json), message_id);
+    if (json.ogSiteName === "Twitter") {
+        addEmbed(twitter(json), messageId);
         return;
     }
 
-    if (json.ogSiteName == "Pastebin") {
-        addEmbed(Pastebin(json), message_id);
+    if (json.ogSiteName === "Pastebin") {
+        addEmbed(pastebin(json), messageId);
         return;
     }
 
-    if (json.ogSiteName == "Gist") {
-        addEmbed(Gist(json), message_id);
+    if (json.ogSiteName === "Gist") {
+        addEmbed(gist(json), messageId);
         return;
     }
 
-    if (json.ogSiteName == "yande.re") {
-        addEmbed(Yandere(json), message_id);
+    if (json.ogSiteName === "yande.re") {
+        addEmbed(yandere(json), messageId);
         return;
     }
 
-    if (json.ogSiteName == "Spotify") {
-        addEmbed(Spotify(json), message_id);
+    if (json.ogSiteName === "Spotify") {
+        addEmbed(spotify(json), messageId);
         return;
     }
 
-    if (json.twitterSite == "@pornhub") {
-        addEmbed(Pornhub(json), message_id);
+    if (json.twitterSite === "@pornhub") {
+        addEmbed(pornhub(json), messageId);
         return;
     }
 
     // not webm
-    /*if (json.ogSiteName == "ニコニコ動画") {
-        addEmbed(Nicovideo(json), message_id);
+    /*if (json.ogSiteName === "ニコニコ動画") {
+        addEmbed(nicovideo(json), messageId);
         return;
     }*/
 
     // generic embed
     if (!Config.GENERICS_DISABLED && json.ogTitle) {
-        addEmbed(Generic(json), message_id);
+        addEmbed(generic(json), messageId);
     }
 }
 
-function FreezeframeGif(url) {
+function freezeframeGif(url) {
     let embed = $('<div/>', {
         class: "generic-file-embed"
     });
@@ -146,10 +170,10 @@ function FreezeframeGif(url) {
     img.src = encodeURI(url);
 
     embed.append(a);
-    return EmbedBlock(embed);
+    return embedBlock(embed);
 }
 
-function ImageFile(url) {
+function imageFile(url) {
     let embed = $('<div/>', {
         class: "generic-file-embed"
     });
@@ -161,9 +185,6 @@ function ImageFile(url) {
         href: url,
         html: img
     });
-    /*i.onload = function() {
-        console.log("success");
-    };*/
     img.onerror = function() {
         console.log("image load failed");
         embed.parent().remove();
@@ -171,10 +192,10 @@ function ImageFile(url) {
     img.src = encodeURI(url);
 
     embed.append(a);
-    return EmbedBlock(embed);
+    return embedBlock(embed);
 }
 
-function AudioFile(url) {
+function audioFile(url) {
     let embed = $('<div/>', {
         class: "generic-file-embed"
     });
@@ -184,10 +205,10 @@ function AudioFile(url) {
         src: encodeURI(url)
     });
     embed.append(audio);
-    return EmbedBlock(embed);
+    return embedBlock(embed);
 }
 
-function VideoFile(url) {
+function videoFile(url) {
     let embed = $('<div/>', {
         class: "generic-file-embed"
     });
@@ -201,10 +222,10 @@ function VideoFile(url) {
         src: encodeURI(url)
     });
     embed.append(video);
-    return EmbedBlock(embed);
+    return embedBlock(embed);
 }
 
-function Youtube(json) {
+function youtube(json) {
     let embed = $('<iframe/>', {
         frameborder: "0",
         width: "400",
@@ -212,10 +233,10 @@ function Youtube(json) {
         src: json.twitterPlayer + "?rel=0",
         allowfullscreen: ""
     });
-    return EmbedBlock(embed);
+    return embedBlock(embed);
 }
 
-function Twitter(json) {
+function twitter(json) {
     let name = json.ogTitle.split(' on Twitter', 1);
     let username = json.path.substr(1).split('/', 1);
     let tweet = $('<div/>', {
@@ -224,7 +245,7 @@ function Twitter(json) {
     tweet.append('<img src="https://twitter.com/'+username+'/profile_image?size=mini" class="twitter-avatar">');
     tweet.append('<span><a href="'+json.ogUrl+'" class="twitter-username">'+name+' (@'+username+')</a></span>');
     tweet.append('<div class="twitter-description">'+anchorme(json.ogDescription.slice(1, -1))+'</div>');
-    if (json.ogImageUserGenerated == "true") {
+    if (json.ogImageUserGenerated === "true") {
         let img = $('<a/>', {
             class: "tweet-image fancybox",
             href: json.ogImage,
@@ -236,28 +257,28 @@ function Twitter(json) {
     /*if (json.ogType == "video") {
         tweet.append('<div><video src="'+json.ogVideoUrl+'"</video></div>');
     }*/
-    return EmbedBlock(tweet);
+    return embedBlock(tweet);
 }
 
-function Pastebin(json) {
+function pastebin(json) {
     let embed = $('<iframe/>', {
         frameborder: "0",
         width: "100%",
         src: "https://pastebin.com/embed_iframe/" + json.path.substr(1)
     });
-    return EmbedBlock(embed);
+    return embedBlock(embed);
 }
 
-function Gist(json) {
+function gist(json) {
     let embed = $('<iframe/>', {
         frameborder: '0',
         width: '100%',
         src: json.ogUrl + '.pibb?scroll=true'
     });
-    return EmbedBlock(embed);
+    return embedBlock(embed);
 }
 
-function Gfycat(json) {
+function gfycat(json) {
     let embed = $('<iframe/>', {
         src: json.ogVideoIframe,
         frameborder: '0',
@@ -266,10 +287,10 @@ function Gfycat(json) {
         width: '400',
         height: '225'
     });
-    return EmbedBlock(embed);
+    return embedBlock(embed);
 }
 
-function Spotify(json) {
+function spotify(json) {
     let embed = $('<iframe/>', {
         width: 250,
         height: 330,
@@ -277,10 +298,10 @@ function Spotify(json) {
         frameborder: "0",
         src: json.twitterPlayer.split('?', 1)
     });
-    return EmbedBlock(embed);
+    return embedBlock(embed);
 }
 
-function Pornhub(json) {
+function pornhub(json) {
     let embed = $('<iframe/>', {
         frameborder: "0",
         width: "400",
@@ -289,11 +310,10 @@ function Pornhub(json) {
         scrolling: "no",
         src: json.ogVideoUrl
     });
-    return EmbedBlock(embed);
+    return embedBlock(embed);
 }
 
-function Yandere(json) {
-
+function yandere(json) {
     let embed = $('<div/>', {
         class: "generic-file-embed"
     });
@@ -305,9 +325,6 @@ function Yandere(json) {
         href: json.ogImage,
         html: img
     });
-    /*i.onload = function() {
-        console.log("success");
-    };*/
     img.onerror = function() {
         console.log("image load failed");
         embed.parent().remove();
@@ -315,10 +332,10 @@ function Yandere(json) {
     img.src = encodeURI(json.ogImage);
 
     embed.append(a);
-    return EmbedBlock(embed);
+    return embedBlock(embed);
 }
 
-function Nicovideo(json) {
+function nicovideo(json) {
     let embed = $('<iframe/>', {
         frameborder: "0",
         width: "400",
@@ -326,15 +343,15 @@ function Nicovideo(json) {
         allowfullscreen: true,
         src: json.twitterPlayer
     });
-    return EmbedBlock(embed);
+    return embedBlock(embed);
 }
 
-function Generic(json) {
+function generic(json) {
     let embed = $('<div/>', {
         class: "generic-og-embed"
     });
     //embed.append(`<div><a href="${((json.ogUrl) ? json.ogUrl : json.url)}" class="embed-og-title">${json.ogTitle}</a></div>`);
-    embed.append($('<a/>', {class: 'embed-og-title', href: ((json.ogUrl) ? json.ogUrl : json.url), text: json.ogTitle}).wrap('<div>'));
+    embed.append($('<a/>', {class: 'embed-og-title', href: json.ogUrl ? json.ogUrl : json.url, text: json.ogTitle}).wrap('<div>'));
     if (json.ogDescription) {
         embed.append(`<div class="embed-og-description">${json.ogDescription}</div>`);
     }
@@ -352,9 +369,6 @@ function Generic(json) {
                 html: img
             })
         );
-        /*i.onload = function() {
-            console.log("success");
-        };*/
         img.onerror = function() {
             console.log("image load failed");
             img.remove();
@@ -362,14 +376,14 @@ function Generic(json) {
         img.src = json.ogImage;
         embed.append(a);
     }
-    return EmbedBlock(embed);
+    return embedBlock(embed);
 }
 
-function addEmbed(embed, message_id) {
-    document.getElementById(message_id).insertAdjacentElement('afterend', embed[0]);
+function addEmbed(embed, messageId) {
+    document.getElementById(messageId).insertAdjacentElement('afterend', embed[0]);
 }
 
-function EmbedBlock(embed) {
+function embedBlock(embed) {
     let embed_container = $('<div/>', { class:'outer-container' }).append(
                             $('<div/>', { class:'embed-container' }).append([
                                     embed, 

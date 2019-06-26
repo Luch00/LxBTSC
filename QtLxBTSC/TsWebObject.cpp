@@ -21,16 +21,6 @@ void TsWebObject::emoteClicked(QString e)
 	emit emoteSignal(e);
 }
 
-void TsWebObject::requestEmbedData(QString url, qulonglong messageId)
-{
-	emit getEmbedData(url, messageId);
-}
-
-void TsWebObject::requestEmoteJson(QStringList url)
-{
-	emit getEmoteJson(url);
-}
-
 void TsWebObject::setDone(bool value)
 {
 	done = value;

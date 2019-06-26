@@ -2,23 +2,23 @@
  * Better Chat plugin for TeamSpeak 3
  * GPLv3 license
  *
- * Copyright (C) 2018 Luch (https://github.com/Luch00)
+ * Copyright (C) 2019 Luch (https://github.com/Luch00)
 */ 
 'use strict';
 let Emotes = {
     emoteList: new Map(),
-    emoteset_json: "emotesets.json",
-    emote_list_element: {},
+    emotesetJson: "emotesets.json",
+    emoteListElement: {},
     emoteIndex: 0,
     fullRegex: undefined,
-    addEmote: function (key, value) {
+    addEmote(key, value) {
         if (this.emoteList.has(key)) {
             this.emoteList.get(key).element.remove();
             $('.emote-container:empty').parent().remove();
         }
         this.emoteList.set(key, value);
     },
-    emoticonize: function (string) {
+    emoticonize(string) {
         let html = string.html();
         html = html.replace(this.fullRegex, function (a, b, c) {
             let e = Emotes.emoteList.get(b);
@@ -26,59 +26,74 @@ let Emotes = {
         });
         string.html(html);
     },
-    buildRegex: function () {
+    buildRegex() {
         let emoteKeyList = Array.from(this.emoteList.keys()).sort(function (a, b) {
             return b.length - a.length;
         });
-        var stringlist = Emotes.escapeRegExp(emoteKeyList.join('|'));
+        let stringlist = Emotes.escapeRegExp(emoteKeyList.join('|'));
         Emotes.fullRegex = new RegExp('('+stringlist+')(?::([a-z0-9]+):)?(?![^<]*?(?:</a>|">))', 'g');
     },
-    clear: function () {
+    clear() {
         Emotes.emoteIndex = 0;
         Emotes.emoteList.clear();
         Emotes.fullRegex = "";
-        Emotes.emote_list_element.empty();
+        Emotes.emoteListElement.empty();
     },
-    load: function () {
-        $.getJSON(this.emoteset_json, function (setlist) {
-            setlist.forEach(function (set) {
-                $.getJSON("Emotes/" + set).then(function (json) {
-                    if (Array.isArray(json)) {
-                        json.forEach(function (item) {
-                            Emotes.parseJson(item);
-                        });
-                    }
-                    else {
-                        Emotes.parseJson(json);
-                    }
-                });
-            });
+    async load() {
+        let setarray;
+        try {
+            setarray = await this.getJson(this.emotesetJson);
+        }
+        catch (error) {
+            console.error('Failed to load emotesets_json');
+            return;
+        }
+        setarray.forEach((value, index) => setarray[index] = 'Emotes/' + value);
+        setarray.push.apply(setarray, Config.REMOTE_EMOTES);
+        console.info(setarray);
+        for (let item of setarray) {
+            let set;
+            try {
+                set = await this.getJson(item);
+            }
+            catch (error) {
+                console.error('Failed to load emotes: '+ item);
+                continue;
+            }
+
+            if (Array.isArray(set)) {
+                set.forEach(set => this.parseJson(set));
+            }
+            else {
+                this.parseJson(set);
+            }
+        }
+    },
+    getJson(url) {
+        return new Promise(function(resolve, reject) {
+            console.log(url);
+            let xhr = new XMLHttpRequest();
+            xhr.responseType = 'json';
+            xhr.open('GET', url);
+            xhr.onload = function() {
+                resolve(xhr.response);
+            };
+            xhr.onerror = function(e) {
+                reject(e);
+            };
+            xhr.send();
         });
-        if (Config.REMOTE_EMOTES.length > 0) {
-            QtObject.requestEmoteJson(Config.REMOTE_EMOTES);
-        }
     },
-    addRemoteEmote: function (jsonString) {
-        let json = JSON.parseJson(jsonString);
-        if (Array.isArray(json)) {
-            json.forEach(function (item) {
-                Emotes.parseJson(item);
-            });
-        }
-        else {
-            Emotes.parseJson(json);
-        }
-    },
-    parseJson: function (json) {
-        let set_element = $('<div>', {
+    parseJson(json) {
+        let setElement = $('<div>', {
             class: 'emoteset',
             'data-name': json.setname
         });
-        set_element.append('<div class="set-header">' + json.setname + '</div>');
+        setElement.append('<div class="set-header">' + json.setname + '</div>');
         let emote_container = $('<div>', {
             class: 'emote-container'
         });
-        set_element.append(emote_container);
+        setElement.append(emote_container);
         json.emoticons.forEach(function (emote) {
             let e = {
                 name: `${json.pathbase}${emote.name}${json.pathappend}`,
@@ -91,18 +106,15 @@ let Emotes = {
                 src: e.name,
                 alt: emote.code,
                 'data-key': emote.code
-            })
-            .click(function (e) {
-                emoteClicked($(this).data('key'), e.shiftKey);
             });
             emote_container.append(emote_img);
             e.element = emote_img;
             Emotes.addEmote(emote.code, e);
         });
         Emotes.buildRegex();
-        this.emote_list_element.append(set_element);
+        this.emoteListElement.append(setElement);
     },
-    escapeRegExp: function (str) {
+    escapeRegExp(str) {
         return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$]/g, "\\$&");
     }
 };

@@ -17,8 +17,6 @@ public:
 	TsWebObject(QObject *parent);
 	~TsWebObject();
 	Q_INVOKABLE void emoteClicked(QString e);
-	Q_INVOKABLE void requestEmbedData(QString url, qulonglong messageId);
-	Q_INVOKABLE void requestEmoteJson(QStringList url);
 	Q_INVOKABLE bool getDone() const;
 	Q_PROPERTY(bool done READ getDone WRITE setDone);
 	void setDone(bool);
@@ -47,16 +45,6 @@ signals:
 	void clientBannedFromServer(QString target, QString time, QString clientLink, QString name, QString kickerLink, QString kickerName, QString kickMessage);
 
 	void clientPoked(QString target, QString time, QString clientLink, QString clientName, QString message);
-
-	void downloadFailed();
-
-	void getEmbedData(QString url, qulonglong messageId);
-	void getEmoteJson(QStringList url);
-
-	void htmlData(QString data, QString url, qulonglong messageId);
-	void fileData(QString dataType, QString url, qulonglong messageId);
-	void emoteJson(QString json);
-	void webError(QString errorMessage);
 
 private:
 	bool done = false;

@@ -6,28 +6,28 @@
 */
 'use strict'
 let msgid = 0;
-const NormalTextTemplate = (msgid, direction, time, userlink, name, text) => `
+const normalTextTemplate = (msgid, direction, time, userlink, name, text) => `
     <p id='${msgid}' class='TextMessage_Normal'>
     <span class='Body'>
     <img class='${direction}'>
     <span class='TextMessage_Time'><${time}> </span>
-    <span class='TextMessage_UserLink'><a href='${userlink}' class='TextMessage_UserLink' oncontextmenu='Ts3LinkClicked(event)'>"${name}"</a></span>: 
+    <span class='TextMessage_UserLink'><a href='${userlink}' class='TextMessage_UserLink' oncontextmenu='ts3LinkClicked(event)'>"${name}"</a></span>: 
     <span class='TextMessage_Text'>${text}</span>
     </span>
     </p>
 `;
 
-const AvatarStyle_NormalTextTemplate = (msgid, direction, time, userlink, name, text, target, client) => `
+const avatarStyle_normalTextTemplate = (msgid, direction, time, userlink, name, text, target, client) => `
     <div id='${msgid}' class='avatar-style TextMessage_Normal'>
     <div class='Body animate-avatar'>
     <div class='avatar-container'>
     ${Config.HOVER_ANIMATES_GIFS ? 
-        `<img class='avatar hidden-image fancybox' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onload='ThumbnailAvatar(this)' onerror='DefaultAvatar(this)'>`: 
-        `<img class='avatar fancybox' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onerror='DefaultAvatar(this);'>`}
+        `<img class='avatar hidden-image fancybox' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onload='thumbnailAvatar(this)' onerror='defaultAvatar(this)'>`: 
+        `<img class='avatar fancybox' src='../../../cache/${target}/clients/avatar_${client}?timestamp=${new Date().getTime()}' onerror='defaultAvatar(this);'>`}
     </div>
     <div class='message-container'>
         <div class='message-header'>
-            <span class='TextMessage_UserLink'><a href='${userlink}' class='TextMessage_UserLink ${direction}' oncontextmenu='Ts3LinkClicked(event)'>${name}</a></span>
+            <span class='TextMessage_UserLink'><a href='${userlink}' class='TextMessage_UserLink ${direction}' oncontextmenu='ts3LinkClicked(event)'>${name}</a></span>
             <span class='avatar-style TextMessage_Time'>${time} </span>
         </div>
         <div class='message-content'>
@@ -38,7 +38,7 @@ const AvatarStyle_NormalTextTemplate = (msgid, direction, time, userlink, name, 
     </div>
 `;
 
-const StatusTextTemplate = (msgid, type, time, text) => Config.AVATARS_ENABLED ? 
+const statusTextTemplate = (msgid, type, time, text) => Config.AVATARS_ENABLED ? 
 `
     <p id='${msgid}' class='avatar-style-status ${type}'>
     <span class='avatar-style TextMessage_Text'>${text}</span>
@@ -53,13 +53,13 @@ const StatusTextTemplate = (msgid, type, time, text) => Config.AVATARS_ENABLED ?
     </p>
 `;
 
-const PokeTextTemplate = (msgid, time, link, name, text) => Config.AVATARS_ENABLED ?
+const pokeTextTemplate = (msgid, time, link, name, text) => Config.AVATARS_ENABLED ?
 `
     <div id='${msgid}' class='TextMessage_Poke'>
     <div class='Body'>
     <div class='message-container'>
         <div class='message-header'>
-        <span class='TextMessage_UserLink'><a href='${link}' class='TextMessage_UserLink' oncontextmenu='Ts3LinkClicked(event)'>${name}</a></span>
+        <span class='TextMessage_UserLink'><a href='${link}' class='TextMessage_UserLink' oncontextmenu='ts3LinkClicked(event)'>${name}</a></span>
         <span class='avatar-style TextMessage_Time'>${time}</span>
         </div>
         <div class='message-content'>
@@ -74,13 +74,13 @@ const PokeTextTemplate = (msgid, time, link, name, text) => Config.AVATARS_ENABL
     <span class='Body'>
     <img class='Incoming'>
     <span class='TextMessage_Time'><${time}> </span>
-    <span class='TextMessage_UserLink'><a href='${link}' class='TextMessage_UserLink' oncontextmenu='Ts3LinkClicked(event)'>"${name}"</a></span>
+    <span class='TextMessage_UserLink'><a href='${link}' class='TextMessage_UserLink' oncontextmenu='ts3LinkClicked(event)'>"${name}"</a></span>
     <span class='TextMessage_Text'>pokes you: ${text}</span>
     </span>
     </p>
 `;
 
-function DefaultAvatar(img) {
+function defaultAvatar(img) {
     img.onerror=null;
     img.classList.remove("hidden-image");
     img.classList.remove("fancybox");
@@ -88,7 +88,7 @@ function DefaultAvatar(img) {
     img.src="";
 }
 
-function ThumbnailAvatar(img) {
+function thumbnailAvatar(img) {
     let still = $('<img/>', { class: 'static-avatar'});
     let canvas = document.createElement('canvas');
     canvas.width = img.naturalWidth;
@@ -98,158 +98,156 @@ function ThumbnailAvatar(img) {
     still.insertBefore(img);
 }
 
-function CheckMessageLimit(tab) {
+function checkMessageLimit(tab) {
     let over = tab.children().length - Config.MAX_LINES;
     if(over > 0) {
         tab.children().slice(0, over).remove();
     }
 }
 
-function ParseBBCode(line) {
+function parseBBCode(line) {
     let result = XBBCODE.process({
         text: line
     });
     return result.html;
 }
 
-function AddTextMessage(target, direction, time, name, userlink, line, mode, client, receiver) {
+function addTextMessage(target, direction, time, name, userlink, line, mode, client, receiver) {
     //console.log(target);
     ++msgid;
-    let parsed = $('<span/>').html(ParseBBCode(line));
+    let parsed = $('<span/>').html(parseBBCode(line));
 
     if (Config.EMOTICONS_ENABLED) {
         Emotes.emoticonize(parsed);
     }
     if (Config.FAVICONS_ENABLED) {
-        GetFavicons(parsed);
+        getFavicons(parsed);
     }
     
-    let tab = GetTab(target, mode, (direction == "Outgoing") ? receiver : client);
-    CheckMessageLimit(tab);
+    let tab = getTab(target, mode, direction === "Outgoing" ? receiver : client);
+    checkMessageLimit(tab);
 
     Config.AVATARS_ENABLED ? 
-        tab.append(AvatarStyle_NormalTextTemplate(msgid, direction, time, userlink, name, parsed.get(0).outerHTML, target, client)) :
-        tab.append(NormalTextTemplate(msgid, direction, time, userlink, name, parsed.get(0).outerHTML));
+        tab.append(avatarStyle_normalTextTemplate(msgid, direction, time, userlink, name, parsed.get(0).outerHTML, target, client)) :
+        tab.append(normalTextTemplate(msgid, direction, time, userlink, name, parsed.get(0).outerHTML));
     
     if (Config.EMBED_ENABLED) {
-        Embed(msgid, parsed);
+        embed(msgid, parsed);
     }
 
-    if (IsBottom) {
+    if (isBottom) {
         window.scroll(0, document.body.scrollHeight);
     }
 }
 
-function AddStatusMessage(target, line) {
-    //console.log("status: "+target+" mesg:"+line);
-
-    let tab = GetTab(target, 3, "");
-    CheckMessageLimit(tab);
+function addStatusMessage(target, line) {
+    let tab = getTab(target, 3, "");
+    checkMessageLimit(tab);
     tab.append(line);
 
-    if (IsBottom) {
+    if (isBottom) {
         window.scroll(0, document.body.scrollHeight);
     }
 }
 
-function Ts3ClientPoked(target, time, link, name, message) {
+function ts3ClientPoked(target, time, link, name, message) {
     ++msgid;
 
-    var parsed = ParseBBCode(message);
-    let tab = GetTab(target, 3, "");
-    CheckMessageLimit(tab);
-    tab.append(PokeTextTemplate(msgid, time, link, name, parsed));
+    var parsed = parseBBCode(message);
+    let tab = getTab(target, 3, "");
+    checkMessageLimit(tab);
+    tab.append(pokeTextTemplate(msgid, time, link, name, parsed));
 
-    if (IsBottom) {
+    if (isBottom) {
         window.scroll(0, document.body.scrollHeight);
     }
 }
 
-function AddConsoleMessage(target, mode, client, message) {
+function addConsoleMessage(target, mode, client, message) {
     ++msgid;
 
-    let tab = GetTab(target, mode, client);
-    CheckMessageLimit(tab);
-    tab.append('<p class="TextMessage_Console">'+ParseBBCode(message)+'</p>');
+    let tab = getTab(target, mode, client);
+    checkMessageLimit(tab);
+    tab.append('<p class="TextMessage_Console">'+parseBBCode(message)+'</p>');
     
-    if (IsBottom) {
+    if (isBottom) {
         window.scroll(0, document.body.scrollHeight);
     }
 }
 
-function Ts3ServerWelcome(target, time, message) {
+function ts3ServerWelcome(target, time, message) {
     ++msgid;
-    AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_Welcome", time, ParseBBCode(message)));
+    addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_Welcome", time, parseBBCode(message)));
 }
 
-function Ts3ServerConnected(target, time, servername) {
+function ts3ServerConnected(target, time, servername) {
     var text;
     if (servername.length > 0) {
-        text = 'Connected to Server: <b><a href="channelid://0" class="TextMessage_ServerLink" oncontextmenu="Ts3LinkClicked(event)">'+servername+'</a></b>';
+        text = 'Connected to Server: <b><a href="channelid://0" class="TextMessage_ServerLink" oncontextmenu="ts3LinkClicked(event)">'+servername+'</a></b>';
     }
     else {
         text = "Connected";
     }
     ++msgid;
-    AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_Connected", time, text))
+    addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_Connected", time, text));
 }
 
-function Ts3ServerDisconnected(target, time) {
+function ts3ServerDisconnected(target, time) {
     ++msgid;
-    AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_Disconnected", time, "Disconnected"));
+    addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_Disconnected", time, "Disconnected"));
 }
 
-function Ts3ServerStopped(target, time, message) {
+function ts3ServerStopped(target, time, message) {
     ++msgid;
-    AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_ServerError", time, "Server Shutdown: "+message));
+    addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_ServerError", time, "Server Shutdown: "+message));
 }
 
-function Ts3ServerConnectionLost(target, time) {
+function ts3ServerConnectionLost(target, time) {
     ++msgid;
-    AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_Disconnected", time, "Connection to server lost"))
+    addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_Disconnected", time, "Connection to server lost"));
 }
 
-function Ts3ClientConnected(target, time, link, name) {
+function ts3ClientConnected(target, time, link, name) {
     ++msgid;
-    AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_ClientConnected", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"'+name+'"</a> connected'));
+    addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_ClientConnected", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="ts3LinkClicked(event)">"'+name+'"</a> connected'));
 }
 
-function Ts3ClientDisconnected(target, time, link, name, message) {
+function ts3ClientDisconnected(target, time, link, name, message) {
     ++msgid;
-    AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_ClientDisconnected", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"'+name+'"</a> disconnected ('+message+')'));
+    addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_ClientDisconnected", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="ts3LinkClicked(event)">"'+name+'"</a> disconnected ('+message+')'));
 }
 
-function Ts3ClientTimeout(target, time, link, name) {
+function ts3ClientTimeout(target, time, link, name) {
     ++msgid;
-    AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_ClientDropped", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"'+name+'"</a> timed out'));
+    addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_ClientDropped", time, '<a href="'+link+'" class="TextMessage_UserLink" oncontextmenu="ts3LinkClicked(event)">"'+name+'"</a> timed out'));
 }
 
-function Ts3ClientKickedFromChannel(target, time, link, name, kickerlink, kickername, message) {
-    ++msgid;
-    let text;
-    if (link)
-        text = `<a href="${link}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${name}"</a> was kicked from a channel by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
-    else
-        text = `You were kicked from the channel by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
-    AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_ClientKicked", time, text));
-}
-
-function Ts3ClientKickedFromServer(target, time, link, name, kickerlink, kickername, message) {
+function ts3ClientKickedFromChannel(target, time, link, name, kickerlink, kickername, message) {
     ++msgid;
     let text;
     if (link)
-        text = `<a href="${link}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${name}"</a> was kicked from the server by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
+        text = `<a href="${link}" class="TextMessage_UserLink" oncontextmenu="ts3LinkClicked(event)">"${name}"</a> was kicked from a channel by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
     else
-        text = `You were kicked from the server by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
-    AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_ClientKicked", time, text));
+        text = `You were kicked from the channel by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
+    addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_ClientKicked", time, text));
 }
 
-function Ts3ClientBannedFromServer(target, time, link, name, kickerlink, kickername, message) {
+function ts3ClientKickedFromServer(target, time, link, name, kickerlink, kickername, message) {
     ++msgid;
     let text;
     if (link)
-        text = `<a href="${link}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${name}"</a> was banned from the server by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
+        text = `<a href="${link}" class="TextMessage_UserLink" oncontextmenu="ts3LinkClicked(event)">"${name}"</a> was kicked from the server by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
     else
-        text = `You were banned from the server by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="Ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
-    AddStatusMessage(target, StatusTextTemplate(msgid, "TextMessage_ClientBanned", time, text));
+        text = `You were kicked from the server by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
+    addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_ClientKicked", time, text));
+}
+
+function ts3ClientBannedFromServer(target, time, link, name, kickerlink, kickername, message) {
+    ++msgid;
+    let text;
+    if (link)
+        text = `<a href="${link}" class="TextMessage_UserLink" oncontextmenu="ts3LinkClicked(event)">"${name}"</a> was banned from the server by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
+    else
+        text = `You were banned from the server by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
+    addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_ClientBanned", time, text));
 }

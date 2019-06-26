@@ -2,9 +2,9 @@
  * Better Chat plugin for TeamSpeak 3
  * GPLv3 license
  *
- * Copyright (C) 2018 Luch (https://github.com/Luch00)
+ * Copyright (C) 2019 Luch (https://github.com/Luch00)
 */
-function GetFavicons(parse) {
+function getFavicons(parse) {
     'use strict'
     $('a', parse).each(function(index, element) {
         if (element.protocol.startsWith('http')) {
