@@ -139,7 +139,16 @@
                         toggleEmoteMenu();
                         hideTooltip();
                     }
-                })
+                });
+
+                $(document.getElementById('tenor')).on('click', '.tenor-gif', function(e) {
+                    qtObject.emoteClicked(this.getAttribute('share-url'));
+                    registerShare(this.getAttribute('share-id'));
+                    if(!e.shiftKey) {
+                        toggleEmoteMenu();
+                        hideTooltip();
+                    }
+                });
             };
 
             function showTooltip(elem) {

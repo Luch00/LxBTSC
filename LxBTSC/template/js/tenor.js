@@ -76,10 +76,6 @@ function searchAppendCallback(json) {
         img.setAttribute('share-url', element['media'][0]['gif']['url']);
         img.setAttribute('share-id', element['id']);
         img.src = element['media'][0]['nanogif']['url'];
-        img.onclick = function() {
-            emoteClicked(this.getAttribute('share-url'), false);
-            registerShare(this.getAttribute('share-id'));
-        };
         elem.appendChild(img);
     });
 }
