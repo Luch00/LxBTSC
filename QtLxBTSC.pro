@@ -25,8 +25,7 @@ HEADERS += QtLxBTSC/ChatWidget.h \
            QtLxBTSC/TsServer.h \
            QtLxBTSC/TsWebEnginePage.h \
            QtLxBTSC/TsWebObject.h \
-           QtLxBTSC/utils.h \
-           QtLxBTSC/WebClient.h
+           QtLxBTSC/utils.h
 SOURCES += QtLxBTSC/ChatWidget.cpp \
            QtLxBTSC/ConfigWidget.cpp \
            QtLxBTSC/FileTransferItemWidget.cpp \
@@ -38,5 +37,4 @@ SOURCES += QtLxBTSC/ChatWidget.cpp \
            QtLxBTSC/TsClient.cpp \
            QtLxBTSC/TsServer.cpp \
            QtLxBTSC/TsWebObject.cpp \
-           QtLxBTSC/utils.cpp \
-           QtLxBTSC/WebClient.cpp
+           QtLxBTSC/utils.cpp

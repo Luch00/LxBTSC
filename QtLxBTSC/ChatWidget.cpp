@@ -27,8 +27,8 @@ ChatWidget::ChatWidget(const QString& path, TsWebObject* webObject, QWidget *par
 	, channel(new QWebChannel(page))
 	, loadComplete(false)
 {
-	if (this->objectName().isEmpty())
-		this->setObjectName(QStringLiteral("ChatWidget"));
+	this->setObjectName(QStringLiteral("ChatWidget"));
+		
 	this->setStyleSheet("border: 1px solid gray");
 
 	verticalLayout->setSpacing(1);
