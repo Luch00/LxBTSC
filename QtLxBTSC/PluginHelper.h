@@ -2,7 +2,7 @@
  * Better Chat plugin for TeamSpeak 3
  * GPLv3 license
  *
- * Copyright (C) 2018 Luch (https://github.com/Luch00)
+ * Copyright (C) 2019 Luch (https://github.com/Luch00)
 */
 
 #pragma once
@@ -53,7 +53,7 @@ signals:
 	void triggerReloadEmotes();
 
 private slots:
-	void onAppStateChanged(Qt::ApplicationState state);
+	//void onAppStateChanged(Qt::ApplicationState state);
 	void onEmoticonAppend(const QString& e) const;
 	void onEmoticonButtonClicked(bool c) const;
 	void onTabChange(int i) const;

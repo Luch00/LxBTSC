@@ -2,7 +2,7 @@
  * Better Chat plugin for TeamSpeak 3
  * GPLv3 license
  *
- * Copyright (C) 2018 Luch (https://github.com/Luch00)
+ * Copyright (C) 2019 Luch (https://github.com/Luch00)
 */
 
 #pragma once
@@ -12,12 +12,11 @@
 #include <QSharedPointer>
 #include "TsClient.h"
 
-class TsServer : public QObject
+class TsServer
 {
-	Q_OBJECT
 
 public:
-	TsServer(unsigned long long serverId, QString uniqueId, unsigned short myId, QMap<unsigned short, QSharedPointer<TsClient>> clients, QObject *parent = 0);
+	TsServer(unsigned long long serverId, QString uniqueId, unsigned short myId, QMap<unsigned short, QSharedPointer<TsClient>> clients);
 	~TsServer();
 
 	QString uniqueId() const;

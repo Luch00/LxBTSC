@@ -113,7 +113,7 @@ void PluginHelper::insertMenu()
 }
 
 // silly thing to prevent webengineview freezing on minimize
-void PluginHelper::onAppStateChanged(Qt::ApplicationState state)
+/*void PluginHelper::onAppStateChanged(Qt::ApplicationState state)
 {
 	if (currentState == Qt::ApplicationHidden || currentState == Qt::ApplicationInactive)
 	{
@@ -122,7 +122,7 @@ void PluginHelper::onAppStateChanged(Qt::ApplicationState state)
 		chat->resize(s);
 	}
 	currentState = state;
-}
+}*/
 
 // Receive chat tab changed signal
 void PluginHelper::onTabChange(int i) const

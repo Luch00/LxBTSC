@@ -85,20 +85,8 @@
     <ClCompile Include="FileTransferItemWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_TsClient.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_TsClient.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="TsClient.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_TsServer.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_TsServer.cpp">
-      <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="TsServer.cpp">
       <Filter>Source Files</Filter>

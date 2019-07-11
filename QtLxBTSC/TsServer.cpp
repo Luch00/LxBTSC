@@ -2,15 +2,14 @@
  * Better Chat plugin for TeamSpeak 3
  * GPLv3 license
  *
- * Copyright (C) 2018 Luch (https://github.com/Luch00)
+ * Copyright (C) 2019 Luch (https://github.com/Luch00)
 */
 
 #include "TsServer.h"
 #include <QString>
 
-TsServer::TsServer(unsigned long long serverId, QString uniqueId, unsigned short myId, QMap<unsigned short, QSharedPointer<TsClient>> clients, QObject *parent) 
-	: QObject(parent)
-	, serverId_(serverId)
+TsServer::TsServer(unsigned long long serverId, QString uniqueId, unsigned short myId, QMap<unsigned short, QSharedPointer<TsClient>> clients) 
+	: serverId_(serverId)
 	, uniqueId_(uniqueId)
 	, myId_(myId)
 	, clients_(clients)
