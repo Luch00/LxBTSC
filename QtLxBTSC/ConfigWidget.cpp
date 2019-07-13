@@ -2,7 +2,7 @@
  * Better Chat plugin for TeamSpeak 3
  * GPLv3 license
  *
- * Copyright (C) 2018 Luch (https://github.com/Luch00)
+ * Copyright (C) 2019 Luch (https://github.com/Luch00)
 */
 
 #include "ConfigWidget.h"
@@ -16,7 +16,7 @@ ConfigWidget::ConfigWidget(const QString& path, QWidget *parent)
 	, configPath(QString("%1LxBTSC/template/config.json").arg(path))
 {
 	this->setWindowTitle("Better Chat Settings");
-	this->setFixedSize(300, 410);
+	//this->setFixedSize(300, 410);
 	formLayout = new QFormLayout(this);
 	embeds = new QCheckBox("Enable embeds", this);
 	embeds->setChecked(true);
@@ -30,6 +30,8 @@ ConfigWidget::ConfigWidget(const QString& path, QWidget *parent)
 	avatar->setChecked(false);
 	stopGifs = new QCheckBox("Play gifs only on hover", this);
 	stopGifs->setChecked(false);
+	history = new QCheckBox("Load chat history", this);
+	history->setChecked(false);
 	maxlines = new QSpinBox(this);
 	maxlines->setMinimum(50);
 	maxlines->setMaximum(1000);
@@ -44,7 +46,7 @@ ConfigWidget::ConfigWidget(const QString& path, QWidget *parent)
 	browseButton->setToolTip("Browse folder");
 	browseButton->setFixedWidth(40);
 	remotes = new QPlainTextEdit(this);
-	remotes->setMinimumHeight(70);
+	remotes->setMaximumHeight(70);
 	remotes->setLineWrapMode(QPlainTextEdit::WidgetWidth);
 	remotes->setPlaceholderText("Separate multiple urls with '|'");
 
@@ -61,6 +63,7 @@ ConfigWidget::ConfigWidget(const QString& path, QWidget *parent)
 	formLayout->addRow(emoticons);
 	formLayout->addRow(avatar);
 	formLayout->addRow(stopGifs);
+	formLayout->addRow(history);
 	formLayout->addRow(new QLabel("Max lines in tab:", this), maxlines);
 	formLayout->addRow(new QLabel("Font size:", this), fontsize);
 	formLayout->addRow(new QLabel("Download directory:"));
@@ -68,8 +71,10 @@ ConfigWidget::ConfigWidget(const QString& path, QWidget *parent)
 	formLayout->addRow(browseButton);
 	formLayout->addRow(new QLabel("Remote emote definitions:"));
 	formLayout->addRow(remotes);
-	formLayout->addItem(new QSpacerItem(0, 50));
+	formLayout->addItem(new QSpacerItem(0, 10));
 	formLayout->addRow(horizontal);
+	this->adjustSize();
+	this->setFixedSize(sizeHint().width(), sizeHint().height());
 	readConfig();
 }
 
@@ -92,6 +97,7 @@ void ConfigWidget::readConfig()
 		emoticons->setChecked(jsonObj.value("EMOTICONS_ENABLED").toBool());
 		avatar->setChecked(jsonObj.value("AVATARS_ENABLED").toBool());
 		stopGifs->setChecked(jsonObj.value("HOVER_ANIMATES_GIFS").toBool());
+		history->setChecked(jsonObj.value("HISTORY_ENABLED").toBool());
 		maxlines->setValue(jsonObj.value("MAX_LINES").toInt());
 		fontsize->setValue(jsonObj.value("FONT_SIZE").toInt());
 		downloadDir->setText(jsonObj.value("DOWNLOAD_DIR").toString());
@@ -119,6 +125,7 @@ void ConfigWidget::save()
 	jsonObj.insert("EMOTICONS_ENABLED", emoticons->isChecked());
 	jsonObj.insert("AVATARS_ENABLED", avatar->isChecked());
 	jsonObj.insert("HOVER_ANIMATES_GIFS", stopGifs->isChecked());
+	jsonObj.insert("HISTORY_ENABLED", history->isChecked());
 	jsonObj.insert("MAX_LINES", maxlines->value());
 	jsonObj.insert("FONT_SIZE", fontsize->value());
 	jsonObj.insert("DOWNLOAD_DIR", downloadDir->text());
@@ -147,4 +154,7 @@ QString ConfigWidget::getConfigAsString(const QString& key)
 	return jsonObj.value(key).toString();
 }
 
-
+bool ConfigWidget::getConfigAsBool(const QString& key)
+{
+	return jsonObj.value(key).toBool();
+}

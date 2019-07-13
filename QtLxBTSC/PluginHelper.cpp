@@ -137,13 +137,12 @@ void PluginHelper::onTabChange(int i) const
 	
 	if (client != nullptr)
 	{
-		if (!client->historyRead())
+		if (config->getConfigAsBool("HISTORY_ENABLED") && !client->historyRead())
 		{
-			const QByteArray history = LogReader::readPrivateLog(server, client->uniqueId().toLatin1().toBase64());
-			emit wObject->privateLogRead(server, client->safeUniqueId(), history);
+			emit wObject->privateLogRead(server, client->safeUniqueId(), LogReader::readPrivateLog(server, client->uniqueId().toLatin1().toBase64()));
 			client->setHistoryRead();
 		}
-
+		
 		emit wObject->tabChanged(server, mode, client->safeUniqueId());
 	}
 	else
@@ -397,6 +396,13 @@ void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID f
 		servers.value(serverConnectionHandlerID)->addClient(fromID, client);
 	}
 	auto r = s->getClient(toID);
+
+	if (targetMode == 1 && !outgoing && config->getConfigAsBool("HISTORY_ENABLED") && !c->historyRead())
+	{
+		emit wObject->privateLogRead(s->safeUniqueId(), c->safeUniqueId(), LogReader::readPrivateLog(s->safeUniqueId(), c->uniqueId().toLatin1().toBase64()));
+		c->setHistoryRead();
+	}
+
 	// serverid, in or out, time, name, link, message, mode, senderid, targetid
 	emit wObject->textMessageReceived(
 		getServerId(serverConnectionHandlerID),
@@ -427,7 +433,10 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 		auto myid = getOwnClientId(serverConnectionHandlerID);
 		QSharedPointer<TsServer> server(new TsServer(serverConnectionHandlerID, res, myid, getAllVisibleClients(serverConnectionHandlerID)));
 		emit wObject->addServer(server->safeUniqueId());
-		emit wObject->logRead(server->safeUniqueId(), LogReader::readLog(server->safeUniqueId()));
+		if (config->getConfigAsBool("HISTORY_ENABLED"))
+		{
+			emit wObject->logRead(server->safeUniqueId(), LogReader::readLog(server->safeUniqueId()));
+		}
 		servers.insert(serverConnectionHandlerID, server);
 		free(res);
 

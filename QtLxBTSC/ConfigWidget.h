@@ -2,7 +2,7 @@
  * Better Chat plugin for TeamSpeak 3
  * GPLv3 license
  *
- * Copyright (C) 2018 Luch (https://github.com/Luch00)
+ * Copyright (C) 2019 Luch (https://github.com/Luch00)
 */
 
 #pragma once
@@ -24,6 +24,7 @@ public:
 	~ConfigWidget();
 
 	QString getConfigAsString(const QString& key);
+	bool getConfigAsBool(const QString& key);
 
 signals:
 	void configChanged();
@@ -40,6 +41,7 @@ private:
 	QCheckBox* emoticons;
 	QCheckBox* stopGifs;
 	QCheckBox* avatar;
+	QCheckBox* history;
 	QSpinBox* maxlines;
 	QSpinBox* fontsize;
 	QPlainTextEdit* remotes;
