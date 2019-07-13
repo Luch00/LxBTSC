@@ -74,6 +74,9 @@
                 qtObject.clientBannedFromServer.connect(ts3ClientBannedFromServer);
 
                 qtObject.clientPoked.connect(ts3ClientPoked);
+
+                qtObject.logRead.connect(ts3LogRead);
+                qtObject.privateLogRead.connect(ts3PrivateLogRead);
             });
 
             function waitForQt() {

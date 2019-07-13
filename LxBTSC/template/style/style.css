@@ -361,6 +361,36 @@ video {
     background-size: contain;
 }
 
+.history-divider {
+    text-align: center;
+    overflow: hidden;
+}
+
+.history-divider > span {
+    position: relative;
+    display: inline-block;
+}
+
+.history-divider > span:before,
+.history-divider > span:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    height: 1px;
+    background: gray;
+}
+
+.history-divider > span:before {
+    right: 100%;
+    margin-right: 15px;
+}
+
+.history-divider > span:after {
+    left: 100%;
+    margin-left: 15px;
+}
+
 .emote-mod-spin {
     animation: spin 2.5s linear infinite;
 }

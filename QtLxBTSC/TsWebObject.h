@@ -2,7 +2,7 @@
  * Better Chat plugin for TeamSpeak 3
  * GPLv3 license
  *
- * Copyright (C) 2018 Luch (https://github.com/Luch00)
+ * Copyright (C) 2019 Luch (https://github.com/Luch00)
 */
 
 #pragma once
@@ -45,6 +45,9 @@ signals:
 	void clientBannedFromServer(QString target, QString time, QString clientLink, QString name, QString kickerLink, QString kickerName, QString kickMessage);
 
 	void clientPoked(QString target, QString time, QString clientLink, QString clientName, QString message);
+
+	void logRead(QString target, QByteArray log);
+	void privateLogRead(QString target, QString client, QByteArray log);
 
 private:
 	bool done = false;

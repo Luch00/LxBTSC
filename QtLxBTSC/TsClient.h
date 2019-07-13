@@ -20,6 +20,8 @@ public:
 	QString safeUniqueId() const;
 	QString uniqueId() const;
 	QString clientLink() const;
+	bool historyRead() const;
+	void setHistoryRead();
 
 	void setName(QString newName);
 
@@ -34,4 +36,5 @@ private:
 	QString safeUniqueId_;
 	QString clientLink_;
 	const unsigned short clientId_;
+	bool historyRead_;
 };

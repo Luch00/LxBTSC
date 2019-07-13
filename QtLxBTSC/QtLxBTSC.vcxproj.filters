@@ -103,6 +103,9 @@
     <ClCompile Include="GeneratedFiles\Release\moc_TsWebEnginePage.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="LogReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="plugin.h">
@@ -115,6 +118,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="globals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LogReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

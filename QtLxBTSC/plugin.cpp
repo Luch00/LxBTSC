@@ -14,7 +14,7 @@
 #include "PluginHelper.h"
 
 #define PLUGIN_API_VERSION 23
-#define PATH_BUFSIZE 512
+//#define PATH_BUFSIZE 512
 
 static char* pluginID = nullptr;
 PluginHelper* helper;
@@ -58,11 +58,12 @@ void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
 
 // Init plugin
 int ts3plugin_init() {
-	char pluginPath[PATH_BUFSIZE];
+	//char pluginPath[PATH_BUFSIZE];
 
 	ts3Functions.createReturnCode(pluginID, returnCodeEmoteFileInfo, 64);
 	ts3Functions.createReturnCode(pluginID, returnCodeEmoteFileRequest, 64);
 	ts3Functions.getPluginPath(pluginPath, PATH_BUFSIZE, pluginID);
+	ts3Functions.getConfigPath(configPath, PATH_BUFSIZE);
 	helper = new PluginHelper(pluginPath);
 
     return 0;

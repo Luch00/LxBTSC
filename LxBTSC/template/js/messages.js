@@ -251,3 +251,41 @@ function ts3ClientBannedFromServer(target, time, link, name, kickerlink, kickern
         text = `You were banned from the server by <a href="${kickerlink}" class="TextMessage_UserLink" oncontextmenu="ts3LinkClicked(event)">"${kickername}"</a> (${message})`;
     addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_ClientBanned", time, text));
 }
+
+function ts3LogRead(target, log) {
+    console.log(target);
+    console.log(log);
+    let json = JSON.parse(log);
+    
+    if (json.server.length > 0) {
+        let tab = getTab(target, 3, "");
+        appendLog(target, tab, json.server);
+    }
+    if (json.channel.length > 0) {
+        let tab = getTab(target, 2, "");
+        appendLog(target, tab, json.channel);
+    }
+}
+
+function ts3PrivateLogRead(target, client, log) {
+    let json = JSON.parse(log);
+
+    if (json.private.length > 0) {
+        let tab = getTab(target, 1, client);
+        appendLog(target, tab, json.private);
+    }
+}
+
+function appendLog(target, tab, log) {
+    let i = Math.max(log.length - Config.MAX_LINES, 0);
+    let html = "";
+    for (; i < log.length; ++i) {
+        html += Config.AVATARS_ENABLED ? 
+            avatarStyle_normalTextTemplate(msgid, "", log[i].time, log[i].link, log[i].name, log[i].text, target, log[i].uid) :
+            normalTextTemplate(msgid, "InfoMessage", log[i].time, log[i].link, log[i].name, log[i].text);
+            
+        ++msgid;
+    }
+    html += '<div class="history-divider"><span>End History</span></div>';
+    tab[0].insertAdjacentHTML('afterbegin', html);
+}

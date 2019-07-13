@@ -12,6 +12,7 @@
 #include <QToolButton>
 #include <QApplication>
 #include <QFileDialog>
+#include "LogReader.h"
 
 PluginHelper::PluginHelper(const QString& pluginPath, QObject *parent)
 	: QObject(parent)
@@ -129,37 +130,51 @@ void PluginHelper::onTabChange(int i) const
 {
 	int mode;
 	QString server;
-	QString client;
+	QSharedPointer<TsClient> client;
 	std::tie(mode, server, client) = getTab(i);
 	if (mode == 0)
 		return;
+	
+	if (client != nullptr)
+	{
+		if (!client->historyRead())
+		{
+			const QByteArray history = LogReader::readPrivateLog(server, client->uniqueId().toLatin1().toBase64());
+			emit wObject->privateLogRead(server, client->safeUniqueId(), history);
+			client->setHistoryRead();
+		}
 
-	emit wObject->tabChanged(server, mode, client);
+		emit wObject->tabChanged(server, mode, client->safeUniqueId());
+	}
+	else
+	{
+		emit wObject->tabChanged(server, mode, "");
+	}
 }
 
-std::tuple<int, QString, QString> PluginHelper::getTab(int tabIndex) const
+std::tuple<int, QString, QSharedPointer<TsClient>> PluginHelper::getTab(int tabIndex) const
 {
 	if (tabIndex >= 0)
 	{
 		auto s = servers.value(ts3Functions.getCurrentServerConnectionHandlerID());
 		if (s == nullptr)
-			return { 0, "", "" };
+			return { 0, "", nullptr };
 
 		if (tabIndex == 0)
 		{
-			return { 3, s->safeUniqueId(), "" };
+			return { 3, s->safeUniqueId(), nullptr };
 		}
 		if (tabIndex == 1)
 		{
-			return { 2, s->safeUniqueId(), "" };
+			return { 2, s->safeUniqueId(), nullptr };
 		}
 		auto c = s->getClientByName(chatTabWidget->tabText(tabIndex));
 		if (c == nullptr)
-			return { 0, "", "" };
+			return { 0, "", nullptr };
 
-		return { 1, s->safeUniqueId(), c->safeUniqueId() };
+		return { 1, s->safeUniqueId(), c };
 	}
-	return { 0, "", "" };
+	return { 0, "", nullptr };
 }
 
 uint64 PluginHelper::getServerDefaultChannel(uint64 serverConnectionHandlerID)
@@ -255,7 +270,7 @@ void PluginHelper::requestServerEmoteJson(uint64 serverConnectionHandlerID, uint
 	}
 }
 
-std::tuple<int, QString, QString> PluginHelper::getCurrentTab() const
+std::tuple<int, QString, QSharedPointer<TsClient>> PluginHelper::getCurrentTab() const
 {
 	const int i = chatTabWidget->currentIndex();
 	return getTab(i);
@@ -361,10 +376,10 @@ void PluginHelper::onPrintConsoleMessageToCurrentTab(const QString& message) con
 {
 	int mode;
 	QString server;
-	QString client;
+	QSharedPointer<TsClient> client;
 	std::tie(mode, server, client) = getCurrentTab();
 	if (mode > 0)
-		emit wObject->printConsoleMessage(server, mode, client, message);
+		emit wObject->printConsoleMessage(server, mode, client->safeUniqueId(), message);
 	else
 		emit wObject->printConsoleMessage(server, 3, "", message);
 }
@@ -412,6 +427,7 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 		auto myid = getOwnClientId(serverConnectionHandlerID);
 		QSharedPointer<TsServer> server(new TsServer(serverConnectionHandlerID, res, myid, getAllVisibleClients(serverConnectionHandlerID)));
 		emit wObject->addServer(server->safeUniqueId());
+		emit wObject->logRead(server->safeUniqueId(), LogReader::readLog(server->safeUniqueId()));
 		servers.insert(serverConnectionHandlerID, server);
 		free(res);
 
@@ -589,9 +605,9 @@ void PluginHelper::onReloaded() const
 {
 	int mode;
 	QString server;
-	QString client;
+	QSharedPointer<TsClient> client;
 	std::tie(mode, server, client) = getCurrentTab();
-	wObject->tabChanged(server, mode, client);
+	wObject->tabChanged(server, mode, client->safeUniqueId());
 }
 
 void PluginHelper::reloadEmotes() const

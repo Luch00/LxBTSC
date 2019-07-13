@@ -14,6 +14,7 @@ TsClient::TsClient(const QString& name, const QString& uniqueId, unsigned short 
 	, safeUniqueId_(utils::ts3WeirdBase16(uniqueId))
 	, clientLink_(link(clientId, uniqueId, name))
 	, clientId_(clientId)
+	, historyRead_(false)
 {
 }
 
@@ -46,4 +47,14 @@ QString TsClient::safeUniqueId() const
 QString TsClient::clientLink() const
 {
 	return clientLink_;
+}
+
+bool TsClient::historyRead() const
+{
+	return historyRead_;
+}
+
+void TsClient::setHistoryRead()
+{
+	historyRead_ = true;
 }

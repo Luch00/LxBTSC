@@ -179,6 +179,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="LogReader.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="ChatWidget.cpp" />
     <ClCompile Include="PluginHelper.cpp" />
@@ -262,6 +263,7 @@
     </CustomBuild>
     <ClInclude Include="globals.h" />
     <ClInclude Include="file.h" />
+    <ClInclude Include="LogReader.h" />
     <ClInclude Include="plugin.h" />
     <CustomBuild Include="PluginHelper.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

@@ -89,8 +89,8 @@ private:
 	static QSharedPointer<TsClient> getClient(uint64 serverConnectionHandlerID, anyID id);
 	static QMap<unsigned short, QSharedPointer<TsClient>> getAllVisibleClients(uint64 serverConnectionHandlerID);
 	static anyID getOwnClientId(uint64 serverConnectionHandlerID);
-	std::tuple<int, QString, QString> getCurrentTab() const;
-	std::tuple<int, QString, QString> getTab(int tabIndex) const;
+	std::tuple<int, QString, QSharedPointer<TsClient>> getCurrentTab() const;
+	std::tuple<int, QString, QSharedPointer<TsClient>> getTab(int tabIndex) const;
 
 	uint64 getServerDefaultChannel(uint64 serverConnectionHandlerID);
 	void getServerEmoteFileInfo(uint64 serverConnectionHandlerID);

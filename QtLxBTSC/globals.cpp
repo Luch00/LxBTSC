@@ -10,3 +10,5 @@
 struct TS3Functions ts3Functions;
 char returnCodeEmoteFileInfo[64];
 char returnCodeEmoteFileRequest[64];
+char pluginPath[PATH_BUFSIZE];
+char configPath[PATH_BUFSIZE];

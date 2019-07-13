@@ -14,6 +14,9 @@
 #include "teamspeak/clientlib_publicdefinitions.h"
 #include "ts3_functions.h"
 
+constexpr short PATH_BUFSIZE = 512;
 extern struct TS3Functions ts3Functions;
 extern char returnCodeEmoteFileInfo[64];
 extern char returnCodeEmoteFileRequest[64];
+extern char pluginPath[PATH_BUFSIZE];
+extern char configPath[PATH_BUFSIZE];
