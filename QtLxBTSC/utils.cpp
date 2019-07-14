@@ -2,7 +2,7 @@
  * Better Chat plugin for TeamSpeak 3
  * GPLv3 license
  *
- * Copyright (C) 2018 Luch (https://github.com/Luch00)
+ * Copyright (C) 2019 Luch (https://github.com/Luch00)
 */
 
 #pragma once
@@ -46,30 +46,6 @@ namespace utils
 	{
 		return QTime::currentTime().toString("hh:mm:ss");
 	}
-	
-	/*void checkEmoteSets(const QString& path)
-	{
-		QDir directory(path + "LxBTSC/template/Emotes");
-		QStringList f = directory.entryList(QStringList("*.json"), QDir::Files, QDir::NoSort);
-		QString json;
-		if (f.isEmpty())
-		{
-			json = "[]";
-		}
-		else
-		{
-			json = "[\"";
-			json.append(f.join("\",\""));
-			json.append("\"]");
-		}
-
-		QFile file(path + "LxBTSC/template/emotesets.json");
-		if (file.open(QIODevice::WriteOnly))
-		{
-			QTextStream stream(&file);
-			stream << json << endl;
-		}
-	}*/
 
 	// make a list of all local emotesets so javascript can load them
 	void makeEmoteJsonArray(const QString& path)
@@ -106,8 +82,8 @@ namespace utils
 	// string used for avatar filenames
 	QString ts3WeirdBase16(const QString& uid)
 	{
-		QString hexArray = "0123456789abcdef";
-		QString replaceArray = "abcdefghijklmnop";
+		static const QString hexArray = "0123456789abcdef";
+		static const QString replaceArray = "abcdefghijklmnop";
 		QByteArray hex = QByteArray::fromBase64(uid.toLatin1()).toHex();
 		QString str(hex);
 		QString ret;
@@ -118,9 +94,4 @@ namespace utils
 		}
 		return ret;
 	}
-
-	/*QString buildClientLink(unsigned short clientID, const QString& uniqueID, const QString& name)
-	{
-		return QString("client://%1/%2~%3").arg(QString::number(clientID), uniqueID, name.toHtmlEscaped());
-	}*/
 }

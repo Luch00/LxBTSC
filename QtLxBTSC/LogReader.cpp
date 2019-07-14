@@ -29,7 +29,6 @@ QByteArray LogReader::readPrivateLog(const QString& serverUniqueID, const QStrin
 	QJsonDocument doc;
 	QJsonObject obj;
 	const QString filePath = QString("%1chats/%2/clients/%3.html").arg(configPath, serverUniqueID, clientUniqueID);
-	//ts3Functions.logMessage(filePath.toLatin1(), LogLevel_DEVEL, "BetterChat", 0);
 	QByteArray log = readFile(filePath);
 	QJsonArray array = parseMessages(log);
 	obj.insert("private", array);
@@ -39,7 +38,6 @@ QByteArray LogReader::readPrivateLog(const QString& serverUniqueID, const QStrin
 
 QByteArray LogReader::readFile(const QString& filePath)
 {
-	//ts3Functions.logMessage("Opening logfile", LogLevel_DEVEL, "BetterChat", 0);
 	QFile file(filePath);
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
@@ -59,7 +57,6 @@ QByteArray LogReader::readFile(const QString& filePath)
 
 QJsonArray LogReader::parseMessages(const QByteArray& log)
 {
-	//ts3Functions.logMessage("Parsing log", LogLevel_DEVEL, "BetterChat", 0);
 	const static QRegularExpression re(R"(&lt;(.*)&gt;.*(client://\d+/(.+)~(.+))\">.*TextMessage_Text\">(.*?)</span>)");
 
 	QJsonArray array;
@@ -67,8 +64,6 @@ QJsonArray LogReader::parseMessages(const QByteArray& log)
 	buffer.open(QBuffer::ReadWrite);
 	buffer.write(log);
 	buffer.seek(0);
-	//int i = 0;
-	//int j = 0;
 	while (buffer.canReadLine())
 	{
 		QByteArray line = buffer.readLine();
@@ -88,11 +83,7 @@ QJsonArray LogReader::parseMessages(const QByteArray& log)
 			message.insert("name", name);
 			message.insert("text", text);
 			array.append(message);
-			//++j;
 		}
-		//++i;
 	}
-	//ts3Functions.logMessage(QString::number(i).toLatin1(), LogLevel_DEVEL, "BetterChat", 0);
-	//ts3Functions.logMessage(QString::number(j).toLatin1(), LogLevel_DEVEL, "BetterChat", 0);
 	return array;
 }

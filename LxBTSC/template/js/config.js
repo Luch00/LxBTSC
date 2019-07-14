@@ -20,6 +20,7 @@ function loadConfig() {
             Config.EMOTICONS_ENABLED = true;
             Config.AVATARS_ENABLED = false;
             Config.HOVER_ANIMATES_GIFS = false;
+            Config.HISTORY_ENABLED = true,
             Config.DOWNLOAD_DIR = "";
             Config.REMOTE_EMOTES = [];
             Config.FONT_SIZE = 12;
