@@ -25,7 +25,6 @@ TsClient::~TsClient()
 void TsClient::setName(QString newName)
 {
 	name_ = newName;
-	//clientLink_ = link();
 	clientLink_ = link(clientId_, uniqueId_, name_);
 }
 

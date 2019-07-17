@@ -176,12 +176,12 @@ int ts3plugin_onServerErrorEvent(uint64 serverConnectionHandlerID, const char* e
 
 	if (strcmp(returnCode, returnCodeEmoteFileRequest) == 0)
 	{
-		ts3Functions.logMessage(QString("Could not dowload emotes, %1").arg(errorMessage).toLatin1(), LogLevel_INFO, "BetterChat", 0);
+		logInfo(QString("Could not dowload emotes, %1").arg(errorMessage).toLatin1());
 		return 1;
 	}
 	if (strcmp(returnCode, returnCodeEmoteFileInfo) == 0)
 	{
-		ts3Functions.logMessage(QString("Could not get emote fileinfo, %1").arg(errorMessage).toLatin1(), LogLevel_INFO, "BetterChat", 0);
+		logInfo(QString("Could not get emote fileinfo, %1").arg(errorMessage).toLatin1());
 		return 1;
 	}
 	
@@ -208,12 +208,12 @@ int ts3plugin_onServerPermissionErrorEvent(uint64 serverConnectionHandlerID, con
 
 	if (strcmp(returnCode, returnCodeEmoteFileRequest) == 0)
 	{
-		ts3Functions.logMessage(QString("Could not dowload emotes, %1").arg(errorMessage).toLatin1(), LogLevel_INFO, "BetterChat", 0);
+		logInfo(QString("Could not dowload emotes, %1").arg(errorMessage).toLatin1());
 		return 1;
 	}
 	if (strcmp(returnCode, returnCodeEmoteFileInfo) == 0)
 	{
-		ts3Functions.logMessage(QString("Could not get emote fileinfo, %1").arg(errorMessage).toLatin1(), LogLevel_INFO, "BetterChat", 0);
+		logInfo(QString("Could not get emote fileinfo, %1").arg(errorMessage).toLatin1());
 		return 1;
 	}
 
@@ -237,7 +237,7 @@ int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetM
 	// get clients own ID
 	anyID myID;
 	if (ts3Functions.getClientID(serverConnectionHandlerID, &myID) != ERROR_ok) {
-		ts3Functions.logMessage("Error querying own client id", LogLevel_ERROR, "Plugin", serverConnectionHandlerID);
+		logError("Error querying own client id");
 		return 0;
 	}
 

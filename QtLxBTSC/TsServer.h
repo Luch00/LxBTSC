@@ -10,13 +10,14 @@
 #include <QObject>
 #include <QMap>
 #include <QSharedPointer>
+#include <globals.h>
 #include "TsClient.h"
 
 class TsServer
 {
 
 public:
-	TsServer(unsigned long long serverId, QString uniqueId, unsigned short myId, QMap<unsigned short, QSharedPointer<TsClient>> clients);
+	TsServer(unsigned long long serverId, const QString& uniqueId);
 	~TsServer();
 
 	QString uniqueId() const;
@@ -24,10 +25,12 @@ public:
 	bool connected() const;
 	unsigned short myId() const;
 	void setDisconnected();
-	void addClients(QMap<unsigned short, QSharedPointer<TsClient>> newClients);
-	void addClient(unsigned short clientId, QSharedPointer<TsClient>);
+	void setConnected();
+	QSharedPointer<TsClient> addClient(unsigned short clientId);
+	QSharedPointer<TsClient> addClient(unsigned short clientId, QSharedPointer<TsClient> client);
 	QSharedPointer<TsClient> getClient(unsigned short clientId) const;
-	QSharedPointer<TsClient> getClientByName(QString name) const;
+	QSharedPointer<TsClient> getClientByName(const QString& name) const;
+	void updateClients();
 
 private:
 	unsigned long long serverId_;
@@ -35,5 +38,9 @@ private:
 	QString safeUniqueId_;
 	bool connected_;
 	unsigned short myId_;
-	QMap<unsigned short, QSharedPointer<TsClient>> clients_;
+	QMap<unsigned short, QString> clientIdCache_;
+	QMap<QString, QSharedPointer<TsClient>> clients_;
+
+	QSharedPointer<TsClient> getClientInfo(unsigned short clientId);
+	void getOwnId();
 };

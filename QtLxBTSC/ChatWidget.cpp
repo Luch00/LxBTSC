@@ -51,12 +51,12 @@ ChatWidget::ChatWidget(const QString& path, TsWebObject* webObject, QWidget *par
 		if (!loadComplete)
 		{
 			loadComplete = true;
-			ts3Functions.logMessage("Page load finished", LogLevel_INFO, "BetterChat", 0);
+			logInfo("Page load finished");
 		}
 		else
 		{
 			emit pageReloaded();
-			ts3Functions.logMessage("Page reload finished", LogLevel_INFO, "BetterChat", 0);
+			logInfo("Page reload finished");
 		}
 	});
 
@@ -77,7 +77,7 @@ void ChatWidget::waitloop() const
 		timer.setSingleShot(true);
 		QEventLoop wait;
 		connect(&timer, &QTimer::timeout, &wait, &QEventLoop::quit);
-		ts3Functions.logMessage("Waiting for page load...", LogLevel_INFO, "BetterChat", 0);
+		logInfo("Waiting for page load...");
 		timer.start(200);
 		wait.exec();
 		if (!loadComplete)
@@ -104,7 +104,7 @@ void ChatWidget::setupPage() const
 
 	page->setWebChannel(channel);
 	channel->registerObject("wObject", wObject);
-	ts3Functions.logMessage("Page load start", LogLevel_INFO, "BetterChat", 0);
+	logInfo("Page load start");
 	page->load(QUrl(pathToPage));
 }
 

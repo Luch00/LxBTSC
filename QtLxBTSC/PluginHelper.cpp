@@ -80,7 +80,7 @@ void PluginHelper::initUi()
 
 	insertMenu();
 	wObject->setDone(true);
-	ts3Functions.logMessage("Hook UI", LogLevel_INFO, "BetterChat", 0);
+	logInfo("Hook UI");
 }
 
 // add own menu to menubar
@@ -155,7 +155,7 @@ std::tuple<int, QString, QSharedPointer<TsClient>> PluginHelper::getTab(int tabI
 {
 	if (tabIndex >= 0)
 	{
-		auto s = servers.value(ts3Functions.getCurrentServerConnectionHandlerID());
+		auto s = getServer(ts3Functions.getCurrentServerConnectionHandlerID());
 		if (s == nullptr)
 			return { 0, "", nullptr };
 
@@ -199,7 +199,7 @@ uint64 PluginHelper::getServerDefaultChannel(uint64 serverConnectionHandlerID)
 			}
 		}
 	}
-	ts3Functions.logMessage("Could not find default channel", LogLevel_INFO, "BetterChat", 0);
+	logInfo("Could not find default channel");
 	return 0;
 }
 
@@ -211,7 +211,7 @@ void PluginHelper::getServerEmoteFileInfo(uint64 serverConnectionHandlerID)
 		// request file info of emotes.json in default channel root, this will be returned in OnFileInfoEvent
 		if (ts3Functions.requestFileInfo(serverConnectionHandlerID, channelID, "", "/emotes.json", returnCodeEmoteFileInfo) != ERROR_ok)
 		{
-			ts3Functions.logMessage("Could not request server emotes.json", LogLevel_INFO, "BetterChat", 0);
+			logInfo("Could not request server emotes.json");
 		}
 	}
 }
@@ -223,11 +223,11 @@ void PluginHelper::handleFileInfoEvent(uint64 serverConnectionHandlerID, uint64 
 
 	if (size > 31457280) // put in some kind of size limitation, left it as large for now
 	{
-		ts3Functions.logMessage("emotes.json too large, skipping", LogLevel_INFO, "BetterChat", 0);
+		logInfo("emotes.json too large, skipping");
 		return;
 	}
 
-	QFileInfo old(QString("%1LxBTSC/template/Emotes/%2/emotes.json").arg(pluginPath).arg(servers[serverConnectionHandlerID]->safeUniqueId()));
+	QFileInfo old(QString("%1LxBTSC/template/Emotes/%2/emotes.json").arg(pluginPath).arg(getServer(serverConnectionHandlerID)->safeUniqueId()));
 
 	// check if old file on disk
 	if (old.exists())
@@ -247,7 +247,7 @@ void PluginHelper::handleFileInfoEvent(uint64 serverConnectionHandlerID, uint64 
 		if (!dir.exists())
 			if (!dir.mkpath("."))
 			{
-				ts3Functions.logMessage("Could not create directory in template/Emotes", LogLevel_INFO, "BetterChat", 0);
+				logInfo("Could not create directory in template/Emotes");
 				return;
 			}
 
@@ -265,7 +265,7 @@ void PluginHelper::requestServerEmoteJson(uint64 serverConnectionHandlerID, uint
 	}
 	else
 	{
-		ts3Functions.logMessage("Could not start file transfer (emotes.json)", LogLevel_INFO, "BetterChat", 0);
+		logInfo("Could not start file transfer (emotes.json)");
 	}
 }
 
@@ -313,7 +313,7 @@ void PluginHelper::onChannelUrlClicked(const QUrl& url) const
 void PluginHelper::onTransferFailure() const
 {
 	ts3Functions.printMessageToCurrentTab("File transfer failure");
-	ts3Functions.logMessage("File transfer failure", LogLevel_ERROR, "BetterChat", 0);
+	logError("File transfer failure");
 }
 
 // called when emote is clicked in html emote menu
@@ -385,15 +385,18 @@ void PluginHelper::onPrintConsoleMessageToCurrentTab(const QString& message) con
 
 void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID fromID, anyID toID, anyID targetMode, QString senderUniqueID, const QString& fromName, QString message, bool outgoing) const
 {
-	auto s = servers.value(serverConnectionHandlerID);
+	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
+	{
+		logError(QString("%1: no cached server").arg(__func__));
 		return;
+	}
 	auto c = s->getClient(fromID);
 	if (c == nullptr)
 	{
 		QSharedPointer<TsClient> client(new TsClient(fromName, senderUniqueID, fromID));
 		c = client;
-		servers.value(serverConnectionHandlerID)->addClient(fromID, client);
+		getServer(serverConnectionHandlerID)->addClient(fromID, client);
 	}
 	auto r = s->getClient(toID);
 
@@ -405,7 +408,7 @@ void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID f
 
 	// serverid, in or out, time, name, link, message, mode, senderid, targetid
 	emit wObject->textMessageReceived(
-		getServerId(serverConnectionHandlerID),
+		s->safeUniqueId(),
 		outgoing ? "Outgoing" : "Incoming",
 		QTime::currentTime().toString("hh:mm:ss"),
 		fromName,
@@ -419,9 +422,12 @@ void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID f
 
 QString PluginHelper::getServerId(uint64 serverConnectionHandlerID) const
 {
-	auto s = servers.value(serverConnectionHandlerID);
+	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
+	{
+		logError(QString("%1: no cached server").arg(__func__));
 		return "MISSING-DEFAULT";
+	}
 	return s->safeUniqueId();
 }
 
@@ -430,60 +436,89 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 	char *res;
 	if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_UNIQUE_IDENTIFIER, &res) == ERROR_ok)
 	{
-		auto myid = getOwnClientId(serverConnectionHandlerID);
-		QSharedPointer<TsServer> server(new TsServer(serverConnectionHandlerID, res, myid, getAllVisibleClients(serverConnectionHandlerID)));
-		emit wObject->addServer(server->safeUniqueId());
-		if (config->getConfigAsBool("HISTORY_ENABLED"))
+		QSharedPointer<TsServer> server;
+		serverIdCache.insert(serverConnectionHandlerID, res);
+		if (servers.contains(res))
 		{
-			emit wObject->logRead(server->safeUniqueId(), LogReader::readLog(server->safeUniqueId()));
+			server = servers.value(res);
+			server->setConnected();
+			server->updateClients();
 		}
-		servers.insert(serverConnectionHandlerID, server);
+		else
+		{
+			//QSharedPointer<TsServer> server(new TsServer(serverConnectionHandlerID, res));
+			server = QSharedPointer<TsServer>(new TsServer(serverConnectionHandlerID, res));
+			emit wObject->addServer(server->safeUniqueId());
+			if (config->getConfigAsBool("HISTORY_ENABLED"))
+			{
+				emit wObject->logRead(server->safeUniqueId(), LogReader::readLog(server->safeUniqueId()));
+			}
+			servers.insert(res, server);
+		}
+		
 		free(res);
 
 		char *msg;
 		if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_WELCOMEMESSAGE, &msg) == ERROR_ok)
 		{
-			emit wObject->serverWelcomeMessage(getServerId(serverConnectionHandlerID), utils::time(), msg);
+			emit wObject->serverWelcomeMessage(server->safeUniqueId(), utils::time(), msg);
 			free(msg);
 		}
 		if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &msg) == ERROR_ok)
 		{
-			emit wObject->serverConnected(getServerId(serverConnectionHandlerID), utils::time(), msg);
+			emit wObject->serverConnected(server->safeUniqueId(), utils::time(), msg);
 			free(msg);
 		}
 		getServerEmoteFileInfo(serverConnectionHandlerID);
 	}
 }
 
+QSharedPointer<TsServer> PluginHelper::getServer(uint64 serverConnectionHandlerID) const
+{
+	const QString uid = serverIdCache.value(serverConnectionHandlerID);
+	return servers.value(uid);
+}
+
 void PluginHelper::serverDisconnected(uint serverConnectionHandlerID) const
 {
-	if (servers.contains(serverConnectionHandlerID))
+	auto s = getServer(serverConnectionHandlerID);
+	if (s == nullptr)
 	{
-		// don't spam "disconnected" in case connection was lost
-		if (servers.value(serverConnectionHandlerID)->connected())
-		{
-			servers.value(serverConnectionHandlerID)->setDisconnected();
-			emit wObject->serverDisconnected(getServerId(serverConnectionHandlerID), utils::time());
-		}
+		logError(QString("%1: no cached server").arg(__func__));
+		return;
+	}
+
+	const QString uid = serverIdCache.value(serverConnectionHandlerID);
+	// don't spam "disconnected" in case connection was lost
+	if (s->connected())
+	{
+		s->setDisconnected();
+		emit wObject->serverDisconnected(s->safeUniqueId(), utils::time());
 	}
 }
 
 void PluginHelper::clientConnected(uint64 serverConnectionHandlerID, anyID clientID) const
 {
-	auto client = getClient(serverConnectionHandlerID, clientID);
-	auto s = servers.value(serverConnectionHandlerID);
+	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
+	{
+		logError(QString("%1: no cached server").arg(__func__));
 		return;
+	}
+		
 
-	s->addClient(clientID, client);
-	emit wObject->clientConnected(getServerId(serverConnectionHandlerID), utils::time(), client->clientLink(), client->name());
+	auto client = s->addClient(clientID);
+	emit wObject->clientConnected(s->safeUniqueId(), utils::time(), client->clientLink(), client->name());
 }
 
 void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message) const
 {
-	auto s = servers.value(serverConnectionHandlerID);
+	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
+	{
+		logError(QString("%1: no cached server").arg(__func__));
 		return;
+	}
 
 	// don't print own disconnects
 	if (clientID == s->myId())
@@ -491,76 +526,103 @@ void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID cl
 	
 	auto client = s->getClient(clientID);
 	if (client == nullptr)
+	{
+		logError(QString("%1: no cached client").arg(__func__));
 		return;
+	}
 
-	emit wObject->clientDisconnected(getServerId(serverConnectionHandlerID), utils::time(), client->clientLink(), client->name(), message);
+	emit wObject->clientDisconnected(s->safeUniqueId(), utils::time(), client->clientLink(), client->name(), message);
 }
 
 void PluginHelper::clientTimeout(uint64 serverConnectionHandlerID, anyID clientID) const
 {
-	auto s = servers.value(serverConnectionHandlerID);
+	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
+	{
+		logError(QString("%1: no cached server").arg(__func__));
 		return;
+	}
 	auto c = s->getClient(clientID);
 	if (c == nullptr)
+	{
+		logError(QString("%1: no cached client").arg(__func__));
 		return;
+	}
 
-	emit wObject->clientTimeout(getServerId(serverConnectionHandlerID), utils::time(), c->clientLink(), c->name());
+	emit wObject->clientTimeout(s->safeUniqueId(), utils::time(), c->clientLink(), c->name());
 }
 
 void PluginHelper::clientKickedFromChannel(uint64 serverConnectionHandlerID, anyID kickedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage)
 {
 	// add channel name here?
-	auto s = servers.value(serverConnectionHandlerID);
+	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
+	{
+		logError(QString("%1: no cached server").arg(__func__));
 		return;
+	}
 	
 	if (kickedID == s->myId())
 	{
-		emit wObject->clientKickedFromChannel(getServerId(serverConnectionHandlerID), utils::time(), "", "", TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+		emit wObject->clientKickedFromChannel(s->safeUniqueId(), utils::time(), "", "", TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
 	}
 
 	auto c = s->getClient(kickedID);
 	if (c == nullptr)
+	{
+		logError(QString("%1: no cached client").arg(__func__));
 		return;
+	}
 
-	emit wObject->clientKickedFromChannel(getServerId(serverConnectionHandlerID), utils::time(), c->clientLink(), c->name(), TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+	emit wObject->clientKickedFromChannel(s->safeUniqueId(), utils::time(), c->clientLink(), c->name(), TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
 }
 
 void PluginHelper::clientKickedFromServer(uint64 serverConnectionHandlerID, anyID kickedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage)
 {
-	auto s = servers.value(serverConnectionHandlerID);
+	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
+	{
+		logError(QString("%1: no cached server").arg(__func__));
 		return;
+	}
 
 	if (kickedID == s->myId())
 	{
-		emit wObject->clientKickedFromChannel(getServerId(serverConnectionHandlerID), utils::time(), "", "", TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+		emit wObject->clientKickedFromServer(s->safeUniqueId(), utils::time(), "", "", TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
 	}
 
 	auto c = s->getClient(kickedID);
 	if (c == nullptr)
+	{
+		logError(QString("%1: no cached client").arg(__func__));
 		return;
+	}
 	
-	emit wObject->clientKickedFromServer(getServerId(serverConnectionHandlerID), utils::time(), c->clientLink(), c->name(), TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+	emit wObject->clientKickedFromServer(s->safeUniqueId(), utils::time(), c->clientLink(), c->name(), TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
 }
 
 void PluginHelper::clientBannedFromServer(uint64 serverConnectionHandlerID, anyID bannedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage)
 {
-	auto s = servers.value(serverConnectionHandlerID);
+	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
+	{
+		logError(QString("%1: no cached server").arg(__func__));
 		return;
+	}
 
 	if (bannedID == s->myId())
 	{
-		emit wObject->clientKickedFromChannel(getServerId(serverConnectionHandlerID), utils::time(), "", "", TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+		emit wObject->clientBannedFromServer(s->safeUniqueId(), utils::time(), "", "", TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
 	}
 
 	auto c = s->getClient(bannedID);
 	if (c == nullptr)
+	{
+		logError(QString("%1: no cached client").arg(__func__));
 		return;
+	}
 
-	emit wObject->clientBannedFromServer(getServerId(serverConnectionHandlerID), utils::time(), c->clientLink(), c->name(), TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+	emit wObject->clientBannedFromServer(s->safeUniqueId(), utils::time(), c->clientLink(), c->name(), TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
 }
 
 // called when file transfer ends in some way
@@ -579,25 +641,32 @@ void PluginHelper::transferStatusChanged(anyID transferID, unsigned int status)
 
 void PluginHelper::clientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, QString displayName) const
 {
-	auto c = servers.value(serverConnectionHandlerID)->getClient(clientID);
+	auto c = getServer(serverConnectionHandlerID)->getClient(clientID);
+	if (c == nullptr)
+	{
+		logError(QString("%1: no cached client").arg(__func__));
+	}
 	c->setName(displayName);
 }
 
 void PluginHelper::poked(uint64 serverConnectionHandlerID, anyID pokerID, const QString& pokerName, QString pokerUniqueID, QString pokeMessage) const
 {
-	auto s = servers.value(serverConnectionHandlerID);
+	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
+	{
+		logError(QString("%1: no cached server").arg(__func__));
 		return;
+	}
 
 	auto c = s->getClient(pokerID);
 	if (c == nullptr)
 	{
 		QSharedPointer <TsClient> client(new TsClient(pokerName, pokerUniqueID, pokerID));
 		c = client;
-		s->addClient(pokerID, client);
+		s->addClient(pokerID, c);
 	}
 	emit wObject->clientPoked(
-		getServerId(serverConnectionHandlerID),
+		s->safeUniqueId(),
 		utils::time(), 
 		c->clientLink(), 
 		pokerName, 
@@ -640,39 +709,6 @@ void PluginHelper::fullReloadEmotes()
 	emit wObject->loadEmotes();
 }
 
-// Get the nickname and unique id of a client
-QSharedPointer<TsClient> PluginHelper::getClient(uint64 serverConnectionHandlerID, anyID id)
-{
-	char res[TS3_MAX_SIZE_CLIENT_NICKNAME];
-	if (ts3Functions.getClientDisplayName(serverConnectionHandlerID, id, res, TS3_MAX_SIZE_CLIENT_NICKNAME) == ERROR_ok)
-	{
-	}
-	QString uniqueid;
-	char *uid;
-	if (ts3Functions.getClientVariableAsString(serverConnectionHandlerID, id, CLIENT_UNIQUE_IDENTIFIER, &uid) == ERROR_ok)
-	{
-		uniqueid = uid;
-		free(uid);
-	}
-	return QSharedPointer<TsClient>(new TsClient(res, uniqueid, id));
-}
-
-// cache all connected visible clients
-QMap<unsigned short, QSharedPointer<TsClient>> PluginHelper::getAllVisibleClients(uint64 serverConnectionHandlerID)
-{
-	QMap<unsigned short, QSharedPointer<TsClient>> map;
-	anyID *list;
-	if (ts3Functions.getClientList(serverConnectionHandlerID, &list) == ERROR_ok)
-	{
-		for (size_t i = 0; list[i] != NULL; i++)
-		{
-			map.insert(list[i], getClient(serverConnectionHandlerID, list[i]));
-		}
-		free(list);
-	}
-	return map;
-}
-
 void PluginHelper::openConfig() const
 {
 	config->show();
@@ -697,19 +733,13 @@ void PluginHelper::serverStopped(uint64 serverConnectionHandlerID, const QString
 // called when client enters view by joining the same channel or by this client subscribing to a channel
 void PluginHelper::clientEnteredView(uint64 serverConnectionHandlerID, anyID clientID) const
 {
-	auto s = servers.value(serverConnectionHandlerID);
-	if (s == nullptr)
-		return;
-
-	s->addClient(clientID, getClient(serverConnectionHandlerID, clientID));
-}
-
-anyID PluginHelper::getOwnClientId(uint64 serverConnectionHandlerID)
-{
-	anyID id;
-	if (ts3Functions.getClientID(serverConnectionHandlerID, &id) != ERROR_ok)
+	auto s = getServer(serverConnectionHandlerID);
+	if (s == nullptr) 
 	{
-		return 0;
+		// cliententeredview is called before STATUS_CONNECTION_ESTABLISHED?
+		//logError(QString("%1: no cached server").arg(__func__));
+		return;
 	}
-	return id;
+
+	s->addClient(clientID);
 }

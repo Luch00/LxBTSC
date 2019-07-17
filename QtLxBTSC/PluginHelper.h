@@ -78,7 +78,8 @@ private:
 	QMenu* chatMenu;
 	ChatWidget* chat;
 
-	QMap<unsigned long long, QSharedPointer<TsServer>> servers;
+	QMap<unsigned long long, QString> serverIdCache;
+	QMap<QString, QSharedPointer<TsServer>> servers;
 	const QString pluginPath;
 	Qt::ApplicationState currentState;
 	QList<anyID> downloads;
@@ -86,9 +87,6 @@ private:
 	void initUi();
 	void insertMenu();
 	QString getServerId(uint64 serverConnectionHandlerID) const;
-	static QSharedPointer<TsClient> getClient(uint64 serverConnectionHandlerID, anyID id);
-	static QMap<unsigned short, QSharedPointer<TsClient>> getAllVisibleClients(uint64 serverConnectionHandlerID);
-	static anyID getOwnClientId(uint64 serverConnectionHandlerID);
 	std::tuple<int, QString, QSharedPointer<TsClient>> getCurrentTab() const;
 	std::tuple<int, QString, QSharedPointer<TsClient>> getTab(int tabIndex) const;
 
@@ -97,4 +95,5 @@ private:
 
 	void requestServerEmoteJson(uint64 serverConnectionHandlerID, uint64 channelID, const QString& filePath);
 
+	QSharedPointer<TsServer> getServer(uint64 serverConnectionHandlerID) const;
 };

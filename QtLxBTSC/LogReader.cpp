@@ -41,7 +41,7 @@ QByteArray LogReader::readFile(const QString& filePath)
 	QFile file(filePath);
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
-		ts3Functions.logMessage("LogReader: failed to open file", LogLevel_DEVEL, "BetterChat", 0);
+		logInfo("LogReader: failed to open file");
 		return "";
 	}
 
