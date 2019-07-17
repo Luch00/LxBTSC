@@ -8,6 +8,7 @@
 var imageMime = [ "image/gif", "image/jpeg", "image/png", "image/svg+xml", "image/webp" ];
 var audioMime = [ "audio/mpeg", "audio/wave", "audio/wav", "audio/x-wav", "audio/x-pn-wav", "audio/webm", "audio/ogg", "audio/flac"];
 var videoMime = [ "video/webm", "video/ogg", "application/ogg" ];
+var h264capable = false;
 
 function embed(messageId, message_text) {
     $('a', message_text).each(function(index, element) {
@@ -138,10 +139,10 @@ function embedHtml(json, messageId) {
     }
 
     // not webm
-    /*if (json.ogSiteName === "ニコニコ動画") {
+    if (json.ogSiteName === "ニコニコ動画" && h264capable) {
         addEmbed(nicovideo(json), messageId);
         return;
-    }*/
+    }
 
     // generic embed
     if (!Config.GENERICS_DISABLED && json.ogTitle) {
@@ -213,8 +214,9 @@ function videoFile(url) {
         class: "generic-file-embed"
     });
     let video = $('<video/>', {
-        width: "100%",
-        height: "100%",
+        /*width: "100%",*/
+        /*height: "100%",*/
+        height: "250px",
         controls: true,
         loop: true,
         allowfullscreen: true,
@@ -253,9 +255,9 @@ function twitter(json) {
         });
         tweet.append(img);
     }
-    // videos don't work, not webm
-    /*if (json.ogType == "video") {
-        tweet.append('<div><video src="'+json.ogVideoUrl+'"</video></div>');
+    // not webm & iframe fails to load, frame-ancestor csp
+    /*if (json.ogType == "video" && h264capable) {
+        tweet.append(`<div><iframe src="${json.ogVideoUrl}" height="250" frameborder="0" allowfullscreen></iframe></div>`)
     }*/
     return embedBlock(tweet);
 }
@@ -395,3 +397,11 @@ function embedBlock(embed) {
 function fixName(name) {
     return name.replace(/(?::|_)(\w)/g, (matches, letter) => letter.toUpperCase());
 }
+
+(() => {
+    const v = document.createElement('video');
+    if (v.canPlayType('video/mp4; codecs="avc1.42E01E"') === "probably") {
+        videoMime.push('video/mp4');
+        h264capable = true;
+    }
+})();
