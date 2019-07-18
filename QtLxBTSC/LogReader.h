@@ -1,3 +1,10 @@
+/*
+ * Better Chat plugin for TeamSpeak 3
+ * GPLv3 license
+ *
+ * Copyright (C) 2019 Luch (https://github.com/Luch00)
+*/
+
 #pragma once
 
 #include <QFile>

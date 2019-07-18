@@ -36,6 +36,10 @@ ConfigWidget::ConfigWidget(const QString& path, QWidget *parent)
 	maxlines->setMinimum(50);
 	maxlines->setMaximum(1000);
 	maxlines->setValue(500);
+	maxHistory = new QSpinBox(this);
+	maxHistory->setMinimum(10);
+	maxHistory->setMaximum(500);
+	maxHistory->setValue(50);
 	fontsize = new QSpinBox(this);
 	fontsize->setMinimum(6);
 	fontsize->setMaximum(34);
@@ -65,6 +69,7 @@ ConfigWidget::ConfigWidget(const QString& path, QWidget *parent)
 	formLayout->addRow(stopGifs);
 	formLayout->addRow(history);
 	formLayout->addRow(new QLabel("Max lines in tab:", this), maxlines);
+	formLayout->addRow(new QLabel("Max lines of history:", this), maxHistory);
 	formLayout->addRow(new QLabel("Font size:", this), fontsize);
 	formLayout->addRow(new QLabel("Download directory:"));
 	formLayout->addRow(downloadDir);
@@ -99,6 +104,7 @@ void ConfigWidget::readConfig()
 		stopGifs->setChecked(jsonObj.value("HOVER_ANIMATES_GIFS").toBool());
 		history->setChecked(jsonObj.value("HISTORY_ENABLED").toBool());
 		maxlines->setValue(jsonObj.value("MAX_LINES").toInt());
+		maxHistory->setValue(jsonObj.value("MAX_HISTORY").toInt());
 		fontsize->setValue(jsonObj.value("FONT_SIZE").toInt());
 		downloadDir->setText(jsonObj.value("DOWNLOAD_DIR").toString());
 		QJsonArray remotejson = jsonObj.value("REMOTE_EMOTES").toArray();
@@ -127,6 +133,7 @@ void ConfigWidget::save()
 	jsonObj.insert("HOVER_ANIMATES_GIFS", stopGifs->isChecked());
 	jsonObj.insert("HISTORY_ENABLED", history->isChecked());
 	jsonObj.insert("MAX_LINES", maxlines->value());
+	jsonObj.insert("MAX_HISTORY", maxHistory->value());
 	jsonObj.insert("FONT_SIZE", fontsize->value());
 	jsonObj.insert("DOWNLOAD_DIR", downloadDir->text());
 	if (remotes->toPlainText().length() > 1)

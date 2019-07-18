@@ -43,6 +43,7 @@ private:
 	QCheckBox* avatar;
 	QCheckBox* history;
 	QSpinBox* maxlines;
+	QSpinBox* maxHistory;
 	QSpinBox* fontsize;
 	QPlainTextEdit* remotes;
 	QPushButton* saveButton;

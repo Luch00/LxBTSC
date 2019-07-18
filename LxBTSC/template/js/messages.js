@@ -277,7 +277,7 @@ function ts3PrivateLogRead(target, client, log) {
 }
 
 function appendLog(target, tab, log) {
-    let i = Math.max(log.length - Config.MAX_LINES, 0);
+    let i = Math.max(log.length - Config.MAX_HISTORY, 0);
     let html = "";
     for (; i < log.length; ++i) {
         html += Config.AVATARS_ENABLED ? 
