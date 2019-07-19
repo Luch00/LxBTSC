@@ -6,6 +6,16 @@
 */
 'use strict'
 let serverMap = new Map();
+let messageLimitObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        if (mutation.addedNodes.length > 0) {
+            let over = mutation.target.childElementCount - Config.MAX_LINES;
+            if(over > 0) {
+                $(mutation.target).children().slice(0, over).remove();
+            }
+        }
+    });
+});
 
 function addServerTabs(serverId, dontshow) {
     if (!serverMap.has(serverId)) {
@@ -56,5 +66,8 @@ function showTab(target, mode, client) {
 }
 
 function createTab() {
-    return $('<div/>', { class: 'chattab', style: `font-size: ${Config.FONT_SIZE ? Config.FONT_SIZE : 12}pt;`} );
+    let tab = $('<div/>', { class: 'chattab', style: `font-size: ${Config.FONT_SIZE ? Config.FONT_SIZE : 12}pt;`} );
+    messageLimitObserver.observe(tab[0], { childList: true });
+    return tab;
+    //return $('<div/>', { class: 'chattab', style: `font-size: ${Config.FONT_SIZE ? Config.FONT_SIZE : 12}pt;`} );
 }

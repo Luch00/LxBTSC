@@ -98,13 +98,6 @@ function thumbnailAvatar(img) {
     still.insertBefore(img);
 }
 
-function checkMessageLimit(tab) {
-    let over = tab.children().length - Config.MAX_LINES;
-    if(over > 0) {
-        tab.children().slice(0, over).remove();
-    }
-}
-
 function parseBBCode(line) {
     let result = XBBCODE.process({
         text: line
@@ -125,7 +118,6 @@ function addTextMessage(target, direction, time, name, userlink, line, mode, cli
     }
     
     let tab = getTab(target, mode, direction === "Outgoing" ? receiver : client);
-    checkMessageLimit(tab);
 
     Config.AVATARS_ENABLED ? 
         tab.append(avatarStyle_normalTextTemplate(msgid, direction, time, userlink, name, parsed.get(0).outerHTML, target, client)) :
@@ -142,7 +134,6 @@ function addTextMessage(target, direction, time, name, userlink, line, mode, cli
 
 function addStatusMessage(target, line) {
     let tab = getTab(target, 3, "");
-    checkMessageLimit(tab);
     tab.append(line);
 
     if (isBottom) {
@@ -155,7 +146,6 @@ function ts3ClientPoked(target, time, link, name, message) {
 
     var parsed = parseBBCode(message);
     let tab = getTab(target, 3, "");
-    checkMessageLimit(tab);
     tab.append(pokeTextTemplate(msgid, time, link, name, parsed));
 
     if (isBottom) {
@@ -167,7 +157,6 @@ function addConsoleMessage(target, mode, client, message) {
     ++msgid;
 
     let tab = getTab(target, mode, client);
-    checkMessageLimit(tab);
     tab.append('<p class="TextMessage_Console">'+parseBBCode(message)+'</p>');
     
     if (isBottom) {

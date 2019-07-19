@@ -4,27 +4,30 @@
  *
  * Copyright (C) 2019 Luch (https://github.com/Luch00)
 */
-var Config = {};
+var Config = {
+    MAX_LINES: 500,
+    MAX_HISTORY: 50,
+    EMBED_ENABLED: true,
+    GENERICS_DISABLED : false,
+    FAVICONS_ENABLED: false,
+    EMOTICONS_ENABLED: true,
+    AVATARS_ENABLED: false,
+    HOVER_ANIMATES_GIFS: false,
+    HISTORY_ENABLED: true,
+    DOWNLOAD_DIR: "",
+    REMOTE_EMOTES: [],
+    FONT_SIZE: 12
+};
 
 function loadConfig() {
     return new Promise((resolve, reject) => {
         $.getJSON("config.json", function(data) {
-            Config = data;
+            Object.keys(data).forEach((key) => {
+                Config[key] = data[key];
+            });
             resolve();
         })
         .fail(function() {
-            Config.MAX_LINES = 500;
-            Config.MAX_HISTORY = 50;
-            Config.EMBED_ENABLED = true;
-            Config.GENERICS_DISABLED = false;
-            Config.FAVICONS_ENABLED = false;
-            Config.EMOTICONS_ENABLED = true;
-            Config.AVATARS_ENABLED = false;
-            Config.HOVER_ANIMATES_GIFS = false;
-            Config.HISTORY_ENABLED = true,
-            Config.DOWNLOAD_DIR = "";
-            Config.REMOTE_EMOTES = [];
-            Config.FONT_SIZE = 12;
             resolve();
         });
     });

@@ -104,7 +104,7 @@ void ConfigWidget::readConfig()
 		stopGifs->setChecked(jsonObj.value("HOVER_ANIMATES_GIFS").toBool());
 		history->setChecked(jsonObj.value("HISTORY_ENABLED").toBool());
 		maxlines->setValue(jsonObj.value("MAX_LINES").toInt());
-		maxHistory->setValue(jsonObj.value("MAX_HISTORY").toInt());
+		maxHistory->setValue(jsonObj.value("MAX_HISTORY").toInt(50));
 		fontsize->setValue(jsonObj.value("FONT_SIZE").toInt());
 		downloadDir->setText(jsonObj.value("DOWNLOAD_DIR").toString());
 		QJsonArray remotejson = jsonObj.value("REMOTE_EMOTES").toArray();
