@@ -241,6 +241,46 @@ function ts3ClientBannedFromServer(target, time, link, name, kickerlink, kickern
     addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_ClientBanned", time, text));
 }
 
+function ts3ClientMovedBySelf(target, time, clientLink, clientName, oldChannelLink, newChannelLink, oldChannelName, newChannelName) {
+    ++msgid;
+    let text;
+    if (clientLink)
+        text = `<a href="${clientLink}">"${clientName}"</a> switched from channel <a href="${oldChannelLink}">"${oldChannelName}"</a> to <a href="${newChannelLink}">"${newChannelName}"</a>`;
+    else
+        text = `You switched from channel <a href="${oldChannelLink}">"${oldChannelName}"</a> to <a href="${newChannelLink}">"${newChannelName}"</a>`;
+    addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_ClientMoved", time, text));
+}
+
+function ts3ClientMovedByOther(target, time, clientLink, clientName, moverLink, moverName, oldChannelLink, newChannelLink, oldChannelName, newChannelName, moveMessage) {
+    ++msgid;
+    let text;
+    if (clientLink)
+        text = `<a href="${clientLink}">"${clientName}"</a> was moved from channel <a href="${oldChannelLink}">"${oldChannelName}"</a> to <a href="${newChannelLink}">"${newChannelName}"</a> by <a href="${moverLink}">"${moverName}"</a>${moveMessage.length > 0 ? `(${moveMessage})` : ""}`;
+    else
+        text = `You were moved from channel <a href="${oldChannelLink}">"${oldChannelName}"</a> to <a href="${newChannelLink}">"${newChannelName}"</a> by <a href="${moverLink}">"${moverName}"</a>${moveMessage.length > 0 ? `(${moveMessage})` : ""}`;
+    addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_ClientMoved", time, text));
+}
+
+function ts3ChannelCreated(target, time, channelLink, channelName, creatorLink, creatorName) {
+    ++msgid;
+    let text;
+    if (creatorLink)
+        text = `Channel <a href="${channelLink}">"${channelName}"</a> created successfully by <a href="${creatorLink}">"${creatorName}"</a>`;
+    else
+        text = `Channel <a href="${channelLink}">"${channelName}"</a> created successfully`;
+    addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_ChannelCreated", time, text));
+}
+
+function ts3ChannelDeleted(target, time, channelLink, channelName, deleterLink, deleterName) {
+    ++msgid;
+    let text;
+    if (deleterLink)
+        text = `Channel <a href="${channelLink}">"${channelName}"</a> was deleted by <a href="${deleterLink}">"${deleterName}"</a>`;
+    else
+        text = `Channel <a href="${channelLink}">"${channelName}"</a> was deleted`;
+    addStatusMessage(target, statusTextTemplate(msgid, "TextMessage_ChannelCreated", time, text));
+}
+
 function ts3LogRead(target, log) {
     console.log(target);
     console.log(log);

@@ -73,6 +73,11 @@
                 qtObject.clientKickedFromServer.connect(ts3ClientKickedFromServer);
                 qtObject.clientBannedFromServer.connect(ts3ClientBannedFromServer);
 
+                qtObject.clientMovedBySelf.connect(ts3ClientMovedBySelf);
+                qtObject.clientMovedByOther.connect(ts3ClientMovedByOther);
+                qtObject.channelCreated.connect(ts3ChannelCreated);
+                qtObject.channelDeleted.connect(ts3ChannelDeleted);
+
                 qtObject.clientPoked.connect(ts3ClientPoked);
 
                 qtObject.logRead.connect(ts3LogRead);
