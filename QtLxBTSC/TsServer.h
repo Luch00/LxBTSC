@@ -33,6 +33,8 @@ public:
 	QString getChannelName(uint64 channelID);
 	void updateClients();
 	void updateOwnId();
+	void updateChannels();
+	void updateChannel(uint64 channelID);
 
 private:
 	unsigned long long serverId_;
@@ -42,6 +44,8 @@ private:
 	unsigned short myId_;
 	QMap<unsigned short, QString> clientIdCache_;
 	QMap<QString, QSharedPointer<TsClient>> clients_;
+	QMap<unsigned long long, QString> channelNameCache_;
 
+	QString getChannelInfo(uint64 channelID);
 	QSharedPointer<TsClient> getClientInfo(unsigned short clientId);
 };

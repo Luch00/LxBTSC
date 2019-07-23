@@ -16,6 +16,7 @@ TsServer::TsServer(unsigned long long serverId, const QString& uniqueId)
 {
 	updateClients();
 	updateOwnId();
+	updateChannels();
 }
 
 TsServer::~TsServer()
@@ -93,13 +94,12 @@ QSharedPointer<TsClient> TsServer::getClientByName(const QString& name) const
 
 QString TsServer::getChannelName(uint64 channelID)
 {
-	char* res;
-	if (ts3Functions.getChannelVariableAsString(serverId_, channelID, CHANNEL_NAME, &res) != ERROR_ok)
+	if (channelNameCache_.contains(channelID))
 	{
-		return "unknown";
+		return channelNameCache_.value(channelID);
 	}
-	QString name = res;
-	free(res);
+	QString name = getChannelInfo(channelID);
+	channelNameCache_.insert(channelID, name);
 	return name;
 }
 
@@ -129,6 +129,41 @@ void TsServer::updateClients()
 		//ts3Functions.logMessage("Failed to get clientlist", LogLevel_ERROR, "BetterChat", 0);
 		logError("Failed to get clientlist");
 	}
+}
+
+// cache channel names
+void TsServer::updateChannels()
+{
+	uint64* list;
+	if(ts3Functions.getChannelList(serverId_, &list) != ERROR_ok)
+	{
+		logError("Failed to get channel list");
+		return;
+	}
+
+	for (size_t i = 0; list[i] != NULL; i++)
+	{
+		QString name = getChannelInfo(list[i]);
+		channelNameCache_.insert(list[i], name);
+	}
+}
+
+void TsServer::updateChannel(uint64 channelID)
+{
+	QString name = getChannelInfo(channelID);
+	channelNameCache_.insert(channelID, name);
+}
+
+QString TsServer::getChannelInfo(uint64 channelID)
+{
+	char* res;
+	if (ts3Functions.getChannelVariableAsString(serverId_, channelID, CHANNEL_NAME, &res) != ERROR_ok)
+	{
+		return "unknown";
+	}
+	QString name = res;
+	free(res);
+	return name;
 }
 
 // Get the nickname and unique id of a client

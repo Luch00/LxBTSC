@@ -54,6 +54,8 @@ public:
 	void channelCreated(uint64 serverConnectionHandlerID, uint64 channelID, anyID creatorID, const QString& creatorUniqueID, const QString& creatorName);
 	void channelDeleted(uint64 serverConnectionHandlerID, uint64 channelID, anyID deleterID, const QString& deleterUniqueID, const QString& deleterName);
 
+	void channelEdited(uint64 serverConnectionHandlerID, uint64 channelID, anyID editorID, const QString& editorUniqueID, const QString& editorName);
+
 signals:
 	void triggerReloadEmotes();
 

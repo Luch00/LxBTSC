@@ -444,6 +444,7 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 			server->setConnected();
 			server->updateClients();
 			server->updateOwnId();
+			server->updateChannels();
 		}
 		else
 		{
@@ -765,6 +766,17 @@ void PluginHelper::channelDeleted(uint64 serverConnectionHandlerID, uint64 chann
 		s->getChannelName(channelID),
 		deleterLink,
 		deleterName);
+}
+
+void PluginHelper::channelEdited(uint64 serverConnectionHandlerID, uint64 channelID, anyID editorID, const QString& editorUniqueID, const QString& editorName)
+{
+	auto s = getServer(serverConnectionHandlerID);
+	if (s == nullptr)
+	{
+		logError(QString("%1: no cached server").arg(__func__));
+		return;
+	}
+	s->updateChannel(channelID);
 }
 
 // called when file transfer ends in some way
