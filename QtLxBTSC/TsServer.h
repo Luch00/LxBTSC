@@ -30,7 +30,9 @@ public:
 	QSharedPointer<TsClient> addClient(unsigned short clientId, QSharedPointer<TsClient> client);
 	QSharedPointer<TsClient> getClient(unsigned short clientId) const;
 	QSharedPointer<TsClient> getClientByName(const QString& name) const;
+	QString getChannelName(uint64 channelID);
 	void updateClients();
+	void updateOwnId();
 
 private:
 	unsigned long long serverId_;
@@ -42,5 +44,4 @@ private:
 	QMap<QString, QSharedPointer<TsClient>> clients_;
 
 	QSharedPointer<TsClient> getClientInfo(unsigned short clientId);
-	void getOwnId();
 };

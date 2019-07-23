@@ -44,6 +44,11 @@ signals:
 	void clientKickedFromServer(QString target, QString time, QString clientLink, QString name, QString kickerLink, QString kickerName, QString kickMessage);
 	void clientBannedFromServer(QString target, QString time, QString clientLink, QString name, QString kickerLink, QString kickerName, QString kickMessage);
 
+	void clientMovedBySelf(QString target, QString time, QString clientLink, QString clientName, QString oldChannelLink, QString newChannelLink, QString oldChannelName, QString newChannelName);
+	void clientMovedByOther(QString target, QString time, QString clientLink, QString clientName, QString moverLink, QString moverName, QString oldChannelLink, QString newChannelLink, QString oldChannelName, QString newChannelName, QString moveMessage);
+	void channelCreated(QString target, QString time, QString channelLink, QString channelName, QString creatorLink, QString creatorName);
+	void channelDeleted(QString target, QString time, QString channelLink, QString channelName, QString deleterLink, QString deleterName);
+
 	void clientPoked(QString target, QString time, QString clientLink, QString clientName, QString message);
 
 	void logRead(QString target, QByteArray log);

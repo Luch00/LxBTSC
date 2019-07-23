@@ -49,6 +49,11 @@ public:
 	void clientKickedFromServer(uint64 serverConnectionHandlerID, anyID kickedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage);
 	void clientBannedFromServer(uint64 serverConnectionHandlerID, anyID bannedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage);
 
+	void clientMoveBySelf(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID);
+	void clientMovedByOther(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, anyID moverID, const QString& moverName, const QString& moverUniqueID, const QString& moveMessage);
+	void channelCreated(uint64 serverConnectionHandlerID, uint64 channelID, anyID creatorID, const QString& creatorUniqueID, const QString& creatorName);
+	void channelDeleted(uint64 serverConnectionHandlerID, uint64 channelID, anyID deleterID, const QString& deleterUniqueID, const QString& deleterName);
+
 signals:
 	void triggerReloadEmotes();
 

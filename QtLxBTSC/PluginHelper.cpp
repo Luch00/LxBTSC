@@ -443,10 +443,10 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 			server = servers.value(res);
 			server->setConnected();
 			server->updateClients();
+			server->updateOwnId();
 		}
 		else
 		{
-			//QSharedPointer<TsServer> server(new TsServer(serverConnectionHandlerID, res));
 			server = QSharedPointer<TsServer>(new TsServer(serverConnectionHandlerID, res));
 			emit wObject->addServer(server->safeUniqueId());
 			if (config->getConfigAsBool("HISTORY_ENABLED"))
@@ -565,6 +565,7 @@ void PluginHelper::clientKickedFromChannel(uint64 serverConnectionHandlerID, any
 	if (kickedID == s->myId())
 	{
 		emit wObject->clientKickedFromChannel(s->safeUniqueId(), utils::time(), "", "", TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+		return;
 	}
 
 	auto c = s->getClient(kickedID);
@@ -589,6 +590,7 @@ void PluginHelper::clientKickedFromServer(uint64 serverConnectionHandlerID, anyI
 	if (kickedID == s->myId())
 	{
 		emit wObject->clientKickedFromServer(s->safeUniqueId(), utils::time(), "", "", TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+		return;
 	}
 
 	auto c = s->getClient(kickedID);
@@ -613,6 +615,7 @@ void PluginHelper::clientBannedFromServer(uint64 serverConnectionHandlerID, anyI
 	if (bannedID == s->myId())
 	{
 		emit wObject->clientBannedFromServer(s->safeUniqueId(), utils::time(), "", "", TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+		return;
 	}
 
 	auto c = s->getClient(bannedID);
@@ -623,6 +626,145 @@ void PluginHelper::clientBannedFromServer(uint64 serverConnectionHandlerID, anyI
 	}
 
 	emit wObject->clientBannedFromServer(s->safeUniqueId(), utils::time(), c->clientLink(), c->name(), TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+}
+
+void PluginHelper::clientMoveBySelf(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID)
+{
+	auto s = getServer(serverConnectionHandlerID);
+	if (s == nullptr)
+	{
+		logError(QString("%1: no cached server").arg(__func__));
+		return;
+	}
+
+	if (clientID == s->myId())
+	{
+		emit wObject->clientMovedBySelf(
+			s->safeUniqueId(),
+			utils::time(),
+			"",
+			"",
+			QString("channelid://%1").arg(oldChannelID),
+			QString("channelid://%1").arg(newChannelID),
+			s->getChannelName(oldChannelID),
+			s->getChannelName(newChannelID));
+
+		return;
+	}
+
+	auto c = s->getClient(clientID);
+	if (c == nullptr)
+	{
+		logError(QString("%1: no cached client").arg(__func__));
+		return;
+	}
+
+	emit wObject->clientMovedBySelf(
+		s->safeUniqueId(), 
+		utils::time(), 
+		c->clientLink(), 
+		c->name(), 
+		QString("channelid://%1").arg(oldChannelID), 
+		QString("channelid://%1").arg(newChannelID), 
+		s->getChannelName(oldChannelID), 
+		s->getChannelName(newChannelID));
+}
+
+void PluginHelper::clientMovedByOther(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, 
+	anyID moverID, const QString& moverName, const QString& moverUniqueID, const QString& moveMessage)
+{
+	auto s = getServer(serverConnectionHandlerID);
+	if (s == nullptr)
+	{
+		logError(QString("%1: no cached server").arg(__func__));
+		return;
+	}
+
+	if (clientID == s->myId())
+	{
+		emit wObject->clientMovedByOther(
+			s->safeUniqueId(),
+			utils::time(),
+			"",
+			"",
+			TsClient::link(moverID, moverUniqueID, moverName),
+			moverName,
+			QString("channelid://%1").arg(oldChannelID),
+			QString("channelid://%1").arg(newChannelID),
+			s->getChannelName(oldChannelID),
+			s->getChannelName(newChannelID),
+			moveMessage);
+
+		return;
+	}
+
+	auto c = s->getClient(clientID);
+	if (c == nullptr)
+	{
+		logError(QString("%1: no cached client").arg(__func__));
+		return;
+	}
+
+	emit wObject->clientMovedByOther(
+		s->safeUniqueId(),
+		utils::time(),
+		c->clientLink(),
+		c->name(),
+		TsClient::link(moverID, moverUniqueID, moverName),
+		moverName,
+		QString("channelid://%1").arg(oldChannelID),
+		QString("channelid://%1").arg(newChannelID),
+		s->getChannelName(oldChannelID),
+		s->getChannelName(newChannelID),
+		moveMessage);
+}
+
+void PluginHelper::channelCreated(uint64 serverConnectionHandlerID, uint64 channelID, anyID creatorID, const QString& creatorUniqueID, const QString& creatorName)
+{
+	auto s = getServer(serverConnectionHandlerID);
+	if (s == nullptr)
+	{
+		logError(QString("%1: no cached server").arg(__func__));
+		return;
+	}
+	bool ownCreation = s->myId() == creatorID;
+	emit wObject->channelCreated(
+		s->safeUniqueId(), 
+		utils::time(), 
+		QString("channelid://%1").arg(channelID), 
+		s->getChannelName(channelID), 
+		ownCreation ? "" : TsClient::link(creatorID, creatorUniqueID, creatorName), 
+		ownCreation ? "" : creatorName);
+}
+
+void PluginHelper::channelDeleted(uint64 serverConnectionHandlerID, uint64 channelID, anyID deleterID, const QString& deleterUniqueID, const QString& deleterName)
+{
+	auto s = getServer(serverConnectionHandlerID);
+	if (s == nullptr)
+	{
+		logError(QString("%1: no cached server").arg(__func__));
+		return;
+	}
+	bool ownDeletion = s->myId() == deleterID;
+	QString deleterLink = "";
+	if (!ownDeletion)
+	{
+		if (deleterID > 0)
+		{
+			deleterLink = TsClient::link(deleterID, deleterUniqueID, deleterName);
+		}
+		else
+		{
+			deleterLink = "channelid://0";
+		}
+	}
+	emit wObject->channelDeleted(
+		s->safeUniqueId(),
+		utils::time(),
+		QString("channelid://%1").arg(channelID),
+		s->getChannelName(channelID),
+		deleterLink,
+		deleterName);
 }
 
 // called when file transfer ends in some way

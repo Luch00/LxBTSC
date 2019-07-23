@@ -153,15 +153,19 @@ void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientI
 	if (oldChannelID == 0)
 	{
 		helper->clientConnected(serverConnectionHandlerID, clientID);
+		return;
 	}
-	else if (newChannelID == 0)
+	if (newChannelID == 0)
 	{
 		helper->clientDisconnected(serverConnectionHandlerID, clientID, moveMessage);
+		return;
 	}
-	else if (visibility == ENTER_VISIBILITY)
+	if (visibility == ENTER_VISIBILITY)
 	{
 		helper->clientEnteredView(serverConnectionHandlerID, clientID);
 	}
+	helper->clientMoveBySelf(serverConnectionHandlerID, clientID, oldChannelID, newChannelID);
+
 }
 
 // client drops connection
@@ -283,11 +287,13 @@ void ts3plugin_onFileInfoEvent(uint64 serverConnectionHandlerID, uint64 channelI
 //void ts3plugin_onNewChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID) {
 //}
 
-//void ts3plugin_onNewChannelCreatedEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
-//}
+void ts3plugin_onNewChannelCreatedEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
+	helper->channelCreated(serverConnectionHandlerID, channelID, invokerID, invokerUniqueIdentifier, invokerName);
+}
 
-//void ts3plugin_onDelChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
-//}
+void ts3plugin_onDelChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
+	helper->channelDeleted(serverConnectionHandlerID, channelID, invokerID, invokerUniqueIdentifier, invokerName);
+}
 
 //void ts3plugin_onChannelMoveEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 newChannelParentID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
 //}
@@ -308,8 +314,13 @@ void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, a
 	}
 }
 
-//void ts3plugin_onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID moverID, const char* moverName, const char* moverUniqueIdentifier, const char* moveMessage) {
-//}
+void ts3plugin_onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID moverID, const char* moverName, const char* moverUniqueIdentifier, const char* moveMessage) {
+	if (visibility == ENTER_VISIBILITY)
+	{
+		helper->clientEnteredView(serverConnectionHandlerID, clientID);
+	}
+	helper->clientMovedByOther(serverConnectionHandlerID, clientID, oldChannelID, newChannelID, moverID, moverName, moverUniqueIdentifier, moveMessage);
+}
 
 void ts3plugin_onClientKickFromChannelEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage) {
 	helper->clientKickedFromChannel(serverConnectionHandlerID, clientID, kickerID, kickerName, kickerUniqueIdentifier, kickMessage);

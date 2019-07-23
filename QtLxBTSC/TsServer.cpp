@@ -15,7 +15,7 @@ TsServer::TsServer(unsigned long long serverId, const QString& uniqueId)
 	, connected_(true)
 {
 	updateClients();
-	getOwnId();
+	updateOwnId();
 }
 
 TsServer::~TsServer()
@@ -91,6 +91,18 @@ QSharedPointer<TsClient> TsServer::getClientByName(const QString& name) const
 	return QSharedPointer<TsClient>(nullptr);
 }
 
+QString TsServer::getChannelName(uint64 channelID)
+{
+	char* res;
+	if (ts3Functions.getChannelVariableAsString(serverId_, channelID, CHANNEL_NAME, &res) != ERROR_ok)
+	{
+		return "unknown";
+	}
+	QString name = res;
+	free(res);
+	return name;
+}
+
 // cache all connected visible clients
 void TsServer::updateClients()
 {
@@ -140,7 +152,7 @@ QSharedPointer<TsClient> TsServer::getClientInfo(unsigned short clientId)
 	return nullptr;
 }
 
-void TsServer::getOwnId()
+void TsServer::updateOwnId()
 {
 	anyID id;
 	if (ts3Functions.getClientID(serverId_, &id) != ERROR_ok)
