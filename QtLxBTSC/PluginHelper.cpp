@@ -465,7 +465,7 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 			emit wObject->serverWelcomeMessage(server->safeUniqueId(), utils::time(), msg);
 			free(msg);
 		}
-		if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &msg) == ERROR_ok)
+		if (config->getConfigAsBool("EVENT_SELFCONNECT") && ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &msg) == ERROR_ok)
 		{
 			emit wObject->serverConnected(server->safeUniqueId(), utils::time(), msg);
 			free(msg);
@@ -489,11 +489,14 @@ void PluginHelper::serverDisconnected(uint serverConnectionHandlerID) const
 		return;
 	}
 
-	const QString uid = serverIdCache.value(serverConnectionHandlerID);
 	// don't spam "disconnected" in case connection was lost
 	if (s->connected())
 	{
 		s->setDisconnected();
+
+		if (!config->getConfigAsBool("EVENT_SELFDISCONNECT"))
+			return;
+
 		emit wObject->serverDisconnected(s->safeUniqueId(), utils::time());
 	}
 }
@@ -509,11 +512,18 @@ void PluginHelper::clientConnected(uint64 serverConnectionHandlerID, anyID clien
 		
 
 	auto client = s->addClient(clientID);
+
+	if (!config->getConfigAsBool("EVENT_CLIENTCONNECT"))
+		return;
+
 	emit wObject->clientConnected(s->safeUniqueId(), utils::time(), client->clientLink(), client->name());
 }
 
 void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message) const
 {
+	if (!config->getConfigAsBool("EVENT_CLIENTDISCONNECT"))
+		return;
+
 	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
 	{
@@ -555,6 +565,9 @@ void PluginHelper::clientTimeout(uint64 serverConnectionHandlerID, anyID clientI
 
 void PluginHelper::clientKickedFromChannel(uint64 serverConnectionHandlerID, anyID kickedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage)
 {
+	if (!config->getConfigAsBool("EVENT_KICK"))
+		return;
+
 	// add channel name here?
 	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
@@ -581,6 +594,9 @@ void PluginHelper::clientKickedFromChannel(uint64 serverConnectionHandlerID, any
 
 void PluginHelper::clientKickedFromServer(uint64 serverConnectionHandlerID, anyID kickedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage)
 {
+	if (!config->getConfigAsBool("EVENT_KICK"))
+		return;
+
 	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
 	{
@@ -606,6 +622,9 @@ void PluginHelper::clientKickedFromServer(uint64 serverConnectionHandlerID, anyI
 
 void PluginHelper::clientBannedFromServer(uint64 serverConnectionHandlerID, anyID bannedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage)
 {
+	if (!config->getConfigAsBool("EVENT_BAN"))
+		return;
+
 	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
 	{
@@ -631,6 +650,9 @@ void PluginHelper::clientBannedFromServer(uint64 serverConnectionHandlerID, anyI
 
 void PluginHelper::clientMoveBySelf(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID)
 {
+	if (!config->getConfigAsBool("EVENT_MOVESELF"))
+		return;
+
 	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
 	{
@@ -674,6 +696,9 @@ void PluginHelper::clientMoveBySelf(uint64 serverConnectionHandlerID, anyID clie
 void PluginHelper::clientMovedByOther(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, 
 	anyID moverID, const QString& moverName, const QString& moverUniqueID, const QString& moveMessage)
 {
+	if (!config->getConfigAsBool("EVENT_MOVEOTHER"))
+		return;
+
 	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
 	{
@@ -722,6 +747,9 @@ void PluginHelper::clientMovedByOther(uint64 serverConnectionHandlerID, anyID cl
 
 void PluginHelper::channelCreated(uint64 serverConnectionHandlerID, uint64 channelID, anyID creatorID, const QString& creatorUniqueID, const QString& creatorName)
 {
+	if (!config->getConfigAsBool("EVENT_CHANNELCREATE"))
+		return;
+
 	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
 	{
@@ -740,6 +768,9 @@ void PluginHelper::channelCreated(uint64 serverConnectionHandlerID, uint64 chann
 
 void PluginHelper::channelDeleted(uint64 serverConnectionHandlerID, uint64 channelID, anyID deleterID, const QString& deleterUniqueID, const QString& deleterName)
 {
+	if (!config->getConfigAsBool("EVENT_CHANNELDELETE"))
+		return;
+
 	auto s = getServer(serverConnectionHandlerID);
 	if (s == nullptr)
 	{

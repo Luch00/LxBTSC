@@ -14,6 +14,7 @@
 #include <QJsonObject>
 #include <QPlainTextEdit>
 #include <QLineEdit>
+#include <QTabWidget>
 
 class ConfigWidget : public QWidget
 {
@@ -34,6 +35,10 @@ private slots:
 	void browseDirectory();
 
 private:
+	QTabWidget* tabWidget;
+	QFormLayout* configLayout;
+	// general tab
+	QWidget* generalTab;
 	QFormLayout* formLayout;
 	QCheckBox* embeds;
 	QCheckBox* generics;
@@ -50,6 +55,19 @@ private:
 	QString configPath;
 	QJsonObject jsonObj;
 	QLineEdit* downloadDir;
+	// events tab
+	QWidget* eventTab;
+	QFormLayout* eventLayout;
+	QCheckBox* kickEvent;
+	QCheckBox* banEvent;
+	QCheckBox* moveSelfEvent;
+	QCheckBox* moveOtherEvent;
+	QCheckBox* channelCreatedEvent;
+	QCheckBox* channelDeletedEvent;
+	QCheckBox* clientConnectedEvent;
+	QCheckBox* clientDisconnectedEvent;
+	QCheckBox* ownDisconnectedEvent;
+	QCheckBox* ownConnectedEvent;
 
 	void readConfig();
 };
