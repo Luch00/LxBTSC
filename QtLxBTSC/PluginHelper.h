@@ -60,7 +60,6 @@ signals:
 	void triggerReloadEmotes();
 
 private slots:
-	//void onAppStateChanged(Qt::ApplicationState state);
 	void onEmoticonAppend(const QString& e) const;
 	void onEmoticonButtonClicked(bool c) const;
 	void onTabChange(int i) const;

@@ -52,36 +52,12 @@
                 qtObject = channel.objects.wObject;
                 
                 qtObject.toggleEmoteMenu.connect(toggleEmoteMenu);
-                qtObject.textMessageReceived.connect(addTextMessage);
-                qtObject.printConsoleMessage.connect(addConsoleMessage);
                 qtObject.tabChanged.connect(showTab);
                 qtObject.addServer.connect(addServerTabs);
                 qtObject.loadEmotes.connect(loadEmotes);
                 qtObject.configChanged.connect(configChanged);
 
-                qtObject.serverWelcomeMessage.connect(ts3ServerWelcome);
-                qtObject.serverConnected.connect(ts3ServerConnected);
-                qtObject.serverDisconnected.connect(ts3ServerDisconnected);
-                qtObject.serverStopped.connect(ts3ServerStopped);
-
-                //qtObject.serverConnectionLost.connect(Ts3ServerConnectionLost);
-
-                qtObject.clientConnected.connect(ts3ClientConnected);
-                qtObject.clientDisconnected.connect(ts3ClientDisconnected);
-                qtObject.clientTimeout.connect(ts3ClientTimeout);
-                qtObject.clientKickedFromChannel.connect(ts3ClientKickedFromChannel);
-                qtObject.clientKickedFromServer.connect(ts3ClientKickedFromServer);
-                qtObject.clientBannedFromServer.connect(ts3ClientBannedFromServer);
-
-                qtObject.clientMovedBySelf.connect(ts3ClientMovedBySelf);
-                qtObject.clientMovedByOther.connect(ts3ClientMovedByOther);
-                qtObject.channelCreated.connect(ts3ChannelCreated);
-                qtObject.channelDeleted.connect(ts3ChannelDeleted);
-
-                qtObject.clientPoked.connect(ts3ClientPoked);
-
-                qtObject.logRead.connect(ts3LogRead);
-                qtObject.privateLogRead.connect(ts3PrivateLogRead);
+                qtObject.sendMessage.connect(messageSwitch);
             });
 
             function waitForQt() {

@@ -12,6 +12,7 @@
 #include <QToolButton>
 #include <QApplication>
 #include <QFileDialog>
+#include <QJsonArray>
 #include "LogReader.h"
 
 PluginHelper::PluginHelper(const QString& pluginPath, QObject *parent)
@@ -35,8 +36,6 @@ PluginHelper::PluginHelper(const QString& pluginPath, QObject *parent)
 	connect(transfers, &FileTransferListWidget::transferFailed, this, &PluginHelper::onTransferFailure);
 	connect(config, &ConfigWidget::configChanged, wObject, &TsWebObject::configChanged);
 	connect(config, &ConfigWidget::configChanged, this, &PluginHelper::onConfigChanged);
-
-	//connect(qApp, &QApplication::applicationStateChanged, this, &PluginHelper::onAppStateChanged); // may be fixed now?
 
 	// run init when eventloop starts
 	QTimer::singleShot(0, this, [=]() { initUi(); });
@@ -113,18 +112,6 @@ void PluginHelper::insertMenu()
 	menubar->insertMenu(menubar->actions().last(), chatMenu);
 }
 
-// silly thing to prevent webengineview freezing on minimize
-/*void PluginHelper::onAppStateChanged(Qt::ApplicationState state)
-{
-	if (currentState == Qt::ApplicationHidden || currentState == Qt::ApplicationInactive)
-	{
-		QSize s = chat->size();
-		chat->resize(s.width() + 1, s.height() + 1);
-		chat->resize(s);
-	}
-	currentState = state;
-}*/
-
 // Receive chat tab changed signal
 void PluginHelper::onTabChange(int i) const
 {
@@ -139,7 +126,14 @@ void PluginHelper::onTabChange(int i) const
 	{
 		if (config->getConfigAsBool("HISTORY_ENABLED") && !client->historyRead())
 		{
-			emit wObject->privateLogRead(server, client->safeUniqueId(), LogReader::readPrivateLog(server, client->uniqueId().toLatin1().toBase64()));
+			QJsonObject json
+			{
+				{"type", "privateChatLog"},
+				{"target", server},
+				{"client", client->safeUniqueId()},
+				{"log", LogReader::readPrivateLog(server, client->uniqueId().toLatin1().toBase64())}
+			};
+			emit wObject->sendMessage(json);
 			client->setHistoryRead();
 		}
 		
@@ -368,7 +362,14 @@ void PluginHelper::toggleNormalChat() const
 
 void PluginHelper::onPrintConsoleMessage(uint64 serverConnectionHandlerID, QString message, int targetMode) const
 {
-	emit wObject->printConsoleMessage(getServerId(serverConnectionHandlerID), targetMode, "", message);
+	QJsonObject json
+	{
+		{"type", "consoleMessage"},
+		{"target", getServerId(serverConnectionHandlerID)},
+		{"message", message}
+
+	};
+	emit wObject->sendMessage(json);
 }
 
 void PluginHelper::onPrintConsoleMessageToCurrentTab(const QString& message) const
@@ -378,9 +379,32 @@ void PluginHelper::onPrintConsoleMessageToCurrentTab(const QString& message) con
 	QSharedPointer<TsClient> client;
 	std::tie(mode, server, client) = getCurrentTab();
 	if (mode > 0)
-		emit wObject->printConsoleMessage(server, mode, client->safeUniqueId(), message);
+	{
+		QJsonObject json
+		{
+			{"type", "consoleMessage"},
+			{"target", server},
+			{"mode", mode},
+			{"client", client->safeUniqueId()},
+			{"message", message}
+
+		};
+		emit wObject->sendMessage(json);
+	}		
 	else
-		emit wObject->printConsoleMessage(server, 3, "", message);
+	{
+		QJsonObject json
+		{
+			{"type", "consoleMessageToCurrentTab"},
+			{"target", server},
+			{"mode", mode},
+			{"client", ""},
+			{"message", message}
+
+		};
+		emit wObject->sendMessage(json);
+	}
+		
 }
 
 void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID fromID, anyID toID, anyID targetMode, QString senderUniqueID, const QString& fromName, QString message, bool outgoing) const
@@ -402,22 +426,33 @@ void PluginHelper::textMessageReceived(uint64 serverConnectionHandlerID, anyID f
 
 	if (targetMode == 1 && !outgoing && config->getConfigAsBool("HISTORY_ENABLED") && !c->historyRead())
 	{
-		emit wObject->privateLogRead(s->safeUniqueId(), c->safeUniqueId(), LogReader::readPrivateLog(s->safeUniqueId(), c->uniqueId().toLatin1().toBase64()));
+		QString target = s->safeUniqueId();
+		QJsonObject json
+		{
+			{"type", "privateChatLog"},
+			{"target", target},
+			{"client", c->safeUniqueId()},
+			{"log", LogReader::readPrivateLog(target, c->uniqueId().toLatin1().toBase64())}
+		};
+		emit wObject->sendMessage(json);
 		c->setHistoryRead();
 	}
 
 	// serverid, in or out, time, name, link, message, mode, senderid, targetid
-	emit wObject->textMessageReceived(
-		s->safeUniqueId(),
-		outgoing ? "Outgoing" : "Incoming",
-		QTime::currentTime().toString("hh:mm:ss"),
-		fromName,
-		c->clientLink(),
-		message,
-		targetMode,
-		c->safeUniqueId(),
-		r != nullptr ? r->safeUniqueId() : "MISSING-DEFAULT"
-	);
+	QJsonObject json
+	{
+		{"type", "textMessage"},
+		{"target", s->safeUniqueId()},
+		{"direction", outgoing ? "Outgoing" : "Incoming"},
+		{"time", QTime::currentTime().toString("hh:mm:ss")},
+		{"name", fromName},
+		{"userlink", c->clientLink()},
+		{"line", message},
+		{"mode", targetMode},
+		{"client", c->safeUniqueId()},
+		{"receiver", r != nullptr ? r->safeUniqueId() : "MISSING-DEFAULT"}
+	};
+	emit wObject->sendMessage(json);
 }
 
 QString PluginHelper::getServerId(uint64 serverConnectionHandlerID) const
@@ -452,7 +487,14 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 			emit wObject->addServer(server->safeUniqueId());
 			if (config->getConfigAsBool("HISTORY_ENABLED"))
 			{
-				emit wObject->logRead(server->safeUniqueId(), LogReader::readLog(server->safeUniqueId()));
+				QString target = server->safeUniqueId();
+				QJsonObject json
+				{
+					{"type", "chatLog"},
+					{"target", target},
+					{"log", LogReader::readLog(target)}
+				};
+				emit wObject->sendMessage(json);
 			}
 			servers.insert(res, server);
 		}
@@ -462,12 +504,26 @@ void PluginHelper::serverConnected(uint64 serverConnectionHandlerID)
 		char *msg;
 		if (ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_WELCOMEMESSAGE, &msg) == ERROR_ok)
 		{
-			emit wObject->serverWelcomeMessage(server->safeUniqueId(), utils::time(), msg);
+			QJsonObject json
+			{
+				{"type", "welcomeMessage"},
+				{"target", server->safeUniqueId()},
+				{"time", utils::time()},
+				{"message", msg}
+			};
+			emit wObject->sendMessage(json);
 			free(msg);
 		}
 		if (config->getConfigAsBool("EVENT_SELFCONNECT") && ts3Functions.getServerVariableAsString(serverConnectionHandlerID, VIRTUALSERVER_NAME, &msg) == ERROR_ok)
 		{
-			emit wObject->serverConnected(server->safeUniqueId(), utils::time(), msg);
+			QJsonObject json
+			{
+				{"type", "serverConnected"},
+				{"target", server->safeUniqueId()},
+				{"time", utils::time()},
+				{"message", msg}
+			};
+			emit wObject->sendMessage(json);
 			free(msg);
 		}
 		getServerEmoteFileInfo(serverConnectionHandlerID);
@@ -497,7 +553,13 @@ void PluginHelper::serverDisconnected(uint serverConnectionHandlerID) const
 		if (!config->getConfigAsBool("EVENT_SELFDISCONNECT"))
 			return;
 
-		emit wObject->serverDisconnected(s->safeUniqueId(), utils::time());
+		QJsonObject json
+		{
+			{"type", "serverDisconnected"},
+			{"target", s->safeUniqueId()},
+			{"time", utils::time()}
+		};
+		emit wObject->sendMessage(json);
 	}
 }
 
@@ -516,7 +578,16 @@ void PluginHelper::clientConnected(uint64 serverConnectionHandlerID, anyID clien
 	if (!config->getConfigAsBool("EVENT_CLIENTCONNECT"))
 		return;
 
-	emit wObject->clientConnected(s->safeUniqueId(), utils::time(), client->clientLink(), client->name());
+	QJsonObject json
+	{
+		{"type", "clientConnected"},
+		{"target", s->safeUniqueId()},
+		{"time", utils::time()},
+		{"link", client->clientLink()},
+		{"name", client->name()}
+	};
+	emit wObject->sendMessage(json);
+	//emit wObject->clientConnected(s->safeUniqueId(), utils::time(), client->clientLink(), client->name());
 }
 
 void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message) const
@@ -542,7 +613,16 @@ void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID cl
 		return;
 	}
 
-	emit wObject->clientDisconnected(s->safeUniqueId(), utils::time(), client->clientLink(), client->name(), message);
+	QJsonObject json
+	{
+		{"type", "clientDisconnected"},
+		{"target", s->safeUniqueId()},
+		{"time", utils::time()},
+		{"link", client->clientLink()},
+		{"name", client->name()},
+		{"message", message}
+	};
+	emit wObject->sendMessage(json);
 }
 
 void PluginHelper::clientTimeout(uint64 serverConnectionHandlerID, anyID clientID) const
@@ -560,7 +640,15 @@ void PluginHelper::clientTimeout(uint64 serverConnectionHandlerID, anyID clientI
 		return;
 	}
 
-	emit wObject->clientTimeout(s->safeUniqueId(), utils::time(), c->clientLink(), c->name());
+	QJsonObject json
+	{
+		{"type", "clientTimeout"},
+		{"target", s->safeUniqueId()},
+		{"time", utils::time()},
+		{"link", c->clientLink()},
+		{"name", c->name()}
+	};
+	emit wObject->sendMessage(json);
 }
 
 void PluginHelper::clientKickedFromChannel(uint64 serverConnectionHandlerID, anyID kickedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage)
@@ -578,7 +666,16 @@ void PluginHelper::clientKickedFromChannel(uint64 serverConnectionHandlerID, any
 	
 	if (kickedID == s->myId())
 	{
-		emit wObject->clientKickedFromChannel(s->safeUniqueId(), utils::time(), "", "", TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+		QJsonObject json
+		{
+			{"type", "channelKick"},
+			{"target", s->safeUniqueId()},
+			{"time", utils::time()},
+			{"kickerlink", TsClient::link(kickerID, kickerUniqueID, kickerName)},
+			{"kickername", kickerName},
+			{"message", kickMessage}
+		};
+		emit wObject->sendMessage(json);
 		return;
 	}
 
@@ -589,7 +686,18 @@ void PluginHelper::clientKickedFromChannel(uint64 serverConnectionHandlerID, any
 		return;
 	}
 
-	emit wObject->clientKickedFromChannel(s->safeUniqueId(), utils::time(), c->clientLink(), c->name(), TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+	QJsonObject json
+	{
+		{"type", "channelKick"},
+		{"target", s->safeUniqueId()},
+		{"time", utils::time()},
+		{"link", c->clientLink()},
+		{"name", c->name()},
+		{"kickerlink", TsClient::link(kickerID, kickerUniqueID, kickerName)},
+		{"kickername", kickerName},
+		{"message", kickMessage}
+	};
+	emit wObject->sendMessage(json);
 }
 
 void PluginHelper::clientKickedFromServer(uint64 serverConnectionHandlerID, anyID kickedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage)
@@ -606,7 +714,16 @@ void PluginHelper::clientKickedFromServer(uint64 serverConnectionHandlerID, anyI
 
 	if (kickedID == s->myId())
 	{
-		emit wObject->clientKickedFromServer(s->safeUniqueId(), utils::time(), "", "", TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+		QJsonObject json
+		{
+			{"type", "serverKick"},
+			{"target", s->safeUniqueId()},
+			{"time", utils::time()},
+			{"kickerlink", TsClient::link(kickerID, kickerUniqueID, kickerName)},
+			{"kickername", kickerName},
+			{"message", kickMessage}
+		};
+		emit wObject->sendMessage(json);
 		return;
 	}
 
@@ -616,8 +733,19 @@ void PluginHelper::clientKickedFromServer(uint64 serverConnectionHandlerID, anyI
 		logError(QString("%1: no cached client").arg(__func__));
 		return;
 	}
-	
-	emit wObject->clientKickedFromServer(s->safeUniqueId(), utils::time(), c->clientLink(), c->name(), TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+
+	QJsonObject json
+	{
+		{"type", "serverKick"},
+		{"target", s->safeUniqueId()},
+		{"time", utils::time()},
+		{"link", c->clientLink()},
+		{"name", c->name()},
+		{"kickerlink", TsClient::link(kickerID, kickerUniqueID, kickerName)},
+		{"kickername", kickerName},
+		{"message", kickMessage}
+	};
+	emit wObject->sendMessage(json);
 }
 
 void PluginHelper::clientBannedFromServer(uint64 serverConnectionHandlerID, anyID bannedID, anyID kickerID, const QString& kickerName, const QString& kickerUniqueID, const QString& kickMessage)
@@ -634,7 +762,16 @@ void PluginHelper::clientBannedFromServer(uint64 serverConnectionHandlerID, anyI
 
 	if (bannedID == s->myId())
 	{
-		emit wObject->clientBannedFromServer(s->safeUniqueId(), utils::time(), "", "", TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+		QJsonObject json
+		{
+			{"type", "clientBan"},
+			{"target", s->safeUniqueId()},
+			{"time", utils::time()},
+			{"kickerlink", TsClient::link(kickerID, kickerUniqueID, kickerName)},
+			{"kickername", kickerName},
+			{"message", kickMessage}
+		};
+		emit wObject->sendMessage(json);
 		return;
 	}
 
@@ -645,7 +782,18 @@ void PluginHelper::clientBannedFromServer(uint64 serverConnectionHandlerID, anyI
 		return;
 	}
 
-	emit wObject->clientBannedFromServer(s->safeUniqueId(), utils::time(), c->clientLink(), c->name(), TsClient::link(kickerID, kickerUniqueID, kickerName), kickerName, kickMessage);
+	QJsonObject json
+	{
+		{"type", "clientBan"},
+		{"target", s->safeUniqueId()},
+		{"time", utils::time()},
+		{"link", c->clientLink()},
+		{"name", c->name()},
+		{"kickerlink", TsClient::link(kickerID, kickerUniqueID, kickerName)},
+		{"kickername", kickerName},
+		{"message", kickMessage}
+	};
+	emit wObject->sendMessage(json);
 }
 
 void PluginHelper::clientMoveBySelf(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID)
@@ -662,15 +810,19 @@ void PluginHelper::clientMoveBySelf(uint64 serverConnectionHandlerID, anyID clie
 
 	if (clientID == s->myId())
 	{
-		emit wObject->clientMovedBySelf(
-			s->safeUniqueId(),
-			utils::time(),
-			"",
-			"",
-			QString("channelid://%1").arg(oldChannelID),
-			QString("channelid://%1").arg(newChannelID),
-			s->getChannelName(oldChannelID),
-			s->getChannelName(newChannelID));
+		QJsonObject json
+		{
+			{"type", "clientMoveBySelf"},
+			{"target", s->safeUniqueId()},
+			{"time", utils::time()},
+			{"clientLink", ""},
+			{"clientName", ""},
+			{"oldChannelLink", QString("channelid://%1").arg(oldChannelID)},
+			{"newChannelLink", QString("channelid://%1").arg(newChannelID)},
+			{"oldChannelName", s->getChannelName(oldChannelID)},
+			{"newChannelName", s->getChannelName(newChannelID)}
+		};
+		emit wObject->sendMessage(json);
 
 		return;
 	}
@@ -682,15 +834,19 @@ void PluginHelper::clientMoveBySelf(uint64 serverConnectionHandlerID, anyID clie
 		return;
 	}
 
-	emit wObject->clientMovedBySelf(
-		s->safeUniqueId(), 
-		utils::time(), 
-		c->clientLink(), 
-		c->name(), 
-		QString("channelid://%1").arg(oldChannelID), 
-		QString("channelid://%1").arg(newChannelID), 
-		s->getChannelName(oldChannelID), 
-		s->getChannelName(newChannelID));
+	QJsonObject json
+	{
+		{"type", "clientMoveBySelf"},
+		{"target", s->safeUniqueId()},
+		{"time", utils::time()},
+		{"clientLink", c->clientLink()},
+		{"clientName", c->name()},
+		{"oldChannelLink", QString("channelid://%1").arg(oldChannelID)},
+		{"newChannelLink", QString("channelid://%1").arg(newChannelID)},
+		{"oldChannelName", s->getChannelName(oldChannelID)},
+		{"newChannelName", s->getChannelName(newChannelID)}
+	};
+	emit wObject->sendMessage(json);
 }
 
 void PluginHelper::clientMovedByOther(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, 
@@ -708,18 +864,23 @@ void PluginHelper::clientMovedByOther(uint64 serverConnectionHandlerID, anyID cl
 
 	if (clientID == s->myId())
 	{
-		emit wObject->clientMovedByOther(
-			s->safeUniqueId(),
-			utils::time(),
-			"",
-			"",
-			TsClient::link(moverID, moverUniqueID, moverName),
-			moverName,
-			QString("channelid://%1").arg(oldChannelID),
-			QString("channelid://%1").arg(newChannelID),
-			s->getChannelName(oldChannelID),
-			s->getChannelName(newChannelID),
-			moveMessage);
+		QJsonObject json
+		{
+			{"type", "clientMoveByOther"},
+			{"target", s->safeUniqueId()},
+			{"time", utils::time()},
+			{"clientLink", ""},
+			{"clientName", ""},
+			{"moverLink", TsClient::link(moverID, moverUniqueID, moverName)},
+			{"moverName", moverName},
+			{"oldChannelLink", QString("channelid://%1").arg(oldChannelID)},
+			{"newChannelLink", QString("channelid://%1").arg(newChannelID)},
+			{"oldChannelName", s->getChannelName(oldChannelID)},
+			{"newChannelName", s->getChannelName(newChannelID)},
+			{"moveMessage", moveMessage}
+		};
+
+		emit wObject->sendMessage(json);
 
 		return;
 	}
@@ -731,18 +892,22 @@ void PluginHelper::clientMovedByOther(uint64 serverConnectionHandlerID, anyID cl
 		return;
 	}
 
-	emit wObject->clientMovedByOther(
-		s->safeUniqueId(),
-		utils::time(),
-		c->clientLink(),
-		c->name(),
-		TsClient::link(moverID, moverUniqueID, moverName),
-		moverName,
-		QString("channelid://%1").arg(oldChannelID),
-		QString("channelid://%1").arg(newChannelID),
-		s->getChannelName(oldChannelID),
-		s->getChannelName(newChannelID),
-		moveMessage);
+	QJsonObject json
+	{
+		{"type", "clientMoveByOther"},
+		{"target", s->safeUniqueId()},
+		{"time", utils::time()},
+		{"clientLink", c->clientLink()},
+		{"clientName", c->name()},
+		{"moverLink", TsClient::link(moverID, moverUniqueID, moverName)},
+		{"moverName", moverName},
+		{"oldChannelLink", QString("channelid://%1").arg(oldChannelID)},
+		{"newChannelLink", QString("channelid://%1").arg(newChannelID)},
+		{"oldChannelName", s->getChannelName(oldChannelID)},
+		{"newChannelName", s->getChannelName(newChannelID)},
+		{"moveMessage", moveMessage}
+	};
+	emit wObject->sendMessage(json);
 }
 
 void PluginHelper::channelCreated(uint64 serverConnectionHandlerID, uint64 channelID, anyID creatorID, const QString& creatorUniqueID, const QString& creatorName)
@@ -757,13 +922,18 @@ void PluginHelper::channelCreated(uint64 serverConnectionHandlerID, uint64 chann
 		return;
 	}
 	bool ownCreation = s->myId() == creatorID;
-	emit wObject->channelCreated(
-		s->safeUniqueId(), 
-		utils::time(), 
-		QString("channelid://%1").arg(channelID), 
-		s->getChannelName(channelID), 
-		ownCreation ? "" : TsClient::link(creatorID, creatorUniqueID, creatorName), 
-		ownCreation ? "" : creatorName);
+
+	QJsonObject json
+	{
+		{"type", "channelCreated"},
+		{"target", s->safeUniqueId()},
+		{"time", utils::time()},
+		{"channelLink", QString("channelid://%1").arg(channelID)},
+		{"channelName", s->getChannelName(channelID)},
+		{"creatorLink", ownCreation ? "" : TsClient::link(creatorID, creatorUniqueID, creatorName)},
+		{"creatorName", ownCreation ? "" : creatorName}
+	};
+	emit wObject->sendMessage(json);
 }
 
 void PluginHelper::channelDeleted(uint64 serverConnectionHandlerID, uint64 channelID, anyID deleterID, const QString& deleterUniqueID, const QString& deleterName)
@@ -790,13 +960,18 @@ void PluginHelper::channelDeleted(uint64 serverConnectionHandlerID, uint64 chann
 			deleterLink = "channelid://0";
 		}
 	}
-	emit wObject->channelDeleted(
-		s->safeUniqueId(),
-		utils::time(),
-		QString("channelid://%1").arg(channelID),
-		s->getChannelName(channelID),
-		deleterLink,
-		deleterName);
+
+	QJsonObject json
+	{
+		{"type", "channelDeleted"},
+		{"target", s->safeUniqueId()},
+		{"time", utils::time()},
+		{"channelLink", QString("channelid://%1").arg(channelID)},
+		{"channelName", s->getChannelName(channelID)},
+		{"deleterLink", deleterLink},
+		{"deleterName", deleterName}
+	};
+	emit wObject->sendMessage(json);
 }
 
 void PluginHelper::channelEdited(uint64 serverConnectionHandlerID, uint64 channelID, anyID editorID, const QString& editorUniqueID, const QString& editorName)
@@ -850,13 +1025,16 @@ void PluginHelper::poked(uint64 serverConnectionHandlerID, anyID pokerID, const 
 		c = client;
 		s->addClient(pokerID, c);
 	}
-	emit wObject->clientPoked(
-		s->safeUniqueId(),
-		utils::time(), 
-		c->clientLink(), 
-		pokerName, 
-		pokeMessage
-	);
+	QJsonObject json
+	{
+		{"type", "pokeMessage"},
+		{"target", s->safeUniqueId()},
+		{"time", utils::time()},
+		{"link", c->clientLink()},
+		{"name", pokerName},
+		{"message", pokeMessage}
+	};
+	emit wObject->sendMessage(json);
 }
 
 void PluginHelper::reload() const
@@ -870,7 +1048,7 @@ void PluginHelper::onReloaded() const
 	QString server;
 	QSharedPointer<TsClient> client;
 	std::tie(mode, server, client) = getCurrentTab();
-	wObject->tabChanged(server, mode, client->safeUniqueId());
+	wObject->tabChanged(server, mode, client ? client->safeUniqueId() : "");
 }
 
 void PluginHelper::reloadEmotes() const
@@ -912,7 +1090,14 @@ void PluginHelper::onConfigChanged() const
 
 void PluginHelper::serverStopped(uint64 serverConnectionHandlerID, const QString& message) const
 {
-	emit wObject->serverStopped(getServerId(serverConnectionHandlerID), utils::time(), message);
+	QJsonObject json
+	{
+		{"type", "serverStopped"},
+		{"target", getServerId(serverConnectionHandlerID)},
+		{"time", utils::time()},
+		{"message", message}
+	};
+	emit wObject->sendMessage(json);
 }
 
 // called when client enters view by joining the same channel or by this client subscribing to a channel

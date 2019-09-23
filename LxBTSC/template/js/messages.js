@@ -6,6 +6,32 @@
 */
 'use strict'
 let msgid = 0;
+
+function messageSwitch(json) {
+    const messages = {
+        "textMessage": () => addTextMessage(json.target, json.direction, json.time, json.name, json.userlink, json.line, json.mode, json.client, json.receiver),
+        "pokeMessage": () =>ts3ClientPoked(json.target, json.time, json.link, json.name, json.message),
+        "welcomeMessage": () =>ts3ServerWelcome(json.target, json.time, json.message),
+        "serverConnected": () =>ts3ServerConnected(json.target, json.time, json.message),
+        "serverDisconnected": () =>ts3ServerDisconnected(json.target, json.time),
+        "serverStopped": () =>ts3ServerStopped(json.target, json.time, json.message),
+        "clientConnected": () =>ts3ClientConnected(json.target, json.time, json.link, json.name),
+        "clientDisconnected": () =>ts3ClientDisconnected(json.target, json.time, json.link, json.name, json.message),
+        "clientTimeout": () =>ts3ClientTimeout(json.target, json.time, json.link, json.name),
+        "channelKick": () =>ts3ClientKickedFromChannel(json.target, json.time, json.link, json.name, json.kickerlink, json.kickername, json.message),
+        "serverKick": () =>ts3ClientKickedFromServer(json.target, json.time, json.link, json.name, json.kickerlink, json.kickername, json.message),
+        "clientBan": () =>ts3ClientBannedFromServer(json.target, json.time, json.link, json.name, json.kickerlink, json.kickername, json.message),
+        "clientMoveBySelf": () =>ts3ClientMovedBySelf(json.target, json.time, json.clientLink, json.clientName, json.oldChannelLink, json.newChannelLink, json.oldChannelName, json.newChannelName),
+        "clientMoveByOther": () =>ts3ClientMovedByOther(json.target, json.time, json.clientLink, json.clientName, json.moverLink, json.moverName, json.oldChannelLink, json.newChannelLink, json.oldChannelName, json.newChannelName, json.moveMessage),
+        "channelCreated": () =>ts3ChannelCreated(json.target, json.time, json.channelLink, json.channelName, json.creatorLink, json.creatorName),
+        "channelDeleted": () =>ts3ChannelDeleted(json.target, json.time, json.channelLink, json.channelName, json.deleterLink, json.deleterName),
+        "consoleMessage": () =>addConsoleMessage(json.target, json.mode, json.client, json.message),
+        "chatLog": () =>ts3LogRead(json.target, json.log),
+        "privateChatLog": () =>ts3PrivateLogRead(json.target, json.client, json.log)
+    };
+    messages[json.type]();
+}
+
 const normalTextTemplate = (msgid, direction, time, userlink, name, text) => `
     <p id='${msgid}' class='TextMessage_Normal'>
     <span class='Body'>
@@ -106,7 +132,6 @@ function parseBBCode(line) {
 }
 
 function addTextMessage(target, direction, time, name, userlink, line, mode, client, receiver) {
-    //console.log(target);
     ++msgid;
     let parsed = $('<span/>').html(parseBBCode(line));
 
@@ -282,26 +307,20 @@ function ts3ChannelDeleted(target, time, channelLink, channelName, deleterLink, 
 }
 
 function ts3LogRead(target, log) {
-    console.log(target);
-    console.log(log);
-    let json = JSON.parse(log);
-    
-    if (json.server.length > 0) {
+    if (log.server.length > 0) {
         let tab = getTab(target, 3, "");
-        appendLog(target, tab, json.server);
+        appendLog(target, tab, log.server);
     }
-    if (json.channel.length > 0) {
+    if (log.channel.length > 0) {
         let tab = getTab(target, 2, "");
-        appendLog(target, tab, json.channel);
+        appendLog(target, tab, log.channel);
     }
 }
 
 function ts3PrivateLogRead(target, client, log) {
-    let json = JSON.parse(log);
-
-    if (json.private.length > 0) {
+    if (log.length > 0) {
         let tab = getTab(target, 1, client);
-        appendLog(target, tab, json.private);
+        appendLog(target, tab, log);
     }
 }
 

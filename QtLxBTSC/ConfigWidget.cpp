@@ -16,7 +16,6 @@ ConfigWidget::ConfigWidget(const QString& path, QWidget *parent)
 	, configPath(QString("%1LxBTSC/template/config.json").arg(path))
 {
 	this->setWindowTitle("Better Chat Settings");
-	//this->setFixedSize(300, 410);
 	generalTab = new QWidget();
 	formLayout = new QFormLayout(generalTab);
 	generalTab->setLayout(formLayout);
@@ -104,7 +103,6 @@ ConfigWidget::ConfigWidget(const QString& path, QWidget *parent)
 	formLayout->addRow(new QLabel("Remote emote definitions:"));
 	formLayout->addRow(remotes);
 	formLayout->addItem(new QSpacerItem(0, 10));
-	//formLayout->addRow(horizontal);
 	tabWidget = new QTabWidget(this);
 	tabWidget->addTab(generalTab, "General");
 	tabWidget->addTab(eventTab, "Events");
@@ -113,8 +111,6 @@ ConfigWidget::ConfigWidget(const QString& path, QWidget *parent)
 	configLayout->addRow(tabWidget);
 	configLayout->addRow(horizontal);
 
-	//this->adjustSize();
-	//this->setFixedSize(sizeHint().width(), sizeHint().height());
 	readConfig();
 }
 
@@ -131,28 +127,28 @@ void ConfigWidget::readConfig()
 		file.close();
 		QJsonDocument document = QJsonDocument::fromJson(jsonText.toUtf8());
 		jsonObj = document.object();
-		embeds->setChecked(jsonObj.value("EMBED_ENABLED").toBool());
-		generics->setChecked(jsonObj.value("GENERICS_DISABLED").toBool());
-		favicons->setChecked(jsonObj.value("FAVICONS_ENABLED").toBool());
-		emoticons->setChecked(jsonObj.value("EMOTICONS_ENABLED").toBool());
-		avatar->setChecked(jsonObj.value("AVATARS_ENABLED").toBool());
-		stopGifs->setChecked(jsonObj.value("HOVER_ANIMATES_GIFS").toBool());
-		history->setChecked(jsonObj.value("HISTORY_ENABLED").toBool());
-		maxlines->setValue(jsonObj.value("MAX_LINES").toInt());
+		embeds->setChecked(jsonObj.value("EMBED_ENABLED").toBool(true));
+		generics->setChecked(jsonObj.value("GENERICS_DISABLED").toBool(false));
+		favicons->setChecked(jsonObj.value("FAVICONS_ENABLED").toBool(false));
+		emoticons->setChecked(jsonObj.value("EMOTICONS_ENABLED").toBool(true));
+		avatar->setChecked(jsonObj.value("AVATARS_ENABLED").toBool(false));
+		stopGifs->setChecked(jsonObj.value("HOVER_ANIMATES_GIFS").toBool(false));
+		history->setChecked(jsonObj.value("HISTORY_ENABLED").toBool(false));
+		maxlines->setValue(jsonObj.value("MAX_LINES").toInt(500));
 		maxHistory->setValue(jsonObj.value("MAX_HISTORY").toInt(50));
 		fontsize->setValue(jsonObj.value("FONT_SIZE").toInt());
 		downloadDir->setText(jsonObj.value("DOWNLOAD_DIR").toString());
 
-		kickEvent->setChecked(jsonObj.value("EVENT_KICK").toBool());
-		banEvent->setChecked(jsonObj.value("EVENT_BAN").toBool());
+		kickEvent->setChecked(jsonObj.value("EVENT_KICK").toBool(true));
+		banEvent->setChecked(jsonObj.value("EVENT_BAN").toBool(true));
 		moveSelfEvent->setChecked(jsonObj.value("EVENT_MOVESELF").toBool());
 		moveOtherEvent->setChecked(jsonObj.value("EVENT_MOVEOTHER").toBool());
 		channelCreatedEvent->setChecked(jsonObj.value("EVENT_CHANNELCREATE").toBool());
 		channelDeletedEvent->setChecked(jsonObj.value("EVENT_CHANNELDELETE").toBool());
-		clientConnectedEvent->setChecked(jsonObj.value("EVENT_CLIENTCONNECT").toBool());
-		clientDisconnectedEvent->setChecked(jsonObj.value("EVENT_CLIENTDISCONNECT").toBool());
-		ownConnectedEvent->setChecked(jsonObj.value("EVENT_SELFCONNECT").toBool());
-		ownDisconnectedEvent->setChecked(jsonObj.value("EVENT_SELFDISCONNECT").toBool());
+		clientConnectedEvent->setChecked(jsonObj.value("EVENT_CLIENTCONNECT").toBool(true));
+		clientDisconnectedEvent->setChecked(jsonObj.value("EVENT_CLIENTDISCONNECT").toBool(true));
+		ownConnectedEvent->setChecked(jsonObj.value("EVENT_SELFCONNECT").toBool(true));
+		ownDisconnectedEvent->setChecked(jsonObj.value("EVENT_SELFDISCONNECT").toBool(true));
 
 		QJsonArray remotejson = jsonObj.value("REMOTE_EMOTES").toArray();
 		QStringList list;
@@ -161,6 +157,32 @@ void ConfigWidget::readConfig()
 			list.append(v.toString());
 		}
 		remotes->setPlainText(list.join('|'));
+	}
+	else
+	{
+		// defaults when config file doesn't exist yet
+		embeds->setChecked(true);
+		generics->setChecked(false);
+		favicons->setChecked(false);
+		emoticons->setChecked(true);
+		avatar->setChecked(false);
+		stopGifs->setChecked(false);
+		history->setChecked(false);
+		maxlines->setValue(500);
+		maxHistory->setValue(50);
+		fontsize->setValue(12);
+		downloadDir->setText("");
+
+		kickEvent->setChecked(true);
+		banEvent->setChecked(true);
+		moveSelfEvent->setChecked(false);
+		moveOtherEvent->setChecked(false);
+		channelCreatedEvent->setChecked(false);
+		channelDeletedEvent->setChecked(false);
+		clientConnectedEvent->setChecked(true);
+		clientDisconnectedEvent->setChecked(true);
+		ownConnectedEvent->setChecked(true);
+		ownDisconnectedEvent->setChecked(true);
 	}
 }
 

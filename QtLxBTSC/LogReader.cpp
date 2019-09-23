@@ -6,7 +6,6 @@
 */
 
 #include "LogReader.h"
-#include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
 #include "globals.h"
@@ -14,9 +13,8 @@
 #include <QBuffer>
 #include <utils.h>
 
-QByteArray LogReader::readLog(const QString& serverUniqueID)
+QJsonObject LogReader::readLog(const QString& serverUniqueID)
 {
-	QJsonDocument doc;
 	QJsonObject obj;
 	const QString chatsPath = QString("%1chats/%2").arg(configPath).arg(serverUniqueID);
 	QByteArray log = readFile(QString("%1/server.html").arg(chatsPath));
@@ -26,21 +24,15 @@ QByteArray LogReader::readLog(const QString& serverUniqueID)
 	log = readFile(QString("%1/channel.html").arg(chatsPath));
 	array = parseMessages(log);
 	obj.insert("channel", array);
-
-	doc.setObject(obj);
-	return doc.toJson();
+	return obj;
 }
 
-QByteArray LogReader::readPrivateLog(const QString& serverUniqueID, const QString& clientUniqueID)
+QJsonArray LogReader::readPrivateLog(const QString& serverUniqueID, const QString& clientUniqueID)
 {
-	QJsonDocument doc;
-	QJsonObject obj;
 	const QString filePath = QString("%1chats/%2/clients/%3.html").arg(configPath, serverUniqueID, clientUniqueID);
 	QByteArray log = readFile(filePath);
 	QJsonArray array = parseMessages(log);
-	obj.insert("private", array);
-	doc.setObject(obj);
-	return doc.toJson();
+	return array;
 }
 
 QByteArray LogReader::readFile(const QString& filePath)
