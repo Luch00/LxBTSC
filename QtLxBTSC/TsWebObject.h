@@ -18,9 +18,6 @@ public:
 	TsWebObject(QObject *parent);
 	~TsWebObject();
 	Q_INVOKABLE void emoteClicked(QString e);
-	Q_INVOKABLE bool getDone() const;
-	Q_PROPERTY(bool done READ getDone WRITE setDone);
-	void setDone(bool);
 	
 signals:
 	void addServer(QString key);
@@ -31,7 +28,4 @@ signals:
 	void configChanged();
 
 	void sendMessage(QJsonObject json);
-
-private:
-	bool done = false;
 };

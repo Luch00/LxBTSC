@@ -59,31 +59,17 @@
 
                 qtObject.sendMessage.connect(messageSwitch);
             });
-
-            function waitForQt() {
-                // try to make sure qwebchannel exists before loading config
-                setTimeout(function() {
-                    qtObject.getDone(function(done) {
-                        if (done === true) {
-                            loadConfig()
-                            .then(function() {
-                                $('.chattab').css('font-size', Config.FONT_SIZE + 'pt');
-                                loadEmotes();
-                                initTenor();
-                            });
-                        }
-                        else {
-                            waitForQt();
-                        }
-                });
-                }, 100);
-            }
             
             window.onload = function() {
                 main = $('#main');
                 tooltip = $('.tooltipper');
                 Emotes.emoteListElement = $('#emote-list');
-                waitForQt();
+
+                loadConfig()
+                .then(function() {
+                    $('.chattab').css('font-size', Config.FONT_SIZE + 'pt');
+                    initTenor();
+                });
 
                 // monitor body and window resizing
                 obs.observe(main[0]);
@@ -176,6 +162,7 @@
             }
 
             function loadEmotes() {
+                console.log("loademotes");
                 Emotes.clear();
                 Emotes.load();
             }

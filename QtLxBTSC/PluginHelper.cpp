@@ -24,6 +24,7 @@ PluginHelper::PluginHelper(const QString& pluginPath, QObject *parent)
 	, pluginPath(pluginPath)
 {
 	utils::makeEmoteJsonArray(pluginPath);
+	emit wObject->loadEmotes();
 	onConfigChanged();
 
 	connect(this, &PluginHelper::triggerReloadEmotes, this, &PluginHelper::reloadEmotes);
@@ -78,7 +79,6 @@ void PluginHelper::initUi()
 	connect(emoticonButton, &QToolButton::clicked, this, &PluginHelper::onEmoticonButtonClicked);
 
 	insertMenu();
-	wObject->setDone(true);
 	logInfo("Hook UI");
 }
 
@@ -587,7 +587,6 @@ void PluginHelper::clientConnected(uint64 serverConnectionHandlerID, anyID clien
 		{"name", client->name()}
 	};
 	emit wObject->sendMessage(json);
-	//emit wObject->clientConnected(s->safeUniqueId(), utils::time(), client->clientLink(), client->name());
 }
 
 void PluginHelper::clientDisconnected(uint64 serverConnectionHandlerID, anyID clientID, QString message) const
