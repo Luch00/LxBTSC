@@ -69,7 +69,7 @@ function parseHtml(htmlString, url, messageId) {
         }
         set[fixName(name)] = content;
     });
-    //console.log(set);
+    console.log(set);
     embedHtml(set, messageId);
 }
 
@@ -141,6 +141,12 @@ function embedHtml(json, messageId) {
     // not webm
     if (json.ogSiteName === "ニコニコ動画" && h264capable) {
         addEmbed(nicovideo(json), messageId);
+        return;
+    }
+
+    // not webm
+    if (json.ogSiteName === "Twitch" && json.ogType === "video.other" && h264capable) {
+        addEmbed(twitch(json), messageId);
         return;
     }
 
@@ -344,6 +350,27 @@ function nicovideo(json) {
         height: "225",
         allowfullscreen: true,
         src: json.twitterPlayer
+    });
+    return embedBlock(embed);
+}
+
+function twitch(json) {
+    if (json.host === 'clips.twitch.tv') {
+        let embed = $('<iframe/>', {
+            frameborder: "0",
+            allowfullscreen: "true",
+            width: "400",
+            height: "225",
+            src: json.twitterPlayer + "&autoplay=false"
+        });
+        return embedBlock(embed);
+    }
+    let embed = $('<iframe/>', {
+        frameborder: "0",
+        allowfullscreen: "true",
+        width: "400",
+        height: "225",
+        src: json.ogVideoSecureUrl.replace('autoplay=true', 'autoplay=false')
     });
     return embedBlock(embed);
 }
