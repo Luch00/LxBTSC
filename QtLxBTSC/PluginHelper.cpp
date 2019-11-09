@@ -1047,6 +1047,7 @@ void PluginHelper::onReloaded() const
 	QString server;
 	QSharedPointer<TsClient> client;
 	std::tie(mode, server, client) = getCurrentTab();
+	wObject->loadEmotes();
 	wObject->tabChanged(server, mode, client ? client->safeUniqueId() : "");
 }
 
