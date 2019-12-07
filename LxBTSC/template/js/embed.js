@@ -238,7 +238,7 @@ function youtube(json) {
         frameborder: "0",
         width: "400",
         height: "225",
-        src: json.twitterPlayer + "?rel=0",
+        src: `${json.twitterPlayer}${json.twitterPlayer.includes('?') ? '&' : '?'}rel=0&modestbranding=1`,
         allowfullscreen: ""
     });
     return embedBlock(embed);
