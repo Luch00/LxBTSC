@@ -391,6 +391,18 @@ video {
     margin-left: 15px;
 }
 
+.emote-mod-mirror {
+    transform: scaleX(-1);
+}
+
+.emote-mod-reverse {
+    transform: scaleY(-1);
+}
+
+.emote-mod-invert {
+    filter: invert(100%);
+}
+
 .emote-mod-spin {
     animation: spin 2.5s linear infinite;
 }
