@@ -133,7 +133,8 @@ function parseBBCode(line) {
 
 function addTextMessage(target, direction, time, name, userlink, line, mode, client, receiver) {
     ++msgid;
-    let parsed = $('<span/>').html(anchorme(parseBBCode(line)));
+    let parsed = $('<span/>').html(autolinker.link(parseBBCode(line)));
+    console.log(parsed);
     if (Config.EMOTICONS_ENABLED) {
         Emotes.emoticonize(parsed);
     }

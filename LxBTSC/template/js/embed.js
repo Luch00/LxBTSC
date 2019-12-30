@@ -252,7 +252,7 @@ function twitter(json) {
     });
     tweet.append('<img src="https://twitter.com/'+username+'/profile_image?size=mini" class="twitter-avatar">');
     tweet.append('<span><a href="'+json.ogUrl+'" class="twitter-username">'+name+' (@'+username+')</a></span>');
-    tweet.append('<div class="twitter-description">'+anchorme(json.ogDescription.slice(1, -1))+'</div>');
+    tweet.append('<div class="twitter-description">'+autolinker.link(json.ogDescription.slice(1, -1))+'</div>');
     if (json.ogImageUserGenerated === "true") {
         let img = $('<a/>', {
             class: "tweet-image fancybox",
