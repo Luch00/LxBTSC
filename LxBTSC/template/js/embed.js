@@ -234,13 +234,34 @@ function videoFile(url) {
 }
 
 function youtube(json) {
-    let embed = $('<iframe/>', {
-        frameborder: "0",
-        width: "400",
-        height: "225",
-        src: `${json.twitterPlayer}${json.twitterPlayer.includes('?') ? '&' : '?'}rel=0&modestbranding=1`,
-        allowfullscreen: ""
-    });
+    let embed;
+    if (json.twitterPlayer) {
+        embed = $('<iframe/>', {
+            frameborder: "0",
+            width: "400",
+            height: "225",
+            src: `${json.twitterPlayer}${json.twitterPlayer.includes('?') ? '&' : '?'}rel=0&modestbranding=1`,
+            allowfullscreen: ""
+        });
+    }
+    // embedding is disabled by uploader, create embed link manually
+    // replace with image placeholder?
+    else {
+        var rx = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        var match = json.url.match(rx);
+        if (match && match[2]) {
+            embed = $('<iframe/>', {
+                frameborder: "0",
+                width: "400",
+                height: "225",
+                src: `https://www.youtube.com/embed/${match[2]}`,
+                allowfullscreen: ""
+            });
+        }
+        else {
+            return;
+        }
+    }
     return embedBlock(embed);
 }
 
