@@ -16,14 +16,14 @@
 
 ChatWidget::ChatWidget(const QString& path, TsWebObject* webObject, QWidget *parent)
     : QFrame(parent)
-	, wObject(webObject)
-	, pathToPage(QString("file:///%1LxBTSC/template/chat.html").arg(path))
-	, view(new QWebEngineView(this))
 	, verticalLayout(new QVBoxLayout(this))
+	, view(new QWebEngineView(this))
+	, wObject(webObject)
+	, page(new TsWebEnginePage(view))
+	, pathToPage(QString("file:///%1LxBTSC/template/chat.html").arg(path))
 	, menu(new QMenu(view))
 	, copyAction(new QAction("Copy", this))
 	, copyUrlAction(new QAction("Copy Link", this))
-	, page(new TsWebEnginePage(view))
 	, channel(new QWebChannel(page))
 	, loadComplete(false)
 {
