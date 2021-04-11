@@ -13,6 +13,7 @@
 #include <QWebEngineSettings>
 #include <QWebEngineProfile>
 #include <QTimer>
+#include <QWebEngineCookieStore>
 
 ChatWidget::ChatWidget(const QString& path, TsWebObject* webObject, QWidget *parent)
     : QFrame(parent)
@@ -67,6 +68,7 @@ ChatWidget::ChatWidget(const QString& path, TsWebObject* webObject, QWidget *par
 
 ChatWidget::~ChatWidget()
 {
+	page->profile()->cookieStore()->setCookieFilter(nullptr);
 }
 
 void ChatWidget::waitloop() const
@@ -95,6 +97,17 @@ void ChatWidget::setupPage() const
 	page->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
 	page->settings()->setUnknownUrlSchemePolicy(QWebEngineSettings::UnknownUrlSchemePolicy::AllowAllUnknownUrlSchemes);
 	page->profile()->setHttpUserAgent(QString("Twitterbot/1.0 %1").arg(QWebEngineProfile::defaultProfile()->httpUserAgent()));
+	page->profile()->cookieStore()->setCookieFilter(
+		[=](const QWebEngineCookieStore::FilterRequest &request) {
+			// block consent.youtube.com cookies
+			// fetch in embed.js gets redirected otherwise
+			// should probably modify how embedding is done instead
+			if (request.origin.host() == "consent.youtube.com") {
+				return false;
+			}
+			return true;
+		}
+	);
 
 	connect(page, &TsWebEnginePage::fullScreenRequested, this, &ChatWidget::onFullScreenRequested);
 	connect(page, &TsWebEnginePage::linkHovered, this, &ChatWidget::onLinkHovered);
